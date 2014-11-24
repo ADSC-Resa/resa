@@ -1,0 +1,49 @@
+# topology.metrics.consumer.register:
+#    - class: "storm.resa.metric.TomLoggingMetricsConsumer"
+#      parallelism.hint: 1
+#      argument:
+#        storm.resa.metrics.names:
+#          - "__emit-count"
+#          - "__transfer-count"
+#          - "__transfer-latency"
+#          - "__execute-count"
+#          - "__execute-latency"
+#          - "sentences"
+
+#true use redis spout, else use random spout
+#default is false
+spout.redis: false
+
+topology.workers: 3
+
+##redis config if redis spout is enabled
+redis.host: "192.168.0.30"
+redis.port: 6379
+redis.queue: "tweets"
+
+# maximum amount of time a message has to complete before it's considered failed
+topology.debug: false
+topology.stats.sample.rate: 1.0
+topology.message.timeout.secs: 30
+
+#causion for this parameter, default value is 8
+### topology.receiver.buffer.size: 1
+
+topology.queue.trace: true
+topology.queue.sample.rate: 0.01
+topology.builtin.metrics.bucket.size.secs: 10
+
+## number of executors for each component
+spout.parallelism: 1
+split.parallelism: 5
+counter.parallelism: 4
+
+resa.metric.redis.host: "192.168.0.30"
+resa.metric.redis.port: 6379
+resa.metric.redis.queue-name: "wc-metrics"
+
+resa.metric.approved.names:
+  - "complete-latency"
+  - "execute"
+  - "emit"
+  - "serialized"

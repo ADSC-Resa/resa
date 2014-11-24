@@ -1,0 +1,4 @@
+resa.opt.win.history.size: 4
+resa.opt.smd.qos.ms: 1500
+resa.opt.smd.sq.thresh: 5.0
+resa.opt.smd.rq.thresh.ratio: 0.6

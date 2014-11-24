@@ -1,0 +1,36 @@
+#true use redis spout, else use random spout
+#default is false
+#spout.redis: false
+spout.redis: true
+
+topology.workers: 6
+
+##redis config if redis spout is enabled
+redis.host: "192.168.0.30"
+redis.port: 6379
+redis.queue: "sentences"
+
+simulate.spout.parallelism: 2
+
+simulate.bolt.count: 4
+
+simulate.bolt.1.compute-time: 1
+simulate.bolt.1.parallelism: 3
+#simulate.bolt.1.tasks: 4
+
+simulate.bolt.2.compute-time: 2
+simulate.bolt.2.parallelism: 6
+#simulate.bolt.2.tasks: 4
+
+simulate.bolt.3.compute-time: 3
+simulate.bolt.3.parallelism: 13
+#simulate.bolt.3.tasks: 4
+
+simulate.bolt.4.compute-time: 2
+simulate.bolt.4.parallelism: 6
+#simulate.bolt.4.tasks: 4
+
+resa.comp.sample.rate: 0.1
+resa.metric.redis.host: 192.168.0.30
+topology.queue.trace: true
+topology.queue.sample.rate: 0.05

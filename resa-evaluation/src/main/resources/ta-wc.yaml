@@ -1,0 +1,67 @@
+# topology.metrics.consumer.register:
+#    - class: "storm.resa.metric.TomLoggingMetricsConsumer"
+#      parallelism.hint: 1
+#      argument:
+#        storm.resa.metrics.names:
+#          - "__emit-count"
+#          - "__transfer-count"
+#          - "__transfer-latency"
+#          - "__execute-count"
+#          - "__execute-latency"
+#          - "sentences"
+
+#true use redis spout, else use random spout
+#default is false
+ #spout.redis: false
+ spout.redis: true
+# topology.workers: 2
+
+##redis config if redis spout is enabled
+ redis.host: "localhost"
+ redis.port: 6379
+ redis.queue: "sentences"
+
+# maximum amount of time a message has to complete before it's considered failed
+ topology.debug: false
+ #topology.max.spout.pending: 2
+ topology.stats.sample.rate: 1.0
+ topology.message.timeout.secs: 300
+
+#causion for this parameter, default value is 8
+### topology.receiver.buffer.size: 1
+
+ topology.executor.send.buffer.size: 1024
+ topology.executor.receive.buffer.size: 1024
+
+ topology.queue.trace: true
+ topology.queue.sample.rate: 0.05
+ topology.builtin.metrics.bucket.size.secs: 10
+
+## number of executors for each component
+ spout.parallelism: 1
+
+ split.parallelism: 5
+ split.mu: 5.0
+
+ counter.parallelism: 2
+ counter.mu: 25.0
+
+ worker.count: 3
+ acker.count: 1
+
+ metrics.output.queue-name: "ta1wc"
+
+## for T2
+ a1-redis.queue: "sentences"
+ a1-metrics.output.queue-name: "ta1wc"
+ 
+ a1-worker.count: 3
+ a1-acker.count: 1
+ 
+ a1-spout.parallelism: 1
+
+ a1-split.parallelism: 4
+ a1-split.mu: 10.0
+
+ a1-counter.parallelism: 2
+ a1-counter.mu: 5.0
