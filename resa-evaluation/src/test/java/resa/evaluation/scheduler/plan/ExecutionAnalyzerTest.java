@@ -2,7 +2,7 @@ package resa.evaluation.scheduler.plan;
 
 import org.junit.Before;
 import org.junit.Test;
-import resa.scheduler.plan.ExecutionAnalyzer;
+import resa.migrate.plan.ExecutionAnalyzer;
 import resa.util.RedisQueueIterable;
 
 import java.nio.file.Files;

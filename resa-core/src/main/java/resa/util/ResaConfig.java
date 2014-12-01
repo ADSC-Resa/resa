@@ -2,7 +2,7 @@ package resa.util;
 
 import backtype.storm.Config;
 import backtype.storm.utils.Utils;
-import resa.metrics.ResaMetricsCollector;
+import resa.topology.ResaContainer;
 
 import java.util.Map;
 
@@ -65,6 +65,6 @@ public class ResaConfig extends Config {
     }
 
     public void addOptimizeSupport() {
-        registerMetricsConsumer(ResaMetricsCollector.class, 1);
+        registerMetricsConsumer(ResaContainer.class, 1);
     }
 }

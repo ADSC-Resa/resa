@@ -223,7 +223,7 @@ public class SimpleGeneralServiceModel {
 
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSec / estimatedLatencyMilliSec);
-        System.out.println("estLatency(ms): " + estimatedLatencyMilliSec + ", realLatency(ms)" + realLatencyMilliSec
+        LOG.info("estLatency(ms): " + estimatedLatencyMilliSec + ", realLatency(ms)" + realLatencyMilliSec
                 + ", underEstRatio: " + underEstimateRatio);
         LOG.info("Find out minReqAllocation under QoS requirement.");
         Map<String, Integer> minReqAllocation = getMinReqServerAllocationGeneralTop(queueingNetwork,
@@ -234,6 +234,10 @@ public class SimpleGeneralServiceModel {
         }
         LOG.info("Find out best allocation given available executors.");
         Map<String, Integer> after = suggestAllocationGeneralTop(queueingNetwork, maxAvailable4Bolt);
-        return new AllocResult(status, minReqAllocation, after);
+        Map<String, Object> context = new HashMap<>();
+        context.put("estLatency", estimatedLatencyMilliSec);
+        context.put("realLatency", realLatencyMilliSec);
+        context.put("underEstRatio", underEstimateRatio);
+        return new AllocResult(status, minReqAllocation, after).setContext(context);
     }
 }

@@ -10,8 +10,8 @@ import com.netflix.curator.framework.CuratorFramework;
 import org.apache.zookeeper.ZKUtil;
 import org.junit.Before;
 import org.junit.Test;
-import resa.scheduler.plan.KuhnMunkres;
-import resa.scheduler.plan.PackCalculator;
+import resa.migrate.plan.KuhnMunkres;
+import resa.migrate.plan.PackCalculator;
 import resa.util.TopologyHelper;
 
 import java.nio.file.Files;

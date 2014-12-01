@@ -148,7 +148,8 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
             // merge the optimized decision into source allocation
             retMinReqAllocation.putAll(allocResult.minReqOptAllocation);
         }
-        return new AllocResult(allocResult.status, retMinReqAllocation, retCurrAllocation);
+        return new AllocResult(allocResult.status, retMinReqAllocation, retCurrAllocation)
+                .setContext(allocResult.getContext());
     }
 
     @Override

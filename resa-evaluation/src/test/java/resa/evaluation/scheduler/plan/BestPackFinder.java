@@ -2,14 +2,14 @@ package resa.evaluation.scheduler.plan;
 
 import org.junit.Before;
 import org.junit.Test;
-import resa.scheduler.plan.KuhnMunkres;
-import resa.scheduler.plan.PackCalculator;
+import resa.migrate.plan.KuhnMunkres;
+import resa.migrate.plan.PackCalculator;
 
 import java.util.*;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-import static resa.scheduler.plan.PackCalculator.convertPack;
+import static resa.migrate.plan.PackCalculator.convertPack;
 
 /**
  * Created by ding on 14-9-4.

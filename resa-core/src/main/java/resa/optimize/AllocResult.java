@@ -18,6 +18,7 @@ public class AllocResult {
     public final Status status;
     public final Map<String, Integer> minReqOptAllocation;
     public final Map<String, Integer> currOptAllocation;
+    private Object context = null;
 
     public AllocResult(Status status, Map<String, Integer> minReqOptAllocation,
                        Map<String, Integer> currOptAllocation) {
@@ -30,4 +31,12 @@ public class AllocResult {
         this(status, null, currOptAllocation);
     }
 
+    public Object getContext() {
+        return context;
+    }
+
+    public AllocResult setContext(Object context) {
+        this.context = context;
+        return this;
+    }
 }

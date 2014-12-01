@@ -1,4 +1,4 @@
-package resa.scheduler.plan;
+package resa.migrate.plan;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import resa.metrics.MetricNames;

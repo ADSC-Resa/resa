@@ -1,4 +1,4 @@
-package resa.scheduler.plan;
+package resa.migrate.plan;
 
 import java.util.Map;
 import java.util.stream.IntStream;

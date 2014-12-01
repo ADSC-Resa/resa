@@ -2,10 +2,10 @@ package resa.evaluation.scheduler.plan;
 
 import org.junit.Before;
 import org.junit.Test;
-import resa.scheduler.plan.DPBasedCalculator;
-import resa.scheduler.plan.KuhnMunkres;
-import resa.scheduler.plan.PackCalculator;
-import resa.scheduler.plan.PackingAlg;
+import resa.migrate.plan.DPBasedCalculator;
+import resa.migrate.plan.KuhnMunkres;
+import resa.migrate.plan.PackCalculator;
+import resa.migrate.plan.PackingAlg;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,7 +17,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static resa.scheduler.plan.PackCalculator.convertPack;
+import static resa.migrate.plan.PackCalculator.convertPack;
 
 /**
  * Created by ding on 14-7-21.
