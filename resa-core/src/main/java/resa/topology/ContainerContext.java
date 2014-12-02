@@ -27,7 +27,7 @@ public abstract class ContainerContext {
         this.conf = conf;
     }
 
-    public abstract void emitMetric(String key, Object data);
+    public abstract void emitMetric(String name, Object data);
 
     public void addListener(Listener listener) {
         listeners.add(listener);

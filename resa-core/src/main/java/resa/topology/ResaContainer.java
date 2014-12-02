@@ -10,17 +10,22 @@ import backtype.storm.task.IErrorReporter;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 import resa.metrics.FilteredMetricsCollector;
 import resa.metrics.MeasuredData;
 import resa.metrics.MetricNames;
 import resa.util.ConfigUtil;
 import resa.util.TopologyHelper;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
 import static resa.util.ResaConfig.REBALANCE_WAITING_SECS;
@@ -30,6 +35,10 @@ import static resa.util.ResaConfig.REBALANCE_WAITING_SECS;
  */
 public class ResaContainer extends FilteredMetricsCollector {
 
+    public static final String REDIS_HOST = "resa.container.metric.redis.host";
+    public static final String REDIS_PORT = "resa.container.metric.redis.port";
+    public static final String REDIS_QUEUE_NAME = "resa.container.metric.redis.queue-name";
+
     private static final Logger LOG = LoggerFactory.getLogger(ResaContainer.class);
 
     private TopologyOptimizer topologyOptimizer = new TopologyOptimizer();
@@ -38,6 +47,9 @@ public class ResaContainer extends FilteredMetricsCollector {
     private String topologyName;
     private String topologyId;
     private Map<String, Object> conf;
+    private Thread metricSendThread;
+    private final BlockingQueue<String> metricsQueue = new LinkedBlockingDeque<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void prepare(Map conf, Object arg, TopologyContext context, IErrorReporter errorReporter) {
@@ -55,11 +67,77 @@ public class ResaContainer extends FilteredMetricsCollector {
         addApprovedMetirc(MetricNames.EMIT_COUNT);
         addApprovedMetirc(MetricNames.DURATION);
 
+        metricSendThread = createMetricsSendThread();
+        metricSendThread.start();
+        LOG.info("Metrics send thread started");
         ctx = new ContainerContextImpl(context.getRawTopology(), conf);
         // topology optimizer will start its own thread
         // if more services required to start, maybe we need to extract a new interface here
         topologyOptimizer.init(ctx);
         topologyOptimizer.start();
+    }
+
+    private String object2Json(Object o) {
+        try {
+            return objectMapper.writeValueAsString(o);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Thread createMetricsSendThread() {
+        String jedisHost = (String) conf.get(REDIS_HOST);
+        int jedisPort = ((Number) conf.get(REDIS_PORT)).intValue();
+        String queueName = (String) conf.get(REDIS_QUEUE_NAME);
+        Thread t = new Thread("Metrics send thread") {
+            private Jedis jedis;
+
+            @Override
+            public void run() {
+                String value = null;
+                while (true) {
+                    if (value == null) {
+                        try {
+                            value = metricsQueue.take();
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                    try {
+                        getJedisInstance(jedisHost, jedisPort).rpush(queueName, value);
+                    } catch (Exception e) {
+                        closeJedis();
+                        Utils.sleep(1);
+                        continue;
+                    }
+                    value = null;
+                }
+                closeJedis();
+                LOG.info("Metrics send thread exit");
+            }
+
+            /* get a jedis instance, create a one if necessary */
+            private Jedis getJedisInstance(String jedisHost, int jedisPort) {
+                if (jedis == null) {
+                    jedis = new Jedis(jedisHost, jedisPort);
+                    LOG.info("connecting to redis server {} on port {}", jedisHost, jedisPort);
+                }
+                return jedis;
+            }
+
+            private void closeJedis() {
+                if (jedis != null) {
+                    try {
+                        LOG.info("disconnecting redis server " + jedisHost);
+                        jedis.disconnect();
+                    } catch (Exception e) {
+                    }
+                    jedis = null;
+                }
+            }
+        };
+        t.setDaemon(true);
+        return t;
     }
 
     private class ContainerContextImpl extends ContainerContext {
@@ -69,8 +147,9 @@ public class ResaContainer extends FilteredMetricsCollector {
         }
 
         @Override
-        public void emitMetric(String key, Object data) {
-
+        public void emitMetric(String name, Object data) {
+            String val = name + "->" + object2Json(data);
+            metricsQueue.add(val);
         }
 
         @Override
@@ -114,5 +193,7 @@ public class ResaContainer extends FilteredMetricsCollector {
     public void cleanup() {
         super.cleanup();
         topologyOptimizer.stop();
+        metricsQueue.clear();
+        metricSendThread.interrupt();
     }
 }
