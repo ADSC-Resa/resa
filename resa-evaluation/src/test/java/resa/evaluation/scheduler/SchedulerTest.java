@@ -3,7 +3,7 @@ package resa.evaluation.scheduler;
 import backtype.storm.Config;
 import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.utils.Utils;
-import com.netflix.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFramework;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

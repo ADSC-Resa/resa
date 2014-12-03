@@ -3,8 +3,8 @@ package resa.evaluation.scheduler;
 import backtype.storm.Config;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.utils.Utils;
-import com.netflix.curator.framework.CuratorFramework;
 import junit.framework.TestCase;
+import org.apache.curator.framework.CuratorFramework;
 import resa.util.ResaConfig;
 import resa.util.TopologyHelper;
 

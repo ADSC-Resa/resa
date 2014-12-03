@@ -1,4 +1,4 @@
-package resa.scheduler;
+package resa.drs;
 
 import backtype.storm.generated.StormTopology;
 import resa.optimize.AllocResult;

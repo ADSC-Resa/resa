@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static resa.topology.video.Constant.*;
+import static resa.evaluation.topology.vld.Constant.*;
 
 /**
  * Created by ding on 14-7-3.

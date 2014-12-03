@@ -11,12 +11,12 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
 import org.junit.Test;
+import resa.evaluation.simulate.sleep.TASplitSentence;
+import resa.evaluation.simulate.sleep.TAWordCounter;
 import resa.evaluation.util.RedisDataSource;
+import resa.examples.wc.RandomSentenceSpout;
 import resa.optimize.AggResultCalculator;
 import resa.optimize.SimpleGeneralAllocCalculator;
-import resa.topology.RandomSentenceSpout;
-import resa.topology.TopologyWithSleepBolt.TASplitSentence;
-import resa.topology.TopologyWithSleepBolt.TAWordCounter;
 import resa.util.ResaConfig;
 import resa.util.TopologyHelper;
 

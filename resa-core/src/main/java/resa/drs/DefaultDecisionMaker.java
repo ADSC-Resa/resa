@@ -1,4 +1,4 @@
-package resa.scheduler;
+package resa.drs;
 
 import resa.optimize.AllocResult;
 

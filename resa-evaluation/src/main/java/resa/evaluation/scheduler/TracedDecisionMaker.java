@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import resa.optimize.AllocResult;
-import resa.scheduler.DecisionMaker;
+import resa.drs.DecisionMaker;
 import resa.util.ConfigUtil;
 
 import java.io.IOException;

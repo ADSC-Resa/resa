@@ -5,7 +5,7 @@ package resa.optimize;
  */
 public class ServiceNode {
 
-    enum ServiceType {EXPONENTIAL, DETERMINISTIC, UNIFORM, OTHER}
+    public static enum ServiceType {EXPONENTIAL, DETERMINISTIC, UNIFORM, OTHER}
 
     private double lambda;
     private double mu;

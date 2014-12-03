@@ -7,9 +7,9 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import resa.metrics.RedisMetricsCollector;
-import resa.topology.TopologyWithSleepBolt.TASentenceSpout;
-import resa.topology.WordCountTopology;
-import resa.topology.WritableTopologyBuilder;
+import resa.examples.wc.TASentenceSpout;
+import resa.examples.wc.WordCountTopology;
+import resa.evaluation.topology.WritableTopologyBuilder;
 import resa.util.ConfigUtil;
 import resa.util.ResaConfig;
 

@@ -9,7 +9,7 @@ import resa.topology.RedisQueueSpout;
 
 import java.util.Map;
 
-import static resa.topology.video.Constant.*;
+import static resa.evaluation.topology.vld.Constant.*;
 
 /**
  * Created by ding on 14-7-3.

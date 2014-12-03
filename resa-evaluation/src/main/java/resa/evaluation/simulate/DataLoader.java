@@ -10,7 +10,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import resa.topology.WordCountTopology;
+import resa.examples.wc.WordCountTopology;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;

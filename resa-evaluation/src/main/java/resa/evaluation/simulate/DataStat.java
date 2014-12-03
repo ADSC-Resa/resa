@@ -1,7 +1,7 @@
 package resa.evaluation.simulate;
 
 import backtype.storm.utils.Utils;
-import com.netflix.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFramework;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package resa.topology;
+package resa.drs;
 
 import backtype.storm.Config;
 import backtype.storm.scheduler.ExecutorDetails;
@@ -6,8 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import resa.metrics.MeasuredData;
 import resa.optimize.*;
-import resa.scheduler.DecisionMaker;
-import resa.scheduler.DefaultDecisionMaker;
+import resa.topology.ContainerContext;
 import resa.util.ConfigUtil;
 import resa.util.ResaUtils;
 
@@ -19,9 +18,9 @@ import static resa.util.ResaConfig.*;
 /**
  * Created by ding on 14-4-26.
  */
-public class TopologyOptimizer {
+public class ResourceScheduler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TopologyOptimizer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceScheduler.class);
 
     private final Timer timer = new Timer(true);
     private Map<String, Integer> currAllocation;

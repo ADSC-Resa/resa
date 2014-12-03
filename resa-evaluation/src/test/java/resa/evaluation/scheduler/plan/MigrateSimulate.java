@@ -6,7 +6,7 @@ import backtype.storm.generated.RebalanceOptions;
 import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
-import com.netflix.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.ZKUtil;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,13 +1,10 @@
-package resa.evaluation.simulate;
+package resa.evaluation.simulate.sleep;
 
 import backtype.storm.Config;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import resa.metrics.RedisMetricsCollector;
 import resa.topology.ResaTopologyBuilder;
-import resa.topology.TopologyWithSleepBolt.TASentenceSpout;
-import resa.topology.TopologyWithSleepBolt.TASplitSentence;
-import resa.topology.TopologyWithSleepBolt.TAWordCounter;
 import resa.util.ConfigUtil;
 import resa.util.ResaConfig;
 

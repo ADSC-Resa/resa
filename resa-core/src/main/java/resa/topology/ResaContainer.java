@@ -14,6 +14,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
+import resa.drs.ResourceScheduler;
 import resa.metrics.FilteredMetricsCollector;
 import resa.metrics.MeasuredData;
 import resa.metrics.MetricNames;
@@ -41,7 +42,7 @@ public class ResaContainer extends FilteredMetricsCollector {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResaContainer.class);
 
-    private TopologyOptimizer topologyOptimizer = new TopologyOptimizer();
+    private ResourceScheduler resourceScheduler = new ResourceScheduler();
     private ContainerContext ctx;
     private Nimbus.Client nimbus;
     private String topologyName;
@@ -73,8 +74,8 @@ public class ResaContainer extends FilteredMetricsCollector {
         ctx = new ContainerContextImpl(context.getRawTopology(), conf);
         // topology optimizer will start its own thread
         // if more services required to start, maybe we need to extract a new interface here
-        topologyOptimizer.init(ctx);
-        topologyOptimizer.start();
+        resourceScheduler.init(ctx);
+        resourceScheduler.start();
     }
 
     private String object2Json(Object o) {
@@ -105,12 +106,11 @@ public class ResaContainer extends FilteredMetricsCollector {
                     }
                     try {
                         getJedisInstance(jedisHost, jedisPort).rpush(queueName, value);
+                        value = null;
                     } catch (Exception e) {
                         closeJedis();
                         Utils.sleep(1);
-                        continue;
                     }
-                    value = null;
                 }
                 closeJedis();
                 LOG.info("Metrics send thread exit");
@@ -192,7 +192,7 @@ public class ResaContainer extends FilteredMetricsCollector {
     @Override
     public void cleanup() {
         super.cleanup();
-        topologyOptimizer.stop();
+        resourceScheduler.stop();
         metricsQueue.clear();
         metricSendThread.interrupt();
     }

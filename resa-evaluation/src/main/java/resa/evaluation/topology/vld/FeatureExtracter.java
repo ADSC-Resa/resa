@@ -18,7 +18,7 @@ import java.util.Map;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.cvDecodeImage;
-import static resa.topology.video.Constant.*;
+import static resa.evaluation.topology.vld.Constant.*;
 
 /**
  * Created by ding on 14-7-3.

@@ -2,7 +2,7 @@ package resa.evaluation.scheduler;
 
 import backtype.storm.generated.StormTopology;
 import resa.optimize.AllocResult;
-import resa.scheduler.DecisionMaker;
+import resa.drs.DecisionMaker;
 import resa.util.ConfigUtil;
 
 import java.util.HashMap;

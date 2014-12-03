@@ -14,15 +14,15 @@ public class AggResultTest {
     public void testGetCombinedResult() throws Exception {
 
         AggResult srcAggResult = new AggResult();
-        srcAggResult.recvQueueResult.add(1, 1, 1);
-        srcAggResult.sendQueueResult.add(2, 2, 2);
+        srcAggResult.getRecvQueueResult().add(1, 1, 1);
+        srcAggResult.getSendQueueResult().add(2, 2, 2);
 
         List<AggResult> aggResultList = new ArrayList<>();
         aggResultList.add(srcAggResult);
 
         srcAggResult = new AggResult();
-        srcAggResult.recvQueueResult.add(1, 1, 1);
-        srcAggResult.sendQueueResult.add(2, 2, 2);
+        srcAggResult.getRecvQueueResult().add(1, 1, 1);
+        srcAggResult.getSendQueueResult().add(2, 2, 2);
 
         aggResultList.add(srcAggResult);
 

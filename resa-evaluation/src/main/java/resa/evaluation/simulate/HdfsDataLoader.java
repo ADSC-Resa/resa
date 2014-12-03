@@ -12,7 +12,7 @@ import com.esotericsoftware.kryo.io.Output;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import resa.topology.WordCountTopology;
+import resa.examples.wc.WordCountTopology;
 
 import java.io.IOException;
 import java.util.List;
