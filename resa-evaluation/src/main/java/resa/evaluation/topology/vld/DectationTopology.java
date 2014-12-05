@@ -57,7 +57,7 @@ public class DectationTopology implements Constant {
             LocalCluster localCluster = new LocalCluster();
             localCluster.submitTopology("local", resaConfig, topology);
         } else {
-            resaConfig.addOptimizeSupport();
+            resaConfig.addDrsSupport();
             resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
             StormSubmitter.submitTopology(args[0], resaConfig, topology);
         }

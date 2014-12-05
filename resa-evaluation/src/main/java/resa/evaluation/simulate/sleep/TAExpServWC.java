@@ -58,7 +58,7 @@ public class TAExpServWC {
                 .shuffleGrouping("split");
 
         if (ConfigUtil.getBoolean(conf, "a1-metric.resa", false)) {
-            resaConfig.addOptimizeSupport();
+            resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
         }

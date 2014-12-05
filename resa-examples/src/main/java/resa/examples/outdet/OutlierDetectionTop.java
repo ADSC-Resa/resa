@@ -82,7 +82,7 @@ public class OutlierDetectionTop {
                 .fieldsGrouping("detector", new Fields(ObjectSpout.TIME_FILED, ObjectSpout.ID_FILED));
 
         if (ConfigUtil.getBoolean(conf, "a-metric.resa", false)) {
-            resaConfig.addOptimizeSupport();
+            resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
         }

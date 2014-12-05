@@ -90,6 +90,11 @@ public class ResaContainer extends FilteredMetricsCollector {
         String jedisHost = (String) conf.get(REDIS_HOST);
         int jedisPort = ((Number) conf.get(REDIS_PORT)).intValue();
         String queueName = (String) conf.get(REDIS_QUEUE_NAME);
+        // queue name is not exist, use topology id as default
+        if (queueName == null || queueName.isEmpty()) {
+            queueName = topologyId + "-container";
+        }
+        final String finalQueueName = queueName;
         Thread t = new Thread("Metrics send thread") {
             private Jedis jedis;
 
@@ -105,7 +110,7 @@ public class ResaContainer extends FilteredMetricsCollector {
                         }
                     }
                     try {
-                        getJedisInstance(jedisHost, jedisPort).rpush(queueName, value);
+                        getJedisInstance(jedisHost, jedisPort).rpush(finalQueueName, value);
                         value = null;
                     } catch (Exception e) {
                         closeJedis();

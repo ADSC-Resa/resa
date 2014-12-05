@@ -64,7 +64,7 @@ public class ResaConfig extends Config {
         return new ResaConfig(loadDefault);
     }
 
-    public void addOptimizeSupport() {
+    public void addDrsSupport() {
         registerMetricsConsumer(ResaContainer.class, 1);
     }
 }

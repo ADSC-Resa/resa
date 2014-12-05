@@ -61,7 +61,7 @@ public class LoadDataTopology {
             LocalCluster localCluster = new LocalCluster();
             localCluster.submitTopology("local", resaConfig, topology);
         } else {
-//            resaConfig.addOptimizeSupport();
+//            resaConfig.addDrsSupport();
             resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
             List<Double> dataSizes = Files.readAllLines(Paths.get(args[2])).stream().map(String::trim)
                     .filter(s -> !s.isEmpty()).map(Double::valueOf).collect(Collectors.toList());

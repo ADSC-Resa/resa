@@ -94,8 +94,7 @@ public class ResourceScheduler {
                 Map<String, Integer> newAllocation = calcNewAllocation(calculator.getResults());
                 if (newAllocation != null && !newAllocation.equals(currAllocation)) {
                     LOG.info("Detected topology allocation changed, request rebalance....");
-                    LOG.info("Old allc is {} ", currAllocation);
-                    LOG.info("new allc is {}", newAllocation);
+                    LOG.info("Old allc is {}, new allc is {}", currAllocation, newAllocation);
                     ctx.requestRebalance(newAllocation, getNumWorkers(newAllocation));
                 }
             }
@@ -107,6 +106,7 @@ public class ResourceScheduler {
             Map<String, Integer> ret = null;
             try {
                 AllocResult decision = allocCalculator.calc(data, maxExecutors);
+                ctx.emitMetric("drs.alloc", decision);
                 // tagged by Tom, modified by troy:
                 // in decisionMaker , we need to improve this rebalance step to calc more stable and smooth
                 // Idea 1) we can maintain an decision list, only when we have received continuous
@@ -130,7 +130,7 @@ public class ResourceScheduler {
     private int getNumWorkers(Map<String, Integer> allocation) {
         int totolNumExecutors = allocation.values().stream().mapToInt(Integer::intValue).sum();
         int numWorkers = totolNumExecutors / maxExecutorsPerWorker;
-        if (totolNumExecutors % maxExecutorsPerWorker > (int) (maxExecutorsPerWorker / 2)) {
+        if (totolNumExecutors % maxExecutorsPerWorker != 0) {
             numWorkers++;
         }
         return numWorkers;

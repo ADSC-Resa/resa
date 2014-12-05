@@ -59,7 +59,7 @@ public class TAExpServWCLoop {
                 .shuffleGrouping("split").shuffleGrouping("counter", "Bolt-P");
 
         if (ConfigUtil.getBoolean(conf, "a4-metric.resa", false)) {
-            resaConfig.addOptimizeSupport();
+            resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
         }

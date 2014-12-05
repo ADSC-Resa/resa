@@ -20,15 +20,20 @@ resa.metric.approved.names:
   - "emit"
   - "duration"
 
+### resa container
+resa.container.metric.redis.host: localhost
+resa.container.metric.redis.port: 6379
+#resa.container.metric.redis.queue-name: metrics
+
 ### optimize
 resa.topology.max.executor.per.worker: 5
 resa.topology.rebalance.waiting.secs: 30
 resa.optimize.interval.secs: 30
 resa.topology.allowed.executor.num: -1
 
-#### scheduler
+#### DRS
 resa.scheduler.alloc.class: "resa.optimize.SimpleGeneralAllocCalculator"
-resa.scheduler.decision.class: "resa.scheduler.DefaultDecisionMaker"
+resa.scheduler.decision.class: "resa.drs.DefaultDecisionMaker"
 
 ####migrate
 resa.comp.checkpoint.interval.sec: 30

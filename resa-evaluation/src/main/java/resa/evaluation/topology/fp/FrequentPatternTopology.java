@@ -54,7 +54,7 @@ public class FrequentPatternTopology implements Constant {
                 .setNumTasks(ConfigUtil.getInt(conf, "fp.reporter.tasks", 1));
 
         if (ConfigUtil.getBoolean(conf, "fp.metric.resa", false)) {
-            resaConfig.addOptimizeSupport();
+            resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
         }

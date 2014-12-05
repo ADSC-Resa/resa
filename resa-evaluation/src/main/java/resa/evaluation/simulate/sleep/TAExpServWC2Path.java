@@ -68,7 +68,7 @@ public class TAExpServWC2Path {
                 .shuffleGrouping("splitP").shuffleGrouping("splitNotP");
 
         if (ConfigUtil.getBoolean(conf, "a3-metric.resa", false)) {
-            resaConfig.addOptimizeSupport();
+            resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
         }

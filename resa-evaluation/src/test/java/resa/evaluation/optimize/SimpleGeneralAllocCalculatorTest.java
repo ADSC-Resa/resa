@@ -284,7 +284,7 @@ public class SimpleGeneralAllocCalculatorTest {
 
         String host = "192.168.0.30";
         int port = 6379;
-        String queue = "fpt-16-1413270599-metrics";
+        String queue = "fpm-7-1417774110-metrics";
         int maxLen = 5000;
 
         NimbusClient nimbusClient = NimbusClient.getConfiguredClient(conf);
@@ -294,7 +294,7 @@ public class SimpleGeneralAllocCalculatorTest {
         ///String topoName = "arwcRedis";
         ///String topoName = "outdetResa";
         ///String topoName = "rwc";
-        String topoName = "fpt";
+        String topoName = "fpm";
         String topoId = TopologyHelper.getTopologyId(nimbus, topoName);
 
         TopologyInfo topoInfo = nimbus.getTopologyInfo(topoId);
