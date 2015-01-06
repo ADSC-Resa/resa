@@ -51,23 +51,23 @@ public class TridentWordCount {
             spout = new TASentenceSpout(host, port, queue);
         }
         TridentTopology topology = new TridentTopology();
-        TridentState wordCounts = topology.newStream("spout", spout).parallelismHint(8)
-                .each(new Fields("sentence"), new Split(), new Fields("word")).groupBy(new Fields("word"))
+        TridentState wordCounts = topology.newStream("spout", spout).parallelismHint(4)
+                .each(new Fields("sentence"), new Split(), new Fields("word")).parallelismHint(8)
+                .groupBy(new Fields("word"))
                 .persistentAggregate(new MemoryMapState.Factory(), new Count(), new Fields("count"))
-                .parallelismHint(16);
+                .parallelismHint(8);
 
         return topology.build();
     }
 
     public static void main(String[] args) throws Exception {
         Config conf = new Config();
-        conf.setMaxSpoutPending(20);
         if (args.length == 0) {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("wordCounter", conf, buildTopology(conf));
         } else {
             conf.setNumWorkers(Integer.parseInt(args[1]));
-            conf.put(RichSpoutBatchExecutor.MAX_BATCH_SIZE_CONF, 300);
+            conf.put(RichSpoutBatchExecutor.MAX_BATCH_SIZE_CONF, 100);
             StormSubmitter.submitTopology(args[0], conf, buildTopology(conf));
         }
     }
