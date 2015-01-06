@@ -14,7 +14,7 @@
             <useProjectAttachments>true</useProjectAttachments>
             <unpack>true</unpack>
             <scope>test</scope>
-            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
             <excludes>
                 <exclude>org.apache.storm:*</exclude>
                 <exclude>junit:*</exclude>
