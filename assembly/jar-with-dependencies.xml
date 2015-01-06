@@ -18,7 +18,7 @@
             <excludes>
                 <exclude>org.apache.storm:*</exclude>
                 <exclude>junit:*</exclude>
-                <exclude>org.slf4j:*</exclude>
+                <exclude>org.slf4j*:*</exclude>
                 <exclude>org.clojure:*</exclude>
                 <exclude>ring:*</exclude>
                 <exclude>org.mortbay.jetty:*</exclude>
