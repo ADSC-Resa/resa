@@ -49,39 +49,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <!-- bind the maven-assembly-plugin to the package phase this will create
-                a jar file without the storm dependencies suitable for deployment to a cluster. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/test-jar-with-dependencies.xml</descriptor>
-                    </descriptors>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass></mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
