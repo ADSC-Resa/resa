@@ -14,7 +14,7 @@
             <useProjectAttachments>true</useProjectAttachments>
             <unpack>true</unpack>
             <scope>test</scope>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <useTransitiveDependencies>true</useTransitiveDependencies>
             <excludes>
                 <exclude>org.apache.storm:*</exclude>
                 <exclude>junit:*</exclude>
@@ -23,7 +23,7 @@
                 <exclude>log4j:*</exclude>
                 <exclude>org.clojure:*</exclude>
                 <exclude>ring:*</exclude>
-                <exclude>org.mortbay.jetty:*</exclude>
+                <exclude>org.mortbay.*:*</exclude>
                 <exclude>javax.servlet:*</exclude>
                 <exclude>jline:*</exclude>
                 <exclude>org.apache.zookeeper:*</exclude>
@@ -32,6 +32,7 @@
                 <exclude>org.apache.httpcompontents:*</exclude>
                 <exclude>io.netty:*</exclude>
                 <exclude>clout:*</exclude>
+                <exclude>org.apache.commons*:*</exclude>
                 <exclude>commons-*:*</exclude>
                 <exclude>com.esotericsoftware.*:*</exclude>
                 <exclude>clj-*:*</exclude>
