@@ -41,7 +41,6 @@ public class RandomSentenceSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        Utils.sleep(_rand.nextInt(10) + 10);
         String sentence = SENTENCES[_rand.nextInt(SENTENCES.length)];
         _collector.emit(new Values(sentence), UUID.randomUUID().toString());
     }

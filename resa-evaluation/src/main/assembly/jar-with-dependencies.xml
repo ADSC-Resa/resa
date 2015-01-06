@@ -14,7 +14,7 @@
             <useProjectAttachments>true</useProjectAttachments>
             <unpack>true</unpack>
             <scope>test</scope>
-            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
             <excludes>
                 <exclude>org.apache.storm:*</exclude>
                 <exclude>junit:*</exclude>
@@ -32,7 +32,7 @@
                 <exclude>org.apache.httpcompontents:*</exclude>
                 <exclude>io.netty:*</exclude>
                 <exclude>clout:*</exclude>
-                <!--<exclude>commons-*:*</exclude>-->
+                <exclude>commons-*:*</exclude>
                 <exclude>com.esotericsoftware.*:*</exclude>
                 <exclude>clj-*:*</exclude>
                 <exclude>org.jgrapht:*</exclude>
