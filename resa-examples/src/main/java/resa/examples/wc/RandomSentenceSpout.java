@@ -14,6 +14,19 @@ import java.util.UUID;
 
 public class RandomSentenceSpout extends BaseRichSpout {
 
+    public static String[] SENTENCES = new String[]{
+            "the cow jumped over the moon",
+            "an apple a day keeps the doctor away",
+            "four score and seven years ago",
+            "snow white and the seven dwarfs",
+            "i am at two with nature",
+            "the latest news and headlines from Yahoo! news",
+            "breaking news latest news and current news",
+            "the latest news from across canada and around the world",
+            "get top headlines on international business news",
+            "cnn delivers the latest breaking news and information on the latest top stories",
+            "get breaking national and world news broadcast video coverage and exclusive interviews"};
+
     private static final long serialVersionUID = 3963979649966518694L;
 
     private transient SpoutOutputCollector _collector;
@@ -29,19 +42,7 @@ public class RandomSentenceSpout extends BaseRichSpout {
     @Override
     public void nextTuple() {
         Utils.sleep(_rand.nextInt(10) + 10);
-        String[] sentences = new String[]{
-                "the cow jumped over the moon",
-                "an apple a day keeps the doctor away",
-                "four score and seven years ago",
-                "snow white and the seven dwarfs",
-                "i am at two with nature",
-                "the latest news and headlines from Yahoo! news",
-                "breaking news latest news and current news",
-                "the latest news from across canada and around the world",
-                "get top headlines on international business news",
-                "cnn delivers the latest breaking news and information on the latest top stories",
-                "get breaking national and world news broadcast video coverage and exclusive interviews"};
-        String sentence = sentences[_rand.nextInt(sentences.length)];
+        String sentence = SENTENCES[_rand.nextInt(SENTENCES.length)];
         _collector.emit(new Values(sentence), UUID.randomUUID().toString());
     }
 
