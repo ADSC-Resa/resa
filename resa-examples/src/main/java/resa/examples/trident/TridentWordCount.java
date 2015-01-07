@@ -9,7 +9,6 @@ import backtype.storm.tuple.Fields;
 import resa.examples.wc.RandomSentenceSpout;
 import resa.examples.wc.TASentenceSpout;
 import resa.util.ConfigUtil;
-import storm.trident.TridentState;
 import storm.trident.TridentTopology;
 import storm.trident.operation.BaseFunction;
 import storm.trident.operation.TridentCollector;
@@ -18,6 +17,7 @@ import storm.trident.spout.RichSpoutBatchExecutor;
 import storm.trident.testing.MemoryMapState;
 import storm.trident.tuple.TridentTuple;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
@@ -51,23 +51,26 @@ public class TridentWordCount {
             spout = new TASentenceSpout(host, port, queue);
         }
         TridentTopology topology = new TridentTopology();
-        TridentState wordCounts = topology.newStream("spout", spout).parallelismHint(4)
-                .each(new Fields("sentence"), new Split(), new Fields("word")).parallelismHint(8)
+        topology.newStream("spout", spout).parallelismHint(ConfigUtil.getInt(conf, "spout.parallelism", 1))
+                .each(new Fields("sentence"), new Split(), new Fields("word"))
+                .parallelismHint(ConfigUtil.getInt(conf, "split.parallelism", 1))
                 .groupBy(new Fields("word"))
                 .persistentAggregate(new MemoryMapState.Factory(), new Count(), new Fields("count"))
-                .parallelismHint(8);
-
+                .parallelismHint(ConfigUtil.getInt(conf, "counter.parallelism", 1));
         return topology.build();
     }
 
     public static void main(String[] args) throws Exception {
-        Config conf = new Config();
+        Config conf = ConfigUtil.readConfig(new File(args[1]));
+        if (conf == null) {
+            throw new RuntimeException("cannot find conf file " + args[1]);
+        }
         if (args.length == 0) {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("wordCounter", conf, buildTopology(conf));
         } else {
-            conf.setNumWorkers(Integer.parseInt(args[1]));
             conf.put(RichSpoutBatchExecutor.MAX_BATCH_SIZE_CONF, 100);
+            conf.setMaxSpoutPending(200);
             StormSubmitter.submitTopology(args[0], conf, buildTopology(conf));
         }
     }

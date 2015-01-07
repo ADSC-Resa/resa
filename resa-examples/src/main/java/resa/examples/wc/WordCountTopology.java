@@ -10,9 +10,7 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
-import resa.topology.ResaTopologyBuilder;
 import resa.util.ConfigUtil;
-import resa.util.ResaConfig;
 
 import java.io.File;
 import java.util.Arrays;
@@ -114,10 +112,7 @@ public class WordCountTopology {
             throw new RuntimeException("cannot find conf file " + args[1]);
         }
 
-        ResaConfig resaConfig = ResaConfig.create();
-        resaConfig.putAll(conf);
-
-        TopologyBuilder builder = new ResaTopologyBuilder();
+        TopologyBuilder builder = new TopologyBuilder();
 
         if (!ConfigUtil.getBoolean(conf, "spout.redis", false)) {
             builder.setSpout("say", new RandomSentenceSpout(), ConfigUtil.getInt(conf, "spout.parallelism", 1));
@@ -132,8 +127,6 @@ public class WordCountTopology {
                 .shuffleGrouping("say");
         builder.setBolt("counter", new WordCount(), ConfigUtil.getInt(conf, "counter.parallelism", 1))
                 .fieldsGrouping("split", new Fields("word"));
-        // add drs component
-        resaConfig.addDrsSupport();
-        StormSubmitter.submitTopology(args[0], resaConfig, builder.createTopology());
+        StormSubmitter.submitTopology(args[0], conf, builder.createTopology());
     }
 }
