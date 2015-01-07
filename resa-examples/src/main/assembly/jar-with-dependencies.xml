@@ -1,7 +1,7 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/xsd/assembly-1.1.0.xsd">
-    <id>test-jar-with-dependencies</id>
+    <id>jar-with-dependencies</id>
     <formats>
         <format>jar</format>
     </formats>
@@ -13,15 +13,14 @@
             <!-- we're creating the test-jar as an attachement -->
             <useProjectAttachments>true</useProjectAttachments>
             <unpack>true</unpack>
-            <scope>test</scope>
+            <scope>runtime</scope>
             <useTransitiveDependencies>true</useTransitiveDependencies>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
                 <exclude>org.apache.storm:*</exclude>
                 <exclude>junit:*</exclude>
-                <exclude>org.slf4j:slf4j-log4j12</exclude>
                 <exclude>org.slf4j:*</exclude>
-                <exclude>org.apache.log4j:*</exclude>
-                <exclude>log4j:*</exclude>
+                <exclude>log4j:log4j</exclude>
                 <exclude>org.clojure:*</exclude>
                 <exclude>ring:*</exclude>
                 <exclude>org.mortbay.*:*</exclude>
