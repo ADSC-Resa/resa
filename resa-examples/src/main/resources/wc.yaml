@@ -47,3 +47,7 @@ resa.metric.approved.names:
   - "execute"
   - "emit"
   - "serialized"
+
+#config for trident
+topology.spout.max.batch.size: 100
+

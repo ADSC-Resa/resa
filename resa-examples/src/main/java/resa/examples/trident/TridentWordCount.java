@@ -13,7 +13,6 @@ import storm.trident.TridentTopology;
 import storm.trident.operation.BaseFunction;
 import storm.trident.operation.TridentCollector;
 import storm.trident.operation.builtin.Count;
-import storm.trident.spout.RichSpoutBatchExecutor;
 import storm.trident.testing.MemoryMapState;
 import storm.trident.tuple.TridentTuple;
 
@@ -69,7 +68,6 @@ public class TridentWordCount {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("wordCounter", conf, buildTopology(conf));
         } else {
-            conf.put(RichSpoutBatchExecutor.MAX_BATCH_SIZE_CONF, 100);
             conf.setMaxSpoutPending(200);
             StormSubmitter.submitTopology(args[0], conf, buildTopology(conf));
         }
