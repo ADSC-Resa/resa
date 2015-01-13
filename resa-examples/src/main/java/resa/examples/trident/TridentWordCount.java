@@ -68,7 +68,6 @@ public class TridentWordCount {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("wordCounter", conf, buildTopology(conf));
         } else {
-            conf.setMaxSpoutPending(200);
             StormSubmitter.submitTopology(args[0], conf, buildTopology(conf));
         }
     }
