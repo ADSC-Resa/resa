@@ -32,7 +32,7 @@ public class ResaWordCount {
             String host = (String) conf.get("redis.host");
             int port = ((Number) conf.get("redis.port")).intValue();
             String queue = (String) conf.get("redis.queue");
-            builder.setSpout("say", new TASentenceSpout(host, port, queue),
+            builder.setSpout("say", new RedisSentenceSpout(host, port, queue),
                     ConfigUtil.getInt(conf, "spout.parallelism", 1));
         }
         builder.setBolt("split", new WordCountTopology.SplitSentence(), ConfigUtil.getInt(conf, "split.parallelism", 1))

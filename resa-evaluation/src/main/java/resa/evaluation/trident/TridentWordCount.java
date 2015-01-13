@@ -1,18 +1,16 @@
-package resa.examples.trident;
+package resa.evaluation.trident;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.StormTopology;
-import backtype.storm.topology.IRichSpout;
 import backtype.storm.tuple.Fields;
-import resa.examples.wc.RandomSentenceSpout;
-import resa.examples.wc.RedisSentenceSpout;
 import resa.util.ConfigUtil;
 import storm.trident.TridentTopology;
 import storm.trident.operation.BaseFunction;
 import storm.trident.operation.TridentCollector;
 import storm.trident.operation.builtin.Count;
+import storm.trident.spout.ITridentSpout;
 import storm.trident.testing.MemoryMapState;
 import storm.trident.tuple.TridentTuple;
 
@@ -40,14 +38,14 @@ public class TridentWordCount {
     }
 
     public static StormTopology buildTopology(Config conf) {
-        IRichSpout spout;
+        ITridentSpout<Object> spout;
         if (!ConfigUtil.getBoolean(conf, "spout.redis", false)) {
-            spout = new RandomSentenceSpout();
+            spout = new BoundSentenceSpout();
         } else {
             String host = (String) conf.get("redis.host");
             int port = ((Number) conf.get("redis.port")).intValue();
             String queue = (String) conf.get("redis.queue");
-            spout = new RedisSentenceSpout(host, port, queue);
+            spout = null;
         }
         TridentTopology topology = new TridentTopology();
         topology.newStream("spout", spout).parallelismHint(ConfigUtil.getInt(conf, "spout.parallelism", 1))

@@ -7,7 +7,7 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import resa.metrics.RedisMetricsCollector;
-import resa.examples.wc.TASentenceSpout;
+import resa.examples.wc.RedisSentenceSpout;
 import resa.examples.wc.WordCountTopology;
 import resa.evaluation.topology.WritableTopologyBuilder;
 import resa.util.ConfigUtil;
@@ -33,7 +33,7 @@ public class LoadDataTopology {
         String host = (String) conf.get("redis.host");
         int port = ConfigUtil.getInt(conf, "redis.port", 6379);
         String queue = (String) conf.get("redis.queue");
-        builder.setSpout("input", new TASentenceSpout(host, port, queue), ConfigUtil.getInt(conf,
+        builder.setSpout("input", new RedisSentenceSpout(host, port, queue), ConfigUtil.getInt(conf,
                 "simulate.spout.parallelism", 1));
 
         int parallelism = ConfigUtil.getInt(conf, "simulate.bolt.split.parallelism", 1);

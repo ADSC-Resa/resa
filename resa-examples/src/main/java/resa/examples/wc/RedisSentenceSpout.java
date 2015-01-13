@@ -9,12 +9,12 @@ import resa.topology.RedisQueueSpout;
 
 import java.util.Map;
 
-public class TASentenceSpout extends RedisQueueSpout {
+public class RedisSentenceSpout extends RedisQueueSpout {
 
     private transient long count = 0;
     private String spoutIdPrefix = "s-";
 
-    public TASentenceSpout(String host, int port, String queue) {
+    public RedisSentenceSpout(String host, int port, String queue) {
         super(host, port, queue);
     }
 
