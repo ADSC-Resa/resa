@@ -1,4 +1,4 @@
-package resa.migrate;
+package resa.evaluation.migrate;
 
 import backtype.storm.Config;
 import backtype.storm.serialization.SerializationFactory;

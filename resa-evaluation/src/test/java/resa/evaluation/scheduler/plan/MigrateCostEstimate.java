@@ -2,6 +2,7 @@ package resa.evaluation.scheduler.plan;
 
 import org.junit.Before;
 import org.junit.Test;
+import resa.evaluation.migrate.ConsistentHashing;
 import resa.migrate.plan.DPBasedCalculator;
 import resa.migrate.plan.KuhnMunkres;
 import resa.migrate.plan.PackCalculator;
@@ -27,17 +28,19 @@ public class MigrateCostEstimate {
     private double[] dataSizes;
     private double[] workload;
     private double totalDataSize;
+    private double totalWorkload;
     private TreeMap<String, Double> migrationMetrics;
-    private float ratio = 1.22f;
+    private float ratio = 1.20f;
     private int[] statesChain = null;
 
     @Before
     public void init() throws Exception {
-        workload = Files.readAllLines(Paths.get("/Volumes/Data/work/doctor/resa/exp/wc-workload-096.txt")).stream()
+        workload = Files.readAllLines(Paths.get("/Volumes/Data/work/doctor/resa/exp/wc-workload-064.txt")).stream()
                 .map(String::trim).filter(s -> !s.isEmpty()).mapToDouble(Double::valueOf).toArray();
-        dataSizes = Files.readAllLines(Paths.get("/Volumes/Data/work/doctor/resa/exp/wc-data-sizes-096.txt")).stream()
+        dataSizes = Files.readAllLines(Paths.get("/Volumes/Data/work/doctor/resa/exp/wc-data-sizes-064.txt")).stream()
                 .map(String::trim).filter(s -> !s.isEmpty()).mapToDouble(Double::valueOf).toArray();
         totalDataSize = DoubleStream.of(dataSizes).sum();
+        totalWorkload = DoubleStream.of(workload).sum();
         migrationMetrics = Files.readAllLines(Paths.get("/Volumes/Data/work/doctor/resa/exp/fp-metrics.txt")).stream()
                 .map(s -> s.split(":")).collect(Collectors.toMap(strs -> strs[0] + "-" + strs[1],
                         strs -> Double.parseDouble(strs[2]), (v1, v2) -> {
@@ -162,11 +165,12 @@ public class MigrateCostEstimate {
 //        System.out.println();
         System.out.println("First pack:" + Arrays.toString(PackingAlg.calc(workload, states[0])));
         KuhnMunkres km = new KuhnMunkres(dataSizes.length);
-        System.out.println("default: " + output(calcDefault(states, km), count - 1));
+        System.out.println("consistent hashing: " + output(consistentHashing(states), count - 1));
+        System.out.println("storm default: " + output(calcStormDefault(states, km), count - 1));
         System.out.println("local opt: " + output(calcLocalOptimization(states, km), count - 1));
 //        System.out.println("global opt1: " + output(calcGlobalOptimization(states, km), count));
 //        System.out.println("global opt2: " + output(calcGlobalOptimization2(states, 0.8f), count - 1));
-//        System.out.println("global opt3: " + output(calcGlobalOptimization3(states, 0.8f), count - 1));
+        //System.out.println("global opt3: " + output(calcGlobalOptimization3(states, 0.8f), count - 1));
     }
 
     private String output(double toMove, int count) {
@@ -175,6 +179,41 @@ public class MigrateCostEstimate {
                 toMove / totalDataSize);
     }
 
+    private double consistentHashing(int[] states) {
+        int[] srcPack = packAvg(workload.length, states[0]);
+        List<int[]> currAlloc = new ArrayList<>(srcPack.length);
+        int taskId = 0;
+        for (int i = 0; i < srcPack.length; i++) {
+            int[] alloc = new int[srcPack[i]];
+            for (int j = 0; j < srcPack[i]; j++) {
+                alloc[j] = taskId++;
+            }
+            currAlloc.add(alloc);
+        }
+        double toMove = 0.0;
+        for (int i = 1; i < states.length; i++) {
+            ConsistentHashing.Result result = ConsistentHashing.calc(dataSizes, currAlloc, states[i]);
+            toMove += result.cost;
+            currAlloc = result.tasks;
+            workloadVariance(currAlloc, "" + states[i]);
+        }
+        return toMove;
+    }
+
+    private void workloadVariance(List<int[]> currAlloc, String head) {
+        double avgWorkload = totalWorkload / currAlloc.size();
+        double[] workloads = currAlloc.stream().mapToDouble(alloc -> Arrays.stream(alloc)
+                .mapToDouble(t -> workload[t]).sum()).toArray();
+        double variance = Math.sqrt(Arrays.stream(workloads).map(w -> square(w - avgWorkload)).sum()
+                / currAlloc.size());
+        double maxWorkload = Arrays.stream(workloads).max().getAsDouble();
+        System.out.printf("%s, %.02f, %.04f, %.02f, %.02f\n", head, maxWorkload, maxWorkload / avgWorkload,
+                Arrays.stream(workloads).min().getAsDouble(), variance);
+    }
+
+    private static double square(double value) {
+        return value * value;
+    }
 
     private double calcGlobalOptimization(int[] states, KuhnMunkres km) {
         Map<Integer, int[]> state2Pack = IntStream.of(states).distinct().boxed()
@@ -225,8 +264,8 @@ public class MigrateCostEstimate {
     }
 
     private double calcGlobalOptimization3(int[] states, float gam) {
-        Path valuesDir = Paths.get("/Volumes/Data/work/doctor/resa/migration/mdp/matrix/wc-new/"
-                + String.format("%.2f", ratio));
+        Path valuesDir = Paths.get("/Volumes/Data/work/doctor/resa/migration/mdp/matrix/fp/"
+                + String.format("%.2f-90", ratio));
         Map<Integer, float[]> state2Values = IntStream.of(states).distinct().boxed().collect(Collectors.toMap(i -> i,
                 i -> readValues(valuesDir.resolve("values_" + i))));
         Map<Integer, int[][]> statePacks = IntStream.of(states).distinct().boxed().collect(Collectors.toMap(i -> i,
@@ -241,6 +280,7 @@ public class MigrateCostEstimate {
             toMove += (totalDataSize - remain);
 //            System.out.println(IntStream.of(selected).mapToObj(String::valueOf).collect(Collectors.joining(",")));
             srcPack = selected;
+            workloadVariance(srcPack, "" + states[i]);
         }
         return toMove;
     }
@@ -339,11 +379,18 @@ public class MigrateCostEstimate {
 //            System.out.printf("%.2f\n", (totalDataSize - remain) / 1024);
             srcPack = newPack;
 //            System.out.println(IntStream.of(newPack).mapToObj(String::valueOf).collect(Collectors.joining(",")));
+            workloadVariance(newPack, "" + states[i]);
         }
         return toMove;
     }
 
-    private double calcDefault(int[] states, KuhnMunkres km) {
+    private void workloadVariance(int[] pack, String head) {
+        List<int[]> alloc = Arrays.stream(convertPack(pack)).map(p -> IntStream.rangeClosed(p.start, p.end).toArray())
+                .collect(Collectors.toList());
+        workloadVariance(alloc, head);
+    }
+
+    private double calcStormDefault(int[] states, KuhnMunkres km) {
         int[] srcPack = packAvg(workload.length, states[0]);
         double toMove = 0.0;
         for (int i = 1; i < states.length; i++) {

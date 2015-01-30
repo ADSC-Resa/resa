@@ -2,7 +2,7 @@ package resa.evaluation.topology;
 
 import backtype.storm.topology.BoltDeclarer;
 import backtype.storm.topology.IRichBolt;
-import resa.migrate.HdfsWritableBolt;
+import resa.evaluation.migrate.HdfsWritableBolt;
 import resa.topology.ResaTopologyBuilder;
 
 /**

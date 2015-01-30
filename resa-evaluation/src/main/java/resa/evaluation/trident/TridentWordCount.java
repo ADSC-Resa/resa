@@ -40,7 +40,7 @@ public class TridentWordCount {
     public static StormTopology buildTopology(Config conf) {
         ITridentSpout<Object> spout;
         if (!ConfigUtil.getBoolean(conf, "spout.redis", false)) {
-            spout = new BoundSentenceSpout();
+            spout = new OneSentencePerBatchSpout();
         } else {
             String host = (String) conf.get("redis.host");
             int port = ((Number) conf.get("redis.port")).intValue();
@@ -66,7 +66,6 @@ public class TridentWordCount {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("wordCounter", conf, buildTopology(conf));
         } else {
-            conf.setMaxSpoutPending(200);
             StormSubmitter.submitTopology(args[0], conf, buildTopology(conf));
         }
     }

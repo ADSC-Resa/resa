@@ -4,8 +4,8 @@ import backtype.storm.Config;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import resa.evaluation.topology.WritableTopologyBuilder;
 import resa.metrics.RedisMetricsCollector;
-import resa.topology.ResaTopologyBuilder;
 import resa.util.ConfigUtil;
 import resa.util.ResaConfig;
 
@@ -26,7 +26,7 @@ public class FrequentPatternTopology implements Constant {
         ResaConfig resaConfig = ResaConfig.create();
         resaConfig.putAll(conf);
 
-        TopologyBuilder builder = new ResaTopologyBuilder();
+        TopologyBuilder builder = new WritableTopologyBuilder();
 //        TopologyBuilder builder = new ResaTopologyBuilder();
 
         int numWorkers = ConfigUtil.getInt(conf, "fp-worker.count", 1);
