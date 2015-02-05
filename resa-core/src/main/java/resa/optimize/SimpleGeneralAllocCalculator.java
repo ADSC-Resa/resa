@@ -57,6 +57,8 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         double componentSampelRate = ConfigUtil.getDouble(conf, "resa.comp.sample.rate", 1.0);
 ///Here we assume only one spout
 
+        Map<String, Map<String, Object>> queueMetric = new HashMap<>();
+
         Map<String, SourceNode> spInfos = spoutAregatedData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     Iterable<AggResult> results = e.getValue();
@@ -141,15 +143,19 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         // merge the optimized decision into source allocation
         retCurrAllocation.putAll(allocResult.currOptAllocation);
         LOG.info(currAllocation + "-->" + retCurrAllocation);
-        LOG.info("minReq: {} " + allocResult.minReqOptAllocation + ", status: " + allocResult.status);
+        LOG.info("minReq: " + allocResult.minReqOptAllocation + ", status: " + allocResult.status);
         Map<String, Integer> retMinReqAllocation = null;
         if (allocResult.minReqOptAllocation != null) {
             retMinReqAllocation = new HashMap<>(currAllocation);
             // merge the optimized decision into source allocation
             retMinReqAllocation.putAll(allocResult.minReqOptAllocation);
         }
+        Map<String, Object> ctx = new HashMap<>();
+        ctx.put("latency", allocResult.getContext());
+        ctx.put("spout", spInfo);
+        ctx.put("bolt", queueingNetwork);
         return new AllocResult(allocResult.status, retMinReqAllocation, retCurrAllocation)
-                .setContext(allocResult.getContext());
+                .setContext(ctx);
     }
 
     @Override

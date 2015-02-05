@@ -106,7 +106,10 @@ public class ResourceScheduler {
             Map<String, Integer> ret = null;
             try {
                 AllocResult decision = allocCalculator.calc(data, maxExecutors);
-                ctx.emitMetric("drs.alloc", decision);
+                if (decision != null) {
+                    ctx.emitMetric("drs.alloc", decision);
+                    LOG.debug("emit drs metric {}", decision);
+                }
                 // tagged by Tom, modified by troy:
                 // in decisionMaker , we need to improve this rebalance step to calc more stable and smooth
                 // Idea 1) we can maintain an decision list, only when we have received continuous

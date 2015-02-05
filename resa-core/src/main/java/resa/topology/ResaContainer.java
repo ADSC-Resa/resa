@@ -22,9 +22,7 @@ import resa.util.ConfigUtil;
 import resa.util.TopologyHelper;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
@@ -39,6 +37,7 @@ public class ResaContainer extends FilteredMetricsCollector {
     public static final String REDIS_HOST = "resa.container.metric.redis.host";
     public static final String REDIS_PORT = "resa.container.metric.redis.port";
     public static final String REDIS_QUEUE_NAME = "resa.container.metric.redis.queue-name";
+    public static final String METRIC_OUTPUT = "resa.container.metric.output";
 
     private static final Logger LOG = LoggerFactory.getLogger(ResaContainer.class);
 
@@ -76,6 +75,37 @@ public class ResaContainer extends FilteredMetricsCollector {
         // if more services required to start, maybe we need to extract a new interface here
         resourceScheduler.init(ctx);
         resourceScheduler.start();
+
+        outputTopologyInfo(context);
+        if ((Boolean) conf.getOrDefault(METRIC_OUTPUT, Boolean.FALSE)) {
+            outputMetric();
+        }
+    }
+
+    private void outputTopologyInfo(TopologyContext context) {
+        Map<String, Object> topo = new LinkedHashMap<>();
+        topo.put("id", context.getStormId());
+        topo.put("spouts", new ArrayList<>(context.getRawTopology().get_spouts().keySet()));
+        topo.put("bolts", new ArrayList<>(context.getRawTopology().get_bolts().keySet()));
+        topo.put("targets", new HashMap<>());
+        for (String comp : context.getComponentIds()) {
+            Map<String, List<String>> targets = new HashMap<>();
+            context.getTargets(comp).forEach((stream, g) -> {
+                targets.put(stream, new ArrayList<>(g.keySet()));
+            });
+            ((Map<String, Object>) topo.get("targets")).put(comp, targets);
+        }
+        ctx.emitMetric("topology.info", topo);
+    }
+
+    private void outputMetric() {
+        ctx.addListener(new ContainerContext.Listener() {
+            @Override
+            public void measuredDataReceived(MeasuredData measuredData) {
+                String key = "task." + measuredData.component + "." + measuredData.task;
+                ctx.emitMetric(key, measuredData.data);
+            }
+        });
     }
 
     private String object2Json(Object o) {
