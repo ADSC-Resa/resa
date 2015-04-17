@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
-            <version>0.8-2-SNAPSHOT</version>
+            <version>0.8</version>
         </dependency>
 
         <dependency>
