@@ -94,27 +94,29 @@ public class tVLDTopDeltaExpFileIn {
 
         conf.setStatsSampleRate(1.0);
         //conf.registerSerialization(Serializable.Mat.class);
-        int sampleFrames = getInt(conf, "sampleFrames");
-        int W = ConfigUtil.getInt(conf, "width", 640);
-        int H = ConfigUtil.getInt(conf, "height", 480);
 
         List<String> templateFiles = getListOfStrings(conf, "originalTemplateFileNames");
 
         ResaConfig resaConfig = ResaConfig.create();
         resaConfig.putAll(conf);
 
-        if (resa.util.ConfigUtil.getBoolean(conf, "fp.metric.resa", false)) {
+        if (resa.util.ConfigUtil.getBoolean(conf, "tVLD.metric.resa", false)) {
             resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
         }
 
-        if (resa.util.ConfigUtil.getBoolean(conf, "fp.metric.redis", false)) {
+        if (resa.util.ConfigUtil.getBoolean(conf, "tVLD.metric.redis", false)) {
             resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
             System.out.println("RedisMetricsCollector is registered");
         }
 
-        StormSubmitter.submitTopology("tVLDDeltaFIn-exp-s" + sampleFrames + "-" + W + "-" + H + "-L" + templateFiles.size(), resaConfig, topology);
+        int sampleFrames = getInt(resaConfig, "sampleFrames");
+        int W = ConfigUtil.getInt(resaConfig, "width", 640);
+        int H = ConfigUtil.getInt(resaConfig, "height", 480);
+        int maxPending = getInt(resaConfig, "topology.max.spout.pending");
+
+        StormSubmitter.submitTopology("tVLDDeltaFIn-exp-s" + sampleFrames + "-" + W + "-" + H + "-L" + templateFiles.size() + "-p" + maxPending, resaConfig, topology);
 
     }
 }
