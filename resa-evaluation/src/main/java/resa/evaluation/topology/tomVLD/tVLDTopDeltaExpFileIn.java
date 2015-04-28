@@ -116,7 +116,8 @@ public class tVLDTopDeltaExpFileIn {
         int H = ConfigUtil.getInt(resaConfig, "height", 480);
         int maxPending = getInt(resaConfig, "topology.max.spout.pending");
 
-        StormSubmitter.submitTopology("tVLDDeltaFIn-exp-s" + sampleFrames + "-" + W + "-" + H + "-L" + templateFiles.size() + "-p" + maxPending, resaConfig, topology);
+        StormSubmitter.submitTopology("tVLDDeltaFIn-exp-s"
+                + sampleFrames + "-" + W + "-" + H + "-L" + templateFiles.size() + "-p" + maxPending, resaConfig, topology);
 
     }
 }
