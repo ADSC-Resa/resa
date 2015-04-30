@@ -4,6 +4,7 @@ import backtype.storm.Config;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_highgui;
 import org.bytedeco.javacpp.opencv_imgproc;
+import org.bytedeco.javacpp.opencv_nonfree;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 
@@ -59,7 +60,8 @@ public class tomDetection {
                 + ", sR: " + sampleRate + ", toDraw: " + toDraw + ", outputFolder: " + outputFolder);
 
         //LogoDetectionByInputImages(sourceFolder, outputFolder, startFrame, endFrame, maxAdditionTemp, minNumberOfMatches, templateFiles, sampleRate, true);
-        LogoDetectionByInputVideo(SOURCE_FILE, outputFolder, startFrame, endFrame, maxAdditionTemp, minNumberOfMatches, templateFiles, sampleRate, toDraw);
+        //LogoDetectionByInputVideo(SOURCE_FILE, outputFolder, startFrame, endFrame, maxAdditionTemp, minNumberOfMatches, templateFiles, sampleRate, toDraw);
+        LogoDetectionByInputVideoGamma(SOURCE_FILE, outputFolder, startFrame, endFrame, maxAdditionTemp, minNumberOfMatches, templateFiles, sampleRate, toDraw);
 
         long endTime = System.currentTimeMillis();
         System.out.println("finished with duration: " + (endTime - startTime));
@@ -176,6 +178,119 @@ public class tomDetection {
         }
     }
 
+    public static void LogoDetectionByInputVideoGamma
+            (String sourceFile, String outputFolder, int startFrame, int endFrame, int maxAdditionTemp,
+             int minNumberOfMatches, List<String> templateFiles, int sampleRate, boolean toFile) {
+
+        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(sourceFile);
+
+        Parameters parameters = new Parameters().withMatchingParameters(
+                new Parameters.MatchingParameters().withMinimalNumberOfMatches(minNumberOfMatches));
+
+        opencv_nonfree.SIFT sift = new opencv_nonfree.SIFT(0, 3, parameters.getSiftParameters().getContrastThreshold(),
+                parameters.getSiftParameters().getEdgeThreshold(), parameters.getSiftParameters().getSigma());
+
+        List<StormVideoLogoDetectorGamma> detectors = new ArrayList<>();
+        for (int logoIndex = 0; logoIndex < templateFiles.size(); logoIndex++) {
+            detectors.add(new StormVideoLogoDetectorGamma(parameters, templateFiles.get(logoIndex), logoIndex, maxAdditionTemp));
+        }
+
+        List<opencv_core.CvScalar> colorList = new ArrayList<>();
+        colorList.add(opencv_core.CvScalar.MAGENTA);
+        colorList.add(opencv_core.CvScalar.YELLOW);
+        colorList.add(opencv_core.CvScalar.CYAN);
+        colorList.add(opencv_core.CvScalar.BLUE);
+        colorList.add(opencv_core.CvScalar.GREEN);
+        colorList.add(opencv_core.CvScalar.RED);
+        colorList.add(opencv_core.CvScalar.BLACK);
+
+        //StormVideoLogoDetector detector = new StormVideoLogoDetector(parameters, templateFiles);
+
+        int frameId = 0;
+        long totalFrameUsed = 0;
+        try {
+            grabber.start();
+            while (++frameId < startFrame)
+                grabber.grab();
+
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+
+        int diff = endFrame - startFrame + 1;
+        frameId = 0;
+        endFrame = frameId + diff;
+
+        List<Serializable.PatchIdentifier> patchIdentifierList = new ArrayList<>();
+        double fx = .25, fy = .25;
+        double fsx = .5, fsy = .5;
+
+        ///int W = mat.cols(), H = mat.rows();
+        int W = 640, H = 480;
+        int w = (int) (W * fx + .5), h = (int) (H * fy + .5);
+        int dx = (int) (w * fsx + .5), dy = (int) (h * fsy + .5);
+
+        for (int x = 0; x + w <= W; x += dx) {
+            for (int y = 0; y + h <= H; y += dy) {
+                patchIdentifierList.add(new Serializable.PatchIdentifier(frameId, new Serializable.Rect(x, y, w, h)));
+            }
+        }
+        System.out.println("W: " + W + ", H: " + H + ", total patch: " + patchIdentifierList.size());
+
+        List<List<Serializable.Rect>> foundedRectList = new ArrayList<>();
+        for (int logoIndex = 0; logoIndex < detectors.size(); logoIndex++) {
+            foundedRectList.add(new ArrayList<>());
+        }
+
+        long start = System.currentTimeMillis();
+
+        while (frameId < endFrame) {
+            try {
+                long frameStart = System.currentTimeMillis();
+
+                opencv_core.IplImage image = grabber.grab();
+                opencv_core.Mat matOrg = new opencv_core.Mat(image);
+                opencv_core.Mat mat = new opencv_core.Mat();
+                opencv_core.Size size = new opencv_core.Size(W, H);
+                opencv_imgproc.resize(matOrg, mat, size);
+
+                if (frameId % sampleRate == 0) {
+                    foundedRectList = LogoDetectionForOneFrameGama(frameId, mat, detectors, patchIdentifierList, sift);
+                }
+
+                for (int logoIndex = 0; logoIndex < foundedRectList.size(); logoIndex++) {
+                    opencv_core.CvScalar color = colorList.get(logoIndex % colorList.size());
+                    if (foundedRectList.get(logoIndex) != null) {
+                        for (Serializable.Rect rect : foundedRectList.get(logoIndex)) {
+                            Util.drawRectOnMat(rect.toJavaCVRect(), mat, color);
+                        }
+                    }
+                }
+
+                long frameSpend = System.currentTimeMillis() - frameStart;
+                if (toFile) {
+                    String outputFileName = outputFolder + System.getProperty("file.separator")
+                            + String.format("frame%06d.jpg", (frameId + 1));
+                    File initialImage = new File(outputFileName);
+                    try {
+                        BufferedImage bufferedImage = mat.getBufferedImage();
+                        ImageIO.write(bufferedImage, "JPEG", initialImage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //System.out.println("finish draw frameID: " + frameId);
+                }
+
+                frameId++;
+                long nowTime = System.currentTimeMillis();
+                totalFrameUsed += frameSpend;
+                System.out.println("Sendout: " + nowTime + ", " + frameId + ", used: " + (nowTime - start) + ", frameUsed: " + frameSpend + ", totalFrameUsed: " + totalFrameUsed);
+
+            } catch (FrameGrabber.Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static void LogoDetectionByInputImages
             (String sourceFolder, String outputFolder, int startFrame, int endFrame, int maxAdditionTemp,
@@ -303,6 +418,43 @@ public class tomDetection {
                 }
             }
             System.out.println("FrameID: " + frameId + ", logoIndex: " + logoIndex + ", totalfoundRect: " + totalFoundCnt);
+        }
+        return foundedRectList;
+    }
+
+    public static List<List<Serializable.Rect>> LogoDetectionForOneFrameGama(
+            int frameId, opencv_core.Mat mat, List<StormVideoLogoDetectorGamma> detectors,
+            List<Serializable.PatchIdentifier> patchIdentifierList, opencv_nonfree.SIFT sift) {
+
+        List<List<Serializable.Rect>> foundedRectList = new ArrayList<>();
+
+        for (int logoIndex = 0; logoIndex < detectors.size(); logoIndex++) {
+            foundedRectList.add(new ArrayList<>());
+        }
+
+
+        int totalFoundCnt = 0;
+        for (Serializable.PatchIdentifier hostPatch : patchIdentifierList) {
+            SIFTfeatures sifTfeatures = new SIFTfeatures(sift, mat, hostPatch.roi.toJavaCVRect(), true);
+
+            for (int logoIndex = 0; logoIndex < detectors.size(); logoIndex++) {
+                StormVideoLogoDetectorGamma detector = detectors.get(logoIndex);
+
+                //detector.detectLogosInRoi(mat, hostPatch.roi.toJavaCVRect());
+                detector.detectLogosByFeatures(sifTfeatures);
+
+                Serializable.Rect detectedLogo = detector.getFoundRect();
+                Serializable.Mat extractedTemplate = detector.getExtractedTemplate();
+
+                if (detectedLogo != null) {
+                    detector.addTemplate(hostPatch, extractedTemplate);
+                    detector.incrementPriority(detector.getParentIdentifier(), 1);
+
+                    foundedRectList.get(logoIndex).add(detectedLogo);
+                    totalFoundCnt++;
+                }
+            }
+            // System.out.println("FrameID: " + frameId + ", totalfoundRect: " + totalFoundCnt);
         }
         return foundedRectList;
     }
