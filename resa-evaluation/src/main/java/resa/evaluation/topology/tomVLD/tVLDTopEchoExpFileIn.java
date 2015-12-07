@@ -50,7 +50,7 @@ public class tVLDTopEchoExpFileIn {
         TopologyBuilder builder = new ResaTopologyBuilder();
         //TopologyBuilder builder = new TopologyBuilder();
         String spoutName = "tVLDSpout";
-        String transName = "tVLDeTrans";
+        String transName = "tVLDTrans";
         String patchGenBolt = "tVLDPatchGen";
         String patchProcBolt = "tVLDPatchProc";
         String patchAggBolt = "tVLDPatchAgg";
