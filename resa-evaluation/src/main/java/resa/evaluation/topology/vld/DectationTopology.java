@@ -10,6 +10,7 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import resa.metrics.RedisMetricsCollector;
 import resa.topology.ResaTopologyBuilder;
+import resa.util.ConfigUtil;
 import resa.util.ResaConfig;
 
 import java.io.File;
@@ -57,8 +58,16 @@ public class DectationTopology implements Constant {
             LocalCluster localCluster = new LocalCluster();
             localCluster.submitTopology("local", resaConfig, topology);
         } else {
-            resaConfig.addDrsSupport();
-            resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
+            if (ConfigUtil.getBoolean(conf, "vd.metric.resa", false)) {
+                resaConfig.addDrsSupport();
+                resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
+                System.out.println("ResaMetricsCollector is registered");
+            }
+
+            if (ConfigUtil.getBoolean(conf, "vd.metric.redis", true)) {
+                resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
+                System.out.println("RedisMetricsCollector is registered");
+            }
             StormSubmitter.submitTopology(args[0], resaConfig, topology);
         }
     }
