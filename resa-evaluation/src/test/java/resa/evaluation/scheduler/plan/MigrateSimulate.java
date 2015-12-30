@@ -6,7 +6,9 @@ import backtype.storm.generated.RebalanceOptions;
 import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
-import org.apache.curator.framework.CuratorFramework;
+import backtype.storm.utils.ZookeeperAuthInfo;
+import org.apache.storm.shade.org.apache.curator.framework.CuratorFramework;
+//import org.apache.curator.framework.CuratorFramework;
 import org.junit.Before;
 import org.junit.Test;
 import resa.migrate.plan.KuhnMunkres;
@@ -40,7 +42,7 @@ public class MigrateSimulate {
         conf.put(Config.NIMBUS_HOST, "192.168.0.30");
         conf.put(Config.STORM_ZOOKEEPER_SERVERS, Arrays.asList("192.168.0.30"));
         zk = Utils.newCuratorStarted(conf, (List<String>) conf.get(Config.STORM_ZOOKEEPER_SERVERS),
-                conf.get(Config.STORM_ZOOKEEPER_PORT));
+                conf.get(Config.STORM_ZOOKEEPER_PORT), (ZookeeperAuthInfo)null);
         allocations = Files.readAllLines(Paths.get("/Volumes/Data/work/doctor/resa/exp/local-migrate.txt")).stream()
                 .map(String::trim).filter(s -> !s.isEmpty())
                 .map(s -> Stream.of(s.split(",")).mapToInt(Integer::parseInt).toArray())

@@ -26,7 +26,7 @@ import static resa.evaluation.topology.tomVLD.StormConfigManager.*;
  */
 public class tomVLDTopExpFInBC {
 
-    public static void main(String args[]) throws InterruptedException, AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
+    public static void main(String args[]) throws Exception {
         if (args.length != 1) {
             System.out.println("Enter path to config file!");
             System.exit(0);

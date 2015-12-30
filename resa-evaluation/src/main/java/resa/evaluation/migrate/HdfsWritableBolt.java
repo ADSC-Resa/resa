@@ -6,12 +6,14 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.utils.Utils;
+import backtype.storm.utils.ZookeeperAuthInfo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.DefaultSerializers;
-import org.apache.curator.framework.CuratorFramework;
+import org.apache.storm.shade.org.apache.curator.framework.CuratorFramework;
+//import org.apache.curator.framework.CuratorFramework;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
@@ -53,7 +55,7 @@ public class HdfsWritableBolt extends DelegatedBolt {
             synchronized (HdfsWritableBolt.class) {
                 if (zk == null) {
                     zk = Utils.newCuratorStarted(conf, (List<String>) conf.get(Config.STORM_ZOOKEEPER_SERVERS),
-                            conf.get(Config.STORM_ZOOKEEPER_PORT));
+                            conf.get(Config.STORM_ZOOKEEPER_PORT), (ZookeeperAuthInfo)null);
                 }
             }
         }

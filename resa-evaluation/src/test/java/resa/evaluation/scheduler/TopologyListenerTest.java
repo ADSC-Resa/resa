@@ -3,8 +3,10 @@ package resa.evaluation.scheduler;
 import backtype.storm.Config;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.utils.Utils;
+import backtype.storm.utils.ZookeeperAuthInfo;
 import junit.framework.TestCase;
-import org.apache.curator.framework.CuratorFramework;
+import org.apache.storm.shade.org.apache.curator.framework.CuratorFramework;
+//import org.apache.curator.framework.CuratorFramework;
 import resa.util.ResaConfig;
 import resa.util.TopologyHelper;
 
@@ -24,7 +26,7 @@ public class TopologyListenerTest extends TestCase {
         topologyListener = new TopologyListener(conf);
         conf.put(ResaConfig.ZK_ROOT_PATH, "/resa");
         zk = Utils.newCuratorStarted(conf, (List<String>) conf.get(Config.STORM_ZOOKEEPER_SERVERS),
-                conf.get(Config.STORM_ZOOKEEPER_PORT));
+                conf.get(Config.STORM_ZOOKEEPER_PORT), (ZookeeperAuthInfo)null);
     }
 
     public void testSynTopologies() throws Exception {

@@ -44,7 +44,7 @@ public class DectationTopology implements Constant {
         return builder.createTopology();
     }
 
-    public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+    public static void main(String[] args) throws Exception {
         Config conf = readConfig(new File(args[1]));
 
         if (conf == null) {

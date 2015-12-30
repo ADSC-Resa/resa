@@ -99,7 +99,9 @@ public class TopologyHelper {
         try {
             Nimbus.Client nimbus = nimbusClient.getClient();
             nimbus.killTopology(topoName);
-        } catch (NotAliveException | TException e) {
+        } catch (NotAliveException e) {
+
+        } catch(TException e){
         } finally {
             nimbusClient.close();
         }
@@ -112,7 +114,9 @@ public class TopologyHelper {
             KillOptions killOptions = new KillOptions();
             killOptions.set_wait_secs(waitSecs);
             nimbus.killTopologyWithOpts(topoName, killOptions);
-        } catch (NotAliveException | TException e) {
+        } catch (NotAliveException e) {
+
+        } catch(TException e){
         } finally {
             nimbusClient.close();
         }
@@ -128,7 +132,9 @@ public class TopologyHelper {
             topology = nimbus.getUserTopology(topoId);
             topologyInfo = nimbus.getTopologyInfo(topoId);
             topologyConf = (Map) JSONValue.parse(nimbus.getTopologyConf(topoId));
-        } catch (NotAliveException | TException e) {
+        } catch (NotAliveException e) {
+            return null;
+        } catch(TException e){
             return null;
         }
         Map<ExecutorDetails, String> exe2Components = topologyInfo.get_executors().stream()

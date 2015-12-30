@@ -29,6 +29,8 @@ import static resa.evaluation.topology.tomVLD.StormConfigManager.*;
  * Note: we in this version's patchProc bolt (tPatchProcessorDelta), uses the StormVideoLogoDetectorBeta class, not the normal one StormVideoLogoDetector!!!
  * Through testing, when sampleFrame = 4, it supports up to 25 fps.
  *
+ * TODO: shall update to the latest Fox version!
+ *
  */
 public class tVLDTopEchoExpFileIn {
 
@@ -36,7 +38,7 @@ public class tVLDTopEchoExpFileIn {
     // b) then avoid broadcast the whole frames, split the functions in PatchProcessorBolt.
     //
 
-    public static void main(String args[]) throws InterruptedException, AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
+    public static void main(String args[]) throws Exception {
         if (args.length != 1) {
             System.out.println("Enter path to config file!");
             System.exit(0);

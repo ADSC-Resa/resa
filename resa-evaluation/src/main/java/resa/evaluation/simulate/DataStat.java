@@ -1,7 +1,9 @@
 package resa.evaluation.simulate;
 
 import backtype.storm.utils.Utils;
-import org.apache.curator.framework.CuratorFramework;
+import backtype.storm.utils.ZookeeperAuthInfo;
+import org.apache.storm.shade.org.apache.curator.framework.CuratorFramework;
+//import org.apache.curator.framework.CuratorFramework;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,7 @@ public class DataStat {
     public static void main(String[] args) throws Exception {
         Map stormConf = Utils.readStormConfig();
         CuratorFramework zk = Utils.newCuratorStarted(stormConf, (List<String>) stormConf.get("storm.zookeeper.servers"),
-                stormConf.get("storm.zookeeper.port"));
+                stormConf.get("storm.zookeeper.port"), (ZookeeperAuthInfo)null);
         String prefix = args[0];
         int numTask = Integer.parseInt(args[1]);
         int[] costs = new int[numTask];

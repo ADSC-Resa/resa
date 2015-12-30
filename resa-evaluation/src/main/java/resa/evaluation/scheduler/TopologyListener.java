@@ -9,11 +9,13 @@ import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
 import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
-import org.apache.curator.framework.CuratorFramework;
+import backtype.storm.utils.ZookeeperAuthInfo;
+import org.apache.storm.shade.org.apache.curator.framework.CuratorFramework;
+//import org.apache.curator.framework.CuratorFramework;
 import org.apache.thrift7.TException;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
+import org.apache.storm.shade.org.apache.zookeeper.CreateMode;
+import org.apache.storm.shade.org.apache.zookeeper.WatchedEvent;
+import org.apache.storm.shade.org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import resa.util.ConfigUtil;
@@ -81,7 +83,7 @@ public class TopologyListener {
 
     public TopologyListener(Map<String, Object> conf) {
         zk = Utils.newCuratorStarted(conf, (List<String>) conf.get(Config.STORM_ZOOKEEPER_SERVERS),
-                conf.get(Config.STORM_ZOOKEEPER_PORT));
+                conf.get(Config.STORM_ZOOKEEPER_PORT), (ZookeeperAuthInfo)null);
         rootPath = (String) conf.getOrDefault(ResaConfig.ZK_ROOT_PATH, "/resa");
         checkZKNode();
         nimbus = NimbusClient.getConfiguredClient(conf).getClient();
@@ -138,12 +140,18 @@ public class TopologyListener {
         return new AllocationContext(topoDetails, compExecutors);
     }
 
+    /**
+     * TODO: need validate the correctness of the modification
+     * @param topoId
+     * @return
+     */
     private Map<String, Integer> getCompExecutorsAndWatch(String topoId) {
         String path = rootPath + '/' + topoId;
         try {
             byte[] data = zk.getData().usingWatcher(new TopologyWatcher(topoId)).forPath(path);
             if (data != null) {
-                return (Map<String, Integer>) Utils.deserialize(data);
+                //return (Map<String, Integer>) Utils.deserialize(data);
+                return (Map<String, Integer>) Utils.deserialize(data, Map.class);
             }
         } catch (Exception e) {
         }
@@ -220,11 +228,14 @@ public class TopologyListener {
             nimbus.rebalance(TopologyHelper.topologyId2Name(topoId), options);
             LOG.info("do rebalance successfully for topology " + topoId);
             context.updateLastRebalance();
-        } catch (TException e) {
-            LOG.warn("do rebalance failed for topology " + topoId, e);
-        } catch (NotAliveException | InvalidTopologyException e) {
+        } catch (NotAliveException e) {
             watchingTopologies.remove(topoId);
             LOG.warn("topology is not exist, maybe killed, remove from waiting list: " + topoId);
+        } catch (InvalidTopologyException e) {
+            watchingTopologies.remove(topoId);
+            LOG.warn("topology is not exist, maybe killed, remove from waiting list: " + topoId);
+        } catch (TException e) {
+            LOG.warn("do rebalance failed for topology " + topoId, e);
         }
     }
 
