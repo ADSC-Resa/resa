@@ -59,7 +59,12 @@ public class CntMeanVar {
         return getAvg2() - avg * avg;
     }
 
-    ///Square coefficient of variation (Scv), scv(X) = Var(X) / [E(X)*E(X)];
+    /**
+     * Var(X) = E(X*X) - E(X)*E(X)
+     * Square coefficient of variation (Scv), scv(X) = Var(X) / [E(X)*E(X)];
+     * @return scv(X) = Var(X) / [E(X)*E(X)] = E(X*X) / [E(X)*E(X)] - 1
+     *
+     */
     double getScv() {
         return count == 0 ? 0.0 : (getAvg2() / (getAvg() * getAvg()) - 1.0);
     }
@@ -67,9 +72,9 @@ public class CntMeanVar {
     String toCMVString() {
         return "Count: " + getCount()
                 + String.format(", sum: %.2f", getSum())
-                + String.format(", avg: %.5f", getAvg())
-                + String.format(", var: %.5f", getVar())
-                + String.format(", scv: %.5f", getScv());
+                + String.format(", avg: %.4f", getAvg())
+                + String.format(", var: %.4f", getVar())
+                + String.format(", scv: %.4f", getScv());
     }
 
     String toCMVStringShort() {

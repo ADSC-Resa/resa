@@ -68,7 +68,7 @@ public class LoadSimulateTopology {
         String host = (String) conf.get("redis.host");
         int port = ConfigUtil.getInt(conf, "redis.port", 6379);
         String queue = (String) conf.get("redis.queue");
-        builder.setSpout("input", new TASentenceSpout(host, port, queue), ConfigUtil.getInt(conf,
+        builder.setSpout("input", new SimulatedSentenceSpout(host, port, queue), ConfigUtil.getInt(conf,
                 "simulate.spout.parallelism", 1));
 
         int parallelism = ConfigUtil.getInt(conf, "simulate.bolt.split.parallelism", 1);

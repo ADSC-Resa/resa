@@ -2,54 +2,63 @@ package resa.optimize;
 
 /**
  * Created by ding on 14-5-6.
+ *
+ * Modified by Tom Fu on 21-Dec-2015, for new DisruptQueue Implementation for Version after storm-core-0.10.0
+ * Functions involving queue-related metrics in the current class will be affected:
+ *   - Class QueueAggResult
  */
 public class QueueAggResult implements Cloneable {
 
-    private long arrivalCount;
-    private long totalQueueLength;
-    private int totalSampleCount;
+    private CntMeanVar queueArrivalRate;
+    private CntMeanVar queueCapacity;
+    private CntMeanVar queueLength;
+    private CntMeanVar queueingTime;
 
-    public QueueAggResult(long arrivalCount, long totalQueueLength, int totalSampleCount) {
-        this.arrivalCount = arrivalCount;
-        this.totalQueueLength = totalQueueLength;
-        this.totalSampleCount = totalSampleCount;
+    public QueueAggResult(double arrivalRate, double capacity, double queueLen, double qTime) {
+        this();
+        this.add(arrivalRate, capacity, queueLen, qTime);
     }
 
     public QueueAggResult() {
-        this(0, 0, 0);
+        this.queueArrivalRate = new CntMeanVar();
+        this.queueCapacity = new CntMeanVar();
+        this.queueLength = new CntMeanVar();
+        this.queueingTime = new CntMeanVar();
     }
 
-    public double getAvgQueueLength() {
-        return totalSampleCount > 0 ? (double) totalQueueLength / (double) totalSampleCount : 0.0;
+    public CntMeanVar getQueueArrivalRate() {
+        return this.queueArrivalRate;
     }
 
-    public long getArrivalCount() {
-        return arrivalCount;
+    public CntMeanVar getQueueLength() {
+        return this.queueLength;
     }
 
-    public long getTotalQueueLength() {
-        return totalQueueLength;
+    public CntMeanVar getQueueCapacity() {
+        return this.queueCapacity;
     }
 
-    public int getTotalSampleCount() {
-        return totalSampleCount;
+    public CntMeanVar getQeueingTime() {
+        return this.queueingTime;
     }
 
-    public void add(QueueAggResult result) {
-        this.arrivalCount += result.arrivalCount;
-        this.totalQueueLength += result.totalQueueLength;
-        this.totalSampleCount += result.totalSampleCount;
+    public void add(double arrivalRate, double capacity, double queueLen, double qTime) {
+        this.queueArrivalRate.addOneNumber(arrivalRate);
+        this.queueCapacity.addOneNumber(capacity);
+        this.queueLength.addOneNumber(queueLen);
+        this.queueingTime.addOneNumber(qTime);
     }
 
-    public void add(long arrivalCount, long totalQueueLength, int totalSampleCount) {
-        this.arrivalCount += arrivalCount;
-        this.totalQueueLength += totalQueueLength;
-        this.totalSampleCount += totalSampleCount;
+    public void add(QueueAggResult r) {
+        this.queueArrivalRate.addCMV(r.queueArrivalRate);
+        this.queueCapacity.addCMV(r.queueCapacity);
+        this.queueLength.addCMV(r.queueLength);
+        this.queueingTime.addCMV(r.queueingTime);
     }
 
     @Override
     public String toString() {
-        return String.format("arrCount: %d, totalQLen: %d, totalSamCnt: %d", arrivalCount,
-                totalQueueLength, totalSampleCount);
+        return String.format("avgRate: %.5f, avgQueueLen: %.5f, avgCapacity: %.5f, avgQueueingTime: %.5f", this.queueArrivalRate.getAvg(),
+                this.queueLength.getAvg(), this.queueCapacity.getAvg(), this.queueingTime.getAvg());
     }
 }

@@ -1,0 +1,90 @@
+#This is a sample yaml for using Resa and Redis Metrics, the topologies are in resa-evaluation.simulate.sleep
+topology.builtin.metrics.bucket.size.secs: 10
+
+#redisMetrics
+EnableRedisMetricsCollector: true
+resa.metric.redis.host: "192.168.0.31"
+resa.metric.redis.port: 6379
+resa.metric.redis.queue-name: "metrics"
+
+#resaMetrics
+EnableResaMetricsCollector: true
+resa.container.metric.redis.host: "192.168.0.31"
+resa.container.metric.redis.port: 6379
+resa.container.metric.output: true
+
+resa.topology.rebalance.waiting.secs: 0
+resa.topology.max.executor.per.worker: 2
+resa.topology.allowed.executor.num: 5
+resa.comp.checkpoint.interval.sec: -1
+
+resa.optimize.interval.secs: 30
+resa.scheduler.alloc.class: "optimize.SimpleGeneralAllocCalculator"
+resa.scheduler.decision.class: "metrics.EmptyDecisionMaker"
+resa.adjust.min.sec: 1040
+
+resa.opt.win.history.size: 2
+resa.opt.win.history.ignore: 0
+resa.opt.smd.qos.ms: 2000
+resa.comp.sample.rate: 1.0
+
+resa.metric.approved.names:
+  - "complete-latency"
+  - "execute"
+  - "latency-stat"
+  - "__sendqueue send-queue"
+  - "__receive recv-queue"
+  - "duration"
+  - "serialized"
+  - "arrival_rate_secs"
+  - "capacity"
+  - "sojourn_time_ms"
+  - "populartion"
+
+#redis queue
+redis.host: 192.168.0.31
+redis.port: 6379
+redis.sourceQueueName: fSource
+
+#topology level
+"sim-topology.yaml" 87L, 1824C                           1,1           Top
+
+#topology level
+chain-NumOfWorkers: 3
+chain-MaxSpoutPending: 20000
+
+2Path-NumOfWorkers: 3
+2Path-MaxSpoutPending: 20000
+
+loop-NumOfWorkers: 3
+loop-MaxSpoutPending: 20000
+
+defaultTaskNum: 5
+DebugTopology: false
+
+#Chain-topology
+chain-BoltA.parallelism: 3
+chain-BoltA.mu: 10.0
+
+chain-BoltB.parallelism: 2
+chain-BoltB.mu: 15.0
+
+#2Path-topology
+2Path-spout.prob: 0.6
+
+2Path-BoltA-P.parallelism: 2
+2Path-BoltA-P.mu: 10
+
+2Path-BoltA-NotP.parallelism: 2
+2Path-BoltA-NotP.mu: 5
+
+2Path-BoltB.parallelism: 1
+2Path-BoltB.mu: 15
+
+#Loop topology
+loop-BoltA.parallelism: 1
+loop-BoltA.mu: 10
+
+loop-BoltB.parallelism: 1
+loop-BoltB.mu: 15
+loop-BoltB-loopback.prob: 0.2

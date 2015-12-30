@@ -31,9 +31,8 @@ public class TASentenceSpout2Path extends RedisQueueSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        ///declarer.declare(new Fields("sid", "sentence"));        
-        declarer.declareStream("Bolt-P", new Fields("sid", "sentence"));
-        declarer.declareStream("Bolt-NotP", new Fields("sid", "sentence"));
+        declarer.declareStream("P-Stream", new Fields("sid", "sentence"));
+        declarer.declareStream("NotP-Stream", new Fields("sid", "sentence"));
     }
 
     @Override
@@ -43,10 +42,10 @@ public class TASentenceSpout2Path extends RedisQueueSpout {
         
         double prob = rand.nextDouble();
         if (prob < this.p){
-        	collector.emit("Bolt-P", new Values(id, data), id);
+            collector.emit("P-Stream", new Values(id, data), id);
         }
         else{
-        	collector.emit("Bolt-NotP", new Values(id, data), id);
+            collector.emit("NotP-Stream", new Values(id, data), id);
         }
     }
 

@@ -19,6 +19,11 @@ import java.util.stream.IntStream;
  * Note:
  * Recv-Queue arrival count includes ack for each message
  * When calculate sum and average, need to adjust (sum - #message, average - 1) for accurate value.
+ *
+ * Modified by Tom Fu on 21-Dec-2015, for new DisruptQueue Implementation for Version after storm-core-0.10.0
+ * Functions and Classes involving queue-related metrics in the current class will be affected:
+ *  - parseQueueResult()
+ *  - AggResult parse(MeasuredData measuredData, AggResult dest)
  */
 public class AggResultCalculator {
 
@@ -26,8 +31,8 @@ public class AggResultCalculator {
 
     protected Iterable<MeasuredData> dataStream;
     private StormTopology rawTopo;
-    private final Map<Integer, AggResult> task2Result = new HashMap<>();
-    private final Map<String, AggResult[]> results = new HashMap<>();
+    private final Map<Integer, AggResult> task2ExecutorResult = new HashMap<>();
+    private final Map<String, AggResult[]> comp2ExecutorResults = new HashMap<>();
     private final Set<Integer> firstTasks;
 
     public AggResultCalculator(Iterable<MeasuredData> dataStream, Map<String, List<ExecutorDetails>> comp2Executors,
@@ -35,42 +40,45 @@ public class AggResultCalculator {
         this.dataStream = dataStream;
         this.rawTopo = rawTopo;
         comp2Executors.forEach((comp, exeList) -> {
-            AggResult[] result;
+            AggResult[] executorResults;
             if (rawTopo.get_spouts().containsKey(comp)) {
-                result = new SpoutAggResult[exeList.size()];
-                for (int i = 0; i < result.length; i++) {
-                    result[i] = createTaskIndex(new SpoutAggResult(), exeList.get(i));
+                executorResults = new SpoutAggResult[exeList.size()];
+                for (int i = 0; i < executorResults.length; i++) {
+                    executorResults[i] = createTaskIndex(new SpoutAggResult(), exeList.get(i));
                 }
             } else {
-                result = new BoltAggResult[exeList.size()];
-                for (int i = 0; i < result.length; i++) {
-                    result[i] = createTaskIndex(new BoltAggResult(), exeList.get(i));
+                executorResults = new BoltAggResult[exeList.size()];
+                for (int i = 0; i < executorResults.length; i++) {
+                    executorResults[i] = createTaskIndex(new BoltAggResult(), exeList.get(i));
                 }
             }
-            results.put(comp, result);
+            comp2ExecutorResults.put(comp, executorResults);
         });
         firstTasks = comp2Executors.values().stream().flatMap(e -> e.stream()).map(ExecutorDetails::getStartTask)
                 .collect(Collectors.toSet());
     }
 
+    //Here, for each executor, we create task2ExecutorResult Entries for each of the tasks, but refer to their corresponding executorResult
     private AggResult createTaskIndex(AggResult result, ExecutorDetails e) {
-        IntStream.rangeClosed(e.getStartTask(), e.getEndTask()).forEach((task) -> task2Result.put(task, result));
+        IntStream.rangeClosed(e.getStartTask(), e.getEndTask()).forEach((task) -> task2ExecutorResult.put(task, result));
         return result;
     }
 
     private AggResult parse(MeasuredData measuredData, AggResult dest) {
-        // parse send queue and recv queue first
-        measuredData.data.computeIfPresent(MetricNames.SEND_QUEUE, (comp, data) -> {
-            parseQueueResult((Map<String, Number>) data, dest.getSendQueueResult());
-            return data;
-        });
-        measuredData.data.computeIfPresent(MetricNames.RECV_QUEUE, (comp, data) -> {
-            parseQueueResult((Map<String, Number>) data, dest.getRecvQueueResult());
-            return data;
-        });
+        /// Modified version by Tom Fu, for each executor queue, only read once by its first task
+        /// We do not need Duration information any more.
         if (firstTasks.contains(measuredData.task)) {
             measuredData.data.computeIfPresent(MetricNames.DURATION, (comp, data) -> {
                 dest.addDuration(((Number) data).longValue());
+                return data;
+            });
+
+            measuredData.data.computeIfPresent(MetricNames.SEND_QUEUE, (comp, data) -> {
+                parseQueueResult((Map<String, Number>) data, dest.getSendQueueResult());
+                return data;
+            });
+            measuredData.data.computeIfPresent(MetricNames.RECV_QUEUE, (comp, data) -> {
+                parseQueueResult((Map<String, Number>) data, dest.getRecvQueueResult());
                 return data;
             });
         }
@@ -107,13 +115,13 @@ public class AggResultCalculator {
     }
 
     private void parseQueueResult(Map<String, Number> queueMetrics, QueueAggResult queueResult) {
-        long totalArrivalCnt = queueMetrics.getOrDefault("totalCount", Integer.valueOf(0)).longValue();
-        if (totalArrivalCnt > 0) {
-            int sampleCnt = queueMetrics.getOrDefault("sampleCount", Integer.valueOf(0)).intValue();
-            long totalQLen = queueMetrics.getOrDefault("totalQueueLen", Integer.valueOf(0)).longValue();
-            // long duration = queueMetrics.getOrDefault("duration", Integer.valueOf(0)).longValue();
-            queueResult.add(totalArrivalCnt, totalQLen, sampleCnt);
-        }
+        //Newly updated, including four incline queue related metrics, refer to package backtype.storm.utils.DisruptorQueue
+        double queueArrivalRatePerSecond = queueMetrics.getOrDefault("arrival_rate_secs", Double.valueOf(0)).doubleValue();
+        double queueCapacity = queueMetrics.getOrDefault("capacity", Double.valueOf(0)).doubleValue();
+        double queueLength = queueMetrics.getOrDefault("population", Double.valueOf(0)).doubleValue();
+        double queueingTimeMilliSecond = queueMetrics.getOrDefault("sojourn_time_ms", Double.valueOf(0)).doubleValue();
+
+        queueResult.add(queueArrivalRatePerSecond, queueCapacity, queueLength, queueingTimeMilliSecond);
     }
 
     public void calCMVStat() {
@@ -124,24 +132,24 @@ public class AggResultCalculator {
             //70) "projection:7->{\"receive\":{\"sampleCount\":52,\"totalQueueLen\":53,\"totalCount\":1052},\"sendqueue\":{\"sampleCount\":2152,\"totalQueueLen\":4514,\"totalCount\":43052},\"execute\":{\"objectSpout:default\":\"525,709.4337659999997,1120.8007487084597\"}}"
             //71) "detector:3->{\"receive\":{\"sampleCount\":2769,\"totalQueueLen\":6088758,\"totalCount\":55416},\"sendqueue\":{\"sampleCount\":8921,\"totalQueueLen\":11476,\"totalCount\":178402},\"execute\":{\"projection:default\":\"49200,5167.623237000047,721.6383647758853\"}}"
             //73) "updater:9->{\"receive\":{\"sampleCount\":3921,\"totalQueueLen\":5495,\"totalCount\":78436},\"sendqueue\":{\"sampleCount\":4001,\"totalQueueLen\":4336,\"totalCount\":80002},\"execute\":{\"detector:default\":\"40000,1651.7782049999894,182.68124734051045\"}}"
-            AggResult car = task2Result.get(measuredData.task);
+            AggResult car = task2ExecutorResult.get(measuredData.task);
             parse(measuredData, car);
             count++;
         }
         LOG.info("calCMVStat, processed measuredData size: " + count);
     }
 
-    public Map<String, AggResult[]> getResults() {
-        return results;
+    public Map<String, AggResult[]> getComp2ExecutorResults() {
+        return comp2ExecutorResults;
     }
 
     public Map<String, AggResult[]> getSpoutResults() {
-        return results.entrySet().stream().filter(e -> rawTopo.get_spouts().containsKey(e.getKey()))
+        return comp2ExecutorResults.entrySet().stream().filter(e -> rawTopo.get_spouts().containsKey(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<String, AggResult[]> getBoltResults() {
-        return results.entrySet().stream().filter(e -> rawTopo.get_bolts().containsKey(e.getKey()))
+        return comp2ExecutorResults.entrySet().stream().filter(e -> rawTopo.get_bolts().containsKey(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

@@ -2,6 +2,10 @@ package resa.optimize;
 
 /**
  * Created by Tom.fu on 23/5/2014.
+ * Modified by Tom Fu on 21-Dec-2015, for new DisruptQueue Implementation for Version after storm-core-0.10.0
+ * Functions involving queue-related metrics in the current class will be affected:
+ *
+ * TODO: the design and usage of this class is not clear, need to consider re-design in future.
  */
 public class SourceNode {
 

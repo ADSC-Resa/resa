@@ -86,7 +86,7 @@ public class SimpleGeneralAllocCalculatorTest {
         AggResultCalculator resultCalculator = new AggResultCalculator(
                 RedisDataSource.readData(host, port, queue, maxLen), comp2Executors, builder.createTopology());
         resultCalculator.calCMVStat();
-        System.out.println(smdm.calc(resultCalculator.getResults(), 6));
+        System.out.println(smdm.calc(resultCalculator.getComp2ExecutorResults(), 6));
 
     }
 
@@ -192,7 +192,7 @@ public class SimpleGeneralAllocCalculatorTest {
 
             System.out.println("-------------Report on: " + System.currentTimeMillis() + "------------------------------");
             if (currAllocation.equals(updatedAllocation)) {
-                System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getResults(), 7));
+                System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getComp2ExecutorResults(), 7));
             } else {
                 currAllocation = updatedAllocation;
                 smdm.allocationChanged(currAllocation);
@@ -258,7 +258,7 @@ public class SimpleGeneralAllocCalculatorTest {
 
             System.out.println("-------------Report on: " + System.currentTimeMillis() + "------------------------------");
             if (currAllocation.equals(updatedAllocation)) {
-                System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getResults(), allewedExecutorNum));
+                System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getComp2ExecutorResults(), allewedExecutorNum));
             } else {
                 currAllocation = updatedAllocation;
                 smdm.allocationChanged(currAllocation);
@@ -315,7 +315,7 @@ public class SimpleGeneralAllocCalculatorTest {
         resultCalculator.calCMVStat();
 
         System.out.println("-------------Report on: " + System.currentTimeMillis() + "------------------------------");
-        System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getResults(), allewedExecutorNum).currOptAllocation);
+        System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getComp2ExecutorResults(), allewedExecutorNum).currOptAllocation);
     }
 
 }
