@@ -4,6 +4,7 @@ import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.AuthorizationException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
@@ -46,7 +47,7 @@ public class SimulatedTopology {
         return builder.createTopology();
     }
 
-    public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+    public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException, AuthorizationException {
         Config conf = readConfig(new File(args[1]));
 
         if (conf == null) {

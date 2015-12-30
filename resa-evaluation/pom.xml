@@ -47,6 +47,18 @@
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
