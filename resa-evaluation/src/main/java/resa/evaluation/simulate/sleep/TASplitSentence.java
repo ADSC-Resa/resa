@@ -25,6 +25,7 @@ public class TASplitSentence extends TASleepBolt {
 //        while (tokenizer.hasMoreTokens()) {
 //            collector.emit(tuple, new Values(sid, tokenizer.nextToken()));
 //        }
+        collector.emit(tuple, new Values(sid, sentence));
         collector.ack(tuple);
     }
 
