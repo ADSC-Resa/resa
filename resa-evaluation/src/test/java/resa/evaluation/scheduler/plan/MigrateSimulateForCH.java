@@ -11,6 +11,7 @@ import org.apache.zookeeper.ZKUtil;
 import org.junit.Before;
 import org.junit.Test;
 import resa.evaluation.migrate.ConsistentHashing;
+import resa.evaluation.migrate.MigPlan;
 import resa.util.TopologyHelper;
 
 import java.nio.file.Files;
@@ -86,7 +87,7 @@ public class MigrateSimulateForCH {
     }
 
     private String[] migrateTo(List<int[]> from, String[] workers, List<int[]> to, int toNumWorkers) {
-        ConsistentHashing.Result res = ConsistentHashing.calc(dataSizes, from, toNumWorkers);
+        MigPlan res = ConsistentHashing.calc(dataSizes, from, toNumWorkers);
         to.addAll(res.tasks);
         String[] newWorkers = new String[toNumWorkers];
         Set<String> selected = new HashSet<>();

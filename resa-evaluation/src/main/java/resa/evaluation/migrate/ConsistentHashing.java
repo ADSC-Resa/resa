@@ -7,26 +7,14 @@ import java.util.*;
  */
 public class ConsistentHashing {
 
-    public static class Result {
-        public final List<int[]> tasks;
-        public final double cost;
-        public final int[][] matching;
-
-        public Result(List<int[]> tasks, double cost, int[][] matching) {
-            this.tasks = tasks;
-            this.cost = cost;
-            this.matching = matching;
-        }
-    }
-
-    public static Result calc(double[] dataSizes, List<int[]> currAlloc, int newSize) {
+    public static MigPlan calc(double[] dataSizes, List<int[]> currAlloc, int newSize) {
         if (newSize == currAlloc.size()) {
             throw new IllegalArgumentException("size equal");
         }
         return newSize > currAlloc.size() ? inc(dataSizes, currAlloc, newSize) : dec(dataSizes, currAlloc, newSize);
     }
 
-    private static Result dec(double[] dataSizes, List<int[]> currAlloc, int newSize) {
+    private static MigPlan dec(double[] dataSizes, List<int[]> currAlloc, int newSize) {
         List<int[]> ret = new ArrayList<>(currAlloc);
         List<Integer> tasks2Move = new ArrayList<>();
         currAlloc.stream()
@@ -52,7 +40,7 @@ public class ConsistentHashing {
             matching[j][1] = currAlloc.indexOf(ret.get(j));
             ret.set(j, newAlloc);
         }
-        return new Result(ret, tasks2Move.stream().mapToDouble(task -> dataSizes[task]).sum(), matching);
+        return new MigPlan(ret, tasks2Move.stream().mapToDouble(task -> dataSizes[task]).sum(), matching);
     }
 
     private static class AllocDataSize implements Comparable<AllocDataSize> {
@@ -70,7 +58,7 @@ public class ConsistentHashing {
         }
     }
 
-    private static Result inc(double[] dataSizes, List<int[]> currAlloc, int newSize) {
+    private static MigPlan inc(double[] dataSizes, List<int[]> currAlloc, int newSize) {
         Map<int[], Integer> posMap = new HashMap<>();
         for (int i = 0; i < currAlloc.size(); i++) {
             posMap.put(currAlloc.get(i), i);
@@ -99,7 +87,7 @@ public class ConsistentHashing {
         for (int i = 0; i < newSize - currAlloc.size(); i++) {
             ret.add(Arrays.copyOfRange(task2Move, avgSize * i, avgSize * (i + 1)));
         }
-        return new Result(ret, Arrays.stream(task2Move).mapToDouble(task -> dataSizes[task]).sum(), matching);
+        return new MigPlan(ret, Arrays.stream(task2Move).mapToDouble(task -> dataSizes[task]).sum(), matching);
     }
 
 
