@@ -6,6 +6,9 @@ import resa.metrics.MeasurableSpout;
 
 /**
  * Created by ding on 14-4-26.
+ * Since release 0.2, we plan to re-design this for this,
+ * by using iTopologyValidator interface, so that this will be transparent to users
+ * and being done silently.
  */
 public class ResaTopologyBuilder extends TopologyBuilder {
 
