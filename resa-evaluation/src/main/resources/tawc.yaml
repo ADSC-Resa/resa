@@ -1,0 +1,122 @@
+#####resa config example########
+
+### metrics
+ resa.comp.sample.rate: 0.1
+
+ resa.metric.redis.host: "192.168.0.31"
+ resa.metric.redis.port: 6379
+
+ resa.container.metric.redis.host: "192.168.0.31"
+ resa.container.metric.redis.port: 6379
+# resa.metric.redis.queue-name: ta1wc
+ resa.metric.approved.names:
+   - "complete-latency"
+   - "execute"
+   - "latency-stat"
+   - "__sendqueue send-queue"
+   - "__receive recv-queue"
+   - "duration"
+   - "serialized"
+    ##- "emit"
+
+### optimize scheduler
+ resa.topology.rebalance.waiting.secs: 0
+ resa.topology.max.executor.per.worker: 5
+ resa.topology.allowed.executor.num: 24
+ resa.comp.checkpoint.interval.sec: -1
+
+ resa.optimize.interval.secs: 60
+ resa.scheduler.alloc.class: "resa.optimize.SimpleGeneralAllocCalculator"
+ resa.scheduler.decision.class: "resa.drs.EmptyDecisionMaker"
+
+ resa.adjust.min.sec: 1040
+
+ resa.opt.smd.sq.thresh: 5.0
+ resa.opt.smd.rq.thresh.ratio: 0.6
+ resa.opt.smd.qos.ms: 20
+ resa.opt.win.history.size: 2
+ resa.opt.win.history.size.ignore: -1
+
+# maximum amount of time a message has to complete before it's considered failed
+ topology.debug: false
+ topology.stats.sample.rate: 0.05
+ topology.message.timeout.secs: 30
+
+ topology.receiver.buffer.size: 1
+
+ topology.max.spout.pending: null
+ topology.executor.send.buffer.size: 65536
+ topology.executor.receive.buffer.size: 65536
+
+ topology.queue.trace: true
+ topology.queue.sample.rate: 0.05
+ topology.builtin.metrics.bucket.size.secs: 60
+
+ #topology.acker.executors: 2
+ #topology.workers: 3
+
+#true use redis spout, else use random spout
+#default is false
+ spout.redis: true
+
+##redis config if redis spout is enabled
+ redis.host: "192.168.0.30"
+ redis.port: 6379
+ redis.queue: "sentences"
+
+## For Outdet
+ a-worker.count: 6
+ a-acker.count: 6
+ a-metric.resa: true
+ a-task.default: 20
+
+ a-spout.object.size: 5000
+ a-spout.parallelism: 1
+
+ a-projection.dimension: 34
+ a-projection.size: 100
+ a-projection.parallelism: 6
+
+ a-detector.neighbor.distance.max: 1
+ a-detector.neighbor.count.min: 100
+ a-detector.parallelism: 6
+
+ a-updater.parallelism: 6
+
+## For Real Word Counter Application
+ arwc-worker.count: 4
+ arwc-acker.count: 4
+ arwc-task.default: 10
+
+ arwc-metric.redis: true
+ arwc-metric.resa: false
+
+ arwc-spout.parallelism: 1
+ arwc-spout.tasks: 1
+
+ arwc-split.parallelism: 2
+ arwc-counter.parallelism: 4
+
+## For Frequent Pattern Application
+ fp-worker.count: 8
+ fp.spout.parallelism: 2
+ fp.pattern.dict-file: "/dict-10000.txt"
+ fp.pattern.max.keep.ms: 60000
+
+ fp.generator.parallelism: 8
+ fp.generator.tasks: 32
+
+ fp.detector.parallelism: 64
+ fp.detector.tasks: 64
+
+ fp.reporter.parallelism: 2
+ fp.reporter.tasks: 8
+
+ fp.pattern.threshold: 15
+
+ fp.metric.redis: false
+ fp.metric.resa: true
+ resa.container.metric.output: true
+
+ topology.message.timeout.secs: 25
+ resa.metric.complete-latency.stat.x-axis: 50,100,200,400,800,1600,3200,6400,12800
