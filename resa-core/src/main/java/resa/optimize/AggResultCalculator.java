@@ -66,7 +66,7 @@ public class AggResultCalculator {
 
     private AggResult parse(MeasuredData measuredData, AggResult dest) {
         /// Modified version by Tom Fu, for each executor queue, only read once by its first task
-        /// We do not need Duration information any more.
+        /// Duration information is still here, used for calculate the tuple complete rate and tuple process rate.
         if (firstTasks.contains(measuredData.task)) {
             measuredData.data.computeIfPresent(MetricNames.DURATION, (comp, data) -> {
                 dest.addDuration(((Number) data).longValue());
