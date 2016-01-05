@@ -178,7 +178,7 @@ public class SimpleGeneralServiceModel {
                 currAllocation = suggestAllocationGeneralTop(components, totalMinReq);
                 currTime = getErlangGeneralTopCompleteTime(components, currAllocation) * adjRatio;
 
-                LOG.info(String.format("getMinReqServAllcQoS(ms): %.4f, rawCompleteTime(ms): %.4f, afterAdjust(ms): %.4f, totalMinReqQoS: %d",
+                LOG.debug(String.format("getMinReqServAllcQoS(ms): %.4f, rawCompleteTime(ms): %.4f, afterAdjust(ms): %.4f, totalMinReqQoS: %d",
                         maxAllowedCompleteTime * 1000.0, currTime * 1000.0 / adjRatio, currTime * 1000.0, totalMinReq));
 
                 totalMinReq++;
