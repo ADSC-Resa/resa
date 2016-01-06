@@ -37,10 +37,10 @@ public class DectationTopology implements Constant {
         builder.setBolt("matcher", new Matcher(), getInt(conf, "vd.matcher.parallelism", 1))
                 .allGrouping("feat-ext", STREAM_FEATURE_DESC)
                 .setNumTasks(getInt(conf, "vd.matcher.tasks", 1));
-        builder.setBolt("aggregater", new Aggregater(), getInt(conf, "vd.aggregater.parallelism", 1))
+        builder.setBolt("aggregator", new Aggregater(), getInt(conf, "vd.aggregator.parallelism", 1))
                 .fieldsGrouping("feat-ext", STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID))
                 .fieldsGrouping("matcher", STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID))
-                .setNumTasks(getInt(conf, "vd.aggregater.tasks", 1));
+                .setNumTasks(getInt(conf, "vd.aggregator.tasks", 1));
         return builder.createTopology();
     }
 
@@ -68,6 +68,8 @@ public class DectationTopology implements Constant {
                 resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
                 System.out.println("RedisMetricsCollector is registered");
             }
+            int numWorkers = ConfigUtil.getInt(conf, "vd-worker.count", 1);
+            resaConfig.setNumWorkers(numWorkers);
             StormSubmitter.submitTopology(args[0], resaConfig, topology);
         }
     }
