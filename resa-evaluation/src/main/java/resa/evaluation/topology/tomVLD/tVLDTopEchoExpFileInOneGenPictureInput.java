@@ -39,11 +39,6 @@ public class tVLDTopEchoExpFileInOneGenPictureInput {
             System.exit(0);
         }
         Config conf = readConfig(args[0]);
-
-        String host = getString(conf, "redis.host");
-        int port = getInt(conf, "redis.port");
-        String queueName = getString(conf, "tVLDQueueName");
-
         TopologyBuilder builder = new ResaTopologyBuilder();
         //TopologyBuilder builder = new TopologyBuilder();
         String spoutName = "tVLDSpout";
