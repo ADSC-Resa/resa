@@ -76,7 +76,7 @@ public class tomFrameSpoutResizePictureInput extends BaseRichSpout {
                     throw new  FileNotFoundException(fileName + " does not exist");
                 }
                 System.out.printf("Get file");
-                opencv_core.IplImage imageFk = new opencv_core.IplImage();
+                opencv_core.IplImage imageFk = cvLoadImage(fileName);
                 opencv_core.Mat mat = opencv_highgui.imread(fileName, opencv_highgui.CV_LOAD_IMAGE_COLOR);
                 System.out.printf("Finish read file");
                 opencv_core.Mat matNew = new opencv_core.Mat();
