@@ -38,6 +38,15 @@ public class StormConfigManager {
     public static String getString(Map<String, Object> config, String key) {
         return (String)config.get(key);
     }
+
+    public static String getString(Map<String, Object> config, String key, String defaultValue) {
+        Object value = config.get(key);
+        if (value != null && value instanceof String) {
+            return (String)value;
+        }
+        return defaultValue;
+    }
+
     public static List<String> getListOfStrings(Map<String, Object> config, String key) {
         return (List<String>)config.get(key);
     }

@@ -47,9 +47,6 @@ redis.port: 6379
 redis.sourceQueueName: fSource
 
 #topology level
-"sim-topology.yaml" 87L, 1824C                           1,1           Top
-
-#topology level
 chain-NumOfWorkers: 3
 chain-MaxSpoutPending: 20000
 
