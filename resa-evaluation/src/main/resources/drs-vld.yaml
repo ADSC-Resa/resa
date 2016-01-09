@@ -55,7 +55,7 @@
 
  topology.queue.trace: true
  topology.queue.sample.rate: 0.05
- topology.builtin.metrics.bucket.size.secs: 60
+ topology.builtin.metrics.bucket.size.secs: 10
 
 #true use redis spout, else use random spout
 #default is false
@@ -69,6 +69,9 @@
  firstFrameId: 1
  lastFrameId: 50000
  videoSourceFile: '/home/storm/logo-dect/video/1.mp4'
+ sourceFilePath: "/home/storm/logo-dect/"
+ imageFolder: "picture"
+ filePrefix: "frame"
 
  originalTemplateFileNames:
   - "/home/storm/logo-dect/logo/mc2.jpg"
