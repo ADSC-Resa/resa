@@ -9,8 +9,6 @@ import backtype.storm.tuple.Values;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_highgui;
 import org.bytedeco.javacpp.opencv_imgproc;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.FrameGrabber;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +25,7 @@ import static resa.evaluation.topology.tomVLD.StormConfigManager.getString;
  */
 public class tomFrameSpoutResizePictureInput extends BaseRichSpout {
     SpoutOutputCollector collector;
-    private int frameId;
+    private int frameCount;
     private long lastFrameTime;
     private int delayInMS;
 
@@ -38,7 +36,6 @@ public class tomFrameSpoutResizePictureInput extends BaseRichSpout {
     private String imageFolder;
     private String filePrefix;
 
-    int generatedFrames;
     int targetCount = 0;
 
     @Override
@@ -55,9 +52,8 @@ public class tomFrameSpoutResizePictureInput extends BaseRichSpout {
         imageFolder = getString(map, "imageFolder");
         filePrefix = getString(map, "filePrefix", "frame");
 
-        frameId = 0;
-        generatedFrames = firstFrameId;
-        targetCount = lastFrameId - firstFrameId;
+        frameCount = 0;
+        targetCount = lastFrameId - firstFrameId + 1;
     }
 
     @Override
@@ -69,11 +65,11 @@ public class tomFrameSpoutResizePictureInput extends BaseRichSpout {
             lastFrameTime = now;
         }
 
-        if (generatedFrames < targetCount) {
+        if (frameCount < targetCount) {
             try {
                 long start = System.currentTimeMillis();
                 String fileName = path + imageFolder + System.getProperty("file.separator")
-                        + String.format("%s%06d.jpg", filePrefix, (generatedFrames + 1));
+                        + String.format("%s%06d.jpg", filePrefix, (frameCount + firstFrameId));
                 File f = new File(fileName);
 
                 if (!f.exists()) {
@@ -88,10 +84,10 @@ public class tomFrameSpoutResizePictureInput extends BaseRichSpout {
 
                 Serializable.Mat sMat = new Serializable.Mat(matNew);
 
-                collector.emit(RAW_FRAME_STREAM, new Values(frameId, sMat), frameId);
-                frameId++;
+                collector.emit(RAW_FRAME_STREAM, new Values(frameCount, sMat), frameCount);
+                frameCount++;
                 long nowTime = System.currentTimeMillis();
-                System.out.printf("Sendout: " + nowTime + "," + frameId + ",used: " + (nowTime -start));
+                System.out.printf("Sendout: " + nowTime + "," + frameCount + ",used: " + (nowTime -start));
             } catch (Exception e) {
                 e.printStackTrace();
             }

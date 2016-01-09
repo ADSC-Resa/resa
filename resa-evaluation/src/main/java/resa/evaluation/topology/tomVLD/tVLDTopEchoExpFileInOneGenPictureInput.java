@@ -107,7 +107,7 @@ public class tVLDTopEchoExpFileInOneGenPictureInput {
         int H = ConfigUtil.getInt(resaConfig, "height", 480);
         int maxPending = getInt(resaConfig, "topology.max.spout.pending");
 
-        StormSubmitter.submitTopology("tVLDEchoExpFInOG-s"
+        StormSubmitter.submitTopology("tVLDEchoExpFInOGPicInput-s"
                 + sampleFrames + "-" + W + "-" + H + "-L" + templateFiles.size() + "-p" + maxPending, resaConfig, topology);
 
     }
