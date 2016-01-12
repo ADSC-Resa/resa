@@ -4,6 +4,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.utils.Utils;
 
 import java.util.Map;
 
@@ -13,9 +14,27 @@ import java.util.Map;
 public class DelegatedSpout implements IRichSpout {
 
     private IRichSpout delegate;
+    private byte[] serializedSpout;
+
+    public DelegatedSpout() {
+    }
 
     public DelegatedSpout(IRichSpout delegate) {
+        setBolt(delegate);
+    }
+
+    public DelegatedSpout(byte[] serializedBolt) {
+        setSerializedSpout(serializedBolt);
+    }
+
+    public void setBolt(IRichSpout delegate) {
         this.delegate = delegate;
+        this.serializedSpout = null;
+    }
+
+    public void setSerializedSpout(byte[] data) {
+        this.delegate = null;
+        this.serializedSpout = data;
     }
 
     @Override
@@ -30,6 +49,10 @@ public class DelegatedSpout implements IRichSpout {
 
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
+        if (delegate == null) {
+            delegate = Utils.javaDeserialize(serializedSpout, IRichSpout.class);
+            serializedSpout = null;
+        }
         delegate.open(conf, context, collector);
     }
 
