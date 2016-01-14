@@ -118,6 +118,11 @@ public class tomFrameSpoutResizeFox extends BaseRichSpout {
     }
 
     @Override
+    public void ack(Object msgId) {
+        System.out.printf("AckFrameID: " + msgId + ",at: " + System.currentTimeMillis());
+    }
+
+    @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declareStream(RAW_FRAME_STREAM, new Fields(FIELD_FRAME_ID, FIELD_FRAME_MAT));
         outputFieldsDeclarer.declareStream(SAMPLE_FRAME_STREAM, new Fields(FIELD_FRAME_ID, FIELD_FRAME_MAT, FIELD_SAMPLE_ID));
