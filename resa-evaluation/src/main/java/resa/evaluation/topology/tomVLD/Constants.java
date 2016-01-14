@@ -23,6 +23,7 @@ public interface Constants {
     public static String STREAM_CACHE_CLEAN = "stream-cache-clean";
 
     public static String FIELD_FRAME_ID = "frame-id";
+    public static String FIELD_SAMPLE_ID = "sample-id";
     public static String FIELD_FRAME_BYTES = "frm-bytes";
     public static String FIELD_FRAME_MAT = "frm-mat";
     public static String FIELD_OPT_MAT = "opt-mat";
@@ -43,6 +44,7 @@ public interface Constants {
 
     public final static String PATCH_STREAM = "patch-stm";
     public final static String RAW_FRAME_STREAM = "raw-frm-stm";
+    public final static String SAMPLE_FRAME_STREAM = "samp-frm-stm";
     public final static String PATCH_FRAME_STREAM = "pat-frm-stm";
     public final static String LOGO_TEMPLATE_UPDATE_STREAM = "ltu-stream";
     public final static String DETECTED_LOGO_STREAM = "dectlogo-stream";
