@@ -61,7 +61,7 @@ public class ResaVLDTopFoxFileInput {
         String patchDrawBolt = "tVLDPatchDraw";
         String redisFrameOut = "tVLDRedisFrameOut";
 
-        builder.setSpout(spoutName, new tomFrameSpoutResize(), getInt(conf, spoutName + ".parallelism"))
+        builder.setSpout(spoutName, new tomFrameSpoutResizeFox(), getInt(conf, spoutName + ".parallelism"))
                 .setNumTasks(getInt(conf, spoutName + ".tasks"));
 
         builder.setBolt(patchGenBolt, new PatchGenFox(), getInt(conf, patchGenBolt + ".parallelism"))
