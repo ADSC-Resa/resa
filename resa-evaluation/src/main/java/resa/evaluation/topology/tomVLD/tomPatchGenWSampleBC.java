@@ -32,6 +32,7 @@ public class tomPatchGenWSampleBC extends BaseRichBolt {
     public void execute(Tuple tuple) {
 
         int frameId = tuple.getIntegerByField(FIELD_FRAME_ID);
+        int sampleID = tuple.getIntegerByField(FIELD_SAMPLE_ID);
         Serializable.Mat sMat = (Serializable.Mat) tuple.getValueByField(FIELD_FRAME_MAT);
 
         //TODO get params from config map
@@ -51,13 +52,13 @@ public class tomPatchGenWSampleBC extends BaseRichBolt {
         //send patch
         if (frameId % sampleFrames == 0) {
             //send raw frames
-            collector.emit(RAW_FRAME_STREAM, tuple, new Values(frameId, sMat, totalPatchCount));
+            collector.emit(SAMPLE_FRAME_STREAM, tuple, new Values(frameId, sMat, totalPatchCount, sampleID));
 
             for (int x = 0; x + w <= W; x += dx) {
                 for (int y = 0; y + h <= H; y += dy) {
                     Serializable.PatchIdentifier identifier = new
                             Serializable.PatchIdentifier(frameId, new Serializable.Rect(x, y, w, h));
-                    collector.emit(PATCH_STREAM, tuple, new Values(identifier, totalPatchCount));
+                    collector.emit(PATCH_STREAM, tuple, new Values(identifier, totalPatchCount, sampleID));
                 }
             }
         }
@@ -66,7 +67,7 @@ public class tomPatchGenWSampleBC extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declareStream(PATCH_STREAM, new Fields(FIELD_PATCH_IDENTIFIER, FIELD_PATCH_COUNT));
-        outputFieldsDeclarer.declareStream(RAW_FRAME_STREAM, new Fields(FIELD_FRAME_ID, FIELD_FRAME_MAT, FIELD_PATCH_COUNT));
+        outputFieldsDeclarer.declareStream(PATCH_STREAM, new Fields(FIELD_PATCH_IDENTIFIER, FIELD_PATCH_COUNT, FIELD_SAMPLE_ID));
+        outputFieldsDeclarer.declareStream(SAMPLE_FRAME_STREAM, new Fields(FIELD_FRAME_ID, FIELD_FRAME_MAT, FIELD_PATCH_COUNT, FIELD_SAMPLE_ID));
     }
 }

@@ -78,7 +78,7 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String streamId = tuple.getSourceStreamId();
-        if (streamId.equals(RAW_FRAME_STREAM))
+        if (streamId.equals(SAMPLE_FRAME_STREAM))
             processFrame(tuple);
         else if (streamId.equals(PATCH_STREAM))
             processPatch(tuple);
@@ -92,6 +92,7 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
     //  Fields("frameId", "frameMat", "patchCount"));
     private void processFrame( Tuple tuple ) {
         int frameId = tuple.getIntegerByField(FIELD_FRAME_ID);
+        int sampleID = tuple.getIntegerByField(FIELD_SAMPLE_ID);
         Serializable.Mat mat = (Serializable.Mat) tuple.getValueByField(FIELD_FRAME_MAT);
         int patchCount = tuple.getIntegerByField(FIELD_PATCH_COUNT);
         if (frameMap.containsKey(frameId)) {
@@ -119,7 +120,7 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
                     }
                     detectedLogoList.add(detectedLogo);
                 }
-                collector.emit(DETECTED_LOGO_STREAM, tuple, new Values(frameId, hostPatch, detectedLogoList, patchCount ));
+                collector.emit(DETECTED_LOGO_STREAM, tuple, new Values(frameId, hostPatch, detectedLogoList, patchCount, sampleID));
             }
         } else {
             //patchQueue.put(frameId, new LinkedList<>());
@@ -148,6 +149,7 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
         Serializable.PatchIdentifier patchIdentifier = (Serializable.PatchIdentifier) tuple.getValueByField(FIELD_PATCH_IDENTIFIER);
         int patchCount = tuple.getIntegerByField(FIELD_PATCH_COUNT);
         int frameId = patchIdentifier.frameId;
+        int sampleID = tuple.getIntegerByField(FIELD_SAMPLE_ID);
         if (frameMap.containsKey(frameId)) {
             List<Serializable.Rect> detectedLogoList = new ArrayList<>();
             SIFTfeatures sifTfeatures = new SIFTfeatures(sift, frameMap.get(frameId).toJavaCVMat(), patchIdentifier.roi.toJavaCVRect(), true);
@@ -164,7 +166,7 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
                 detectedLogoList.add(detectedLogo);
             }
             collector.emit(DETECTED_LOGO_STREAM, tuple,
-                    new Values(frameId, patchIdentifier, detectedLogoList, patchCount));
+                    new Values(frameId, patchIdentifier, detectedLogoList, patchCount, sampleID));
         } else {
             if (!patchQueue.containsKey(frameId))
                 patchQueue.put(frameId, new LinkedList<>());
@@ -213,7 +215,7 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declareStream(DETECTED_LOGO_STREAM,
-                new Fields(FIELD_FRAME_ID, FIELD_PATCH_IDENTIFIER, FIELD_FOUND_RECT, FIELD_PATCH_COUNT));
+                new Fields(FIELD_FRAME_ID, FIELD_PATCH_IDENTIFIER, FIELD_FOUND_RECT, FIELD_PATCH_COUNT, FIELD_SAMPLE_ID));
 
         outputFieldsDeclarer.declareStream(LOGO_TEMPLATE_UPDATE_STREAM,
                 new Fields(FIELD_HOST_PATCH_IDENTIFIER, FIELD_DETECTED_LOGO_RECT, FIELD_PARENT_PATCH_IDENTIFIER, FIELD_LOGO_INDEX));
