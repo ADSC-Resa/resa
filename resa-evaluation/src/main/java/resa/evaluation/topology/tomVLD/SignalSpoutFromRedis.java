@@ -20,7 +20,7 @@ import static resa.evaluation.topology.tomVLD.Constants.SIGNAL_STREAM;
 public class SignalSpoutFromRedis extends RedisQueueSpout {
 
     public SignalSpoutFromRedis(String host, int port, String queue) {
-        super(host, port, queue, true);
+        super(host, port, queue, false);
     }
 
     @Override
