@@ -51,27 +51,30 @@ public class ResaVLDTopFoxFileInputChangeLogo {
 
         String host = getString(conf, "redis.host");
         int port = getInt(conf, "redis.port");
-        String queueName = getString(conf, "tVLDQueueName");
+        String sigQueue = getString(conf, "tVLDSignalQueue");
 
         TopologyBuilder builder = new ResaTopologyBuilder();
 //        TopologyBuilder builder = new TopologyBuilder();
         String spoutName = "tVLDSpout";
+        String signalName = "tVLDSignal";
         String patchGenBolt = "tVLDPatchGen";
         String patchProcBolt = "tVLDPatchProc";
         String patchAggBolt = "tVLDPatchAgg";
         String patchDrawBolt = "tVLDPatchDraw";
         String redisFrameOut = "tVLDRedisFrameOut";
 
-        builder.setSpout(spoutName, new tomFrameSpoutResizeFoxChangeLogo(), getInt(conf, spoutName + ".parallelism"))
+        builder.setSpout(spoutName, new tomFrameSpoutResizeFox(), getInt(conf, spoutName + ".parallelism"))
                 .setNumTasks(getInt(conf, spoutName + ".tasks"));
+
+        builder.setSpout(signalName, new SignalSpoutFromRedis(host, port, sigQueue), 1);
 
         builder.setBolt(patchGenBolt, new PatchGenFox(), getInt(conf, patchGenBolt + ".parallelism"))
                 .shuffleGrouping(spoutName, SAMPLE_FRAME_STREAM)
                 .setNumTasks(getInt(conf, patchGenBolt + ".tasks"));
 
         builder.setBolt(patchProcBolt, new PatchProcessorFoxChangeLogo(), getInt(conf, patchProcBolt + ".parallelism"))
+                .allGrouping(signalName, SIGNAL_STREAM)
                 .allGrouping(patchProcBolt, LOGO_TEMPLATE_UPDATE_STREAM)
-                .allGrouping(spoutName, SIGNAL_STREAM)
                 .shuffleGrouping(patchGenBolt, PATCH_FRAME_STREAM)
                 .setNumTasks(getInt(conf, patchProcBolt + ".tasks"));
 
