@@ -26,6 +26,7 @@ public interface Constants {
     public static String FIELD_SAMPLE_ID = "sample-id";
     public static String FIELD_FRAME_BYTES = "frm-bytes";
     public static String FIELD_FRAME_MAT = "frm-mat";
+    public static String FIELD_SIGNAL_TYPE = "sig-type";
     public static String FIELD_OPT_MAT = "opt-mat";
     public static String FIELD_FRAME_MAT_PREV = "frm-mat-prev";
     public static String FIELD_TRACE_CONTENT = "trace-content";
@@ -44,6 +45,7 @@ public interface Constants {
 
     public final static String PATCH_STREAM = "patch-stm";
     public final static String RAW_FRAME_STREAM = "raw-frm-stm";
+    public final static String SIGNAL_STREAM = "signal-stm";
     public final static String SAMPLE_FRAME_STREAM = "samp-frm-stm";
     public final static String PATCH_FRAME_STREAM = "pat-frm-stm";
     public final static String LOGO_TEMPLATE_UPDATE_STREAM = "ltu-stream";
