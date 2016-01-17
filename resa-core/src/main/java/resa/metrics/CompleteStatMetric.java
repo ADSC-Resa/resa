@@ -7,6 +7,7 @@ import java.util.Map;
 
 /**
  * Created by ding on 14-9-10.
+ * This class is used for collect and calculate the detailed distribution (histogram) of certain metric within one time window
  */
 class CompleteStatMetric extends StatMetric {
 

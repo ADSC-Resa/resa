@@ -1,6 +1,8 @@
 package resa.evaluation.scheduler;
 
 import backtype.storm.generated.StormTopology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import resa.optimize.AllocResult;
 import resa.drs.DecisionMaker;
 import resa.util.ConfigUtil;
@@ -13,6 +15,7 @@ import java.util.Map;
  */
 public class OnceAdjustMaker implements DecisionMaker {
 
+    private static final Logger LOG = LoggerFactory.getLogger(OnceAdjustMaker.class);
     private long startTime;
     private boolean adjust = false;
     private long minAdjustInterval;
@@ -21,6 +24,7 @@ public class OnceAdjustMaker implements DecisionMaker {
     public void init(Map<String, Object> conf, StormTopology rawTopology) {
         startTime = now();
         minAdjustInterval = ConfigUtil.getInt(conf, "resa.adjust.min.sec", 300);
+        LOG.info("OnceAdjustMaker is initialized, minAdjustInterval: " + minAdjustInterval);
     }
 
     @Override
@@ -36,10 +40,20 @@ public class OnceAdjustMaker implements DecisionMaker {
 //            ret.put("feat-ext", 10);
 //            ret.put("matcher", 11);
 //            ret.put("aggregater", 1);
-            ret.put("image-input", 2);
-            ret.put("feat-ext", 8);
-            ret.put("matcher", 8);
-            ret.put("aggregater", 1);
+//            ret.put("image-input", 2);
+//            ret.put("feat-ext", 8);
+//            ret.put("matcher", 8);
+//            ret.put("aggregater", 1);
+
+            ///for resaVLD
+            ret.put("tVLDSpout", 1);
+            ret.put("tVLDPatchGen", 1);
+            ret.put("tVLDPatchProc", 20);
+            ret.put("tVLDPatchAgg", 1);
+            ret.put("tVLDPatchDraw", 1);
+            ret.put("tVLDRedisFrameOut", 1);
+
+            LOG.info("OnceAdjustMaker.make() is called with result allocation: " + ret);
             return ret;
         }
         return null;
