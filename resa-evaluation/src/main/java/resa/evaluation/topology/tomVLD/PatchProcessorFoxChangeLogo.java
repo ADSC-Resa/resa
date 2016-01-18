@@ -119,8 +119,10 @@ public class PatchProcessorFoxChangeLogo extends BaseRichBolt {
 
         int logoIndex = tuple.getIntegerByField(FIELD_LOGO_INDEX);
 
-        detectors.get(logoIndex).addTemplateBySubMat(receivedPatchIdentifier, extracted);
-        detectors.get(logoIndex).incrementPriority(parent, 1);
+        if (logoIndex < detectors.size() - 1) {
+            detectors.get(logoIndex).addTemplateBySubMat(receivedPatchIdentifier, extracted);
+            detectors.get(logoIndex).incrementPriority(parent, 1);
+        }
     }
 
     @Override
