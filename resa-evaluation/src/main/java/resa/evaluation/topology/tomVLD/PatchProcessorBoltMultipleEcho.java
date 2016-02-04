@@ -23,8 +23,6 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
     opencv_nonfree.SIFT sift;
 
     /** Instance of detector */
-    //private StormVideoLogoDetector detector;
-
     private List<StormVideoLogoDetectorGamma> detectors;
 
     /** This counts from which patches the update has been already received */
@@ -60,8 +58,6 @@ public class PatchProcessorBoltMultipleEcho extends BaseRichBolt {
         for (int logoIndex = 0; logoIndex < templateFiles.size(); logoIndex ++) {
             detectors.add(new StormVideoLogoDetectorGamma(parameters, templateFiles.get(logoIndex), logoIndex, maxAdditionTemp));
         }
-        //detector = new StormVideoLogoDetector(parameters, templateFiles);
-        //receivedUpdatesFrom = new HashSet<>();
         //Modified by Tom on Sep 8, 2014
         receivedUpdatesFrom = new LinkedHashMap<Serializable.PatchIdentifier, Boolean>(){
             @Override

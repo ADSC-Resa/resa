@@ -23,7 +23,7 @@ import static resa.evaluation.topology.tomVLD.StormConfigManager.*;
  * In the delta version, we enables the feature of supporting the multiple logo input,
  * When the setting in the configuration file includes multiple logo image files,
  * it automatically creates corresponding detector instance
- * Note: we in this version's patchProc bolt (tPatchProcessorDelta), uses the StormVideoLogoDetectorGamma
+ * Note: we in this version's patchProc bolt, uses the StormVideoLogoDetectorGamma
  * This gamma Detector helps to decrease overhead of multiple logo image files.
  *
  * Through testing, when sampleFrame = 4, it supports up to 25 fps.

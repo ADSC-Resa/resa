@@ -1,5 +1,6 @@
 package resa.evaluation.topology.tomVLD;
 
+import backtype.storm.metric.SystemBolt;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -28,6 +29,7 @@ public class tomFrameSpoutResizeFox extends BaseRichSpout {
     private int frameId;
     private long lastFrameTime;
     private int delayInMS;
+    private long openTimeStamp;
 
     int firstFrameId;
     int lastFrameId;
@@ -76,6 +78,7 @@ public class tomFrameSpoutResizeFox extends BaseRichSpout {
         int diff = lastFrameId - firstFrameId + 1;
         frameId = 0;
         endFrameID = frameId + diff;
+        openTimeStamp = System.currentTimeMillis();
 
     }
 
@@ -117,10 +120,12 @@ public class tomFrameSpoutResizeFox extends BaseRichSpout {
         }
     }
 
-//    @Override
-//    public void ack(Object msgId) {
-//        System.out.printf("AckFrameID: " + msgId + ",at: " + System.currentTimeMillis());
-//    }
+    @Override
+    public void fail(Object msgId) {
+        long failedTS = System.currentTimeMillis();
+        long durationMins = (failedTS - openTimeStamp) / 60000;
+        System.out.printf("FailedFrameID: " + msgId + ",at: " + failedTS + ", durationMin: " + durationMins);
+    }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {

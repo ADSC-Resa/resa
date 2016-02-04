@@ -53,16 +53,16 @@ public class PatchProcessorFoxChangeLogo extends BaseRichBolt {
         for (int logoIndex = 0; logoIndex < templateFiles.size(); logoIndex ++) {
             detectors_1.add(new StormVideoLogoDetectorGamma(parameters, templateFiles.get(logoIndex), logoIndex, maxAdditionTemp));
         }
-        System.out.println("tPatchProcessorDelta.prepare, with logos: " + detectors_1.size() + ", maxAdditionTemp: " + maxAdditionTemp);
+        System.out.println("PatchProcessorFoxChangeLogo.prepare, with logos: " + detectors_1.size() + ", maxAdditionTemp: " + maxAdditionTemp);
 
         detectors_2 = new ArrayList<>();
         for (int logoIndex = 0; logoIndex < templateFiles_2.size(); logoIndex ++) {
             detectors_2.add(new StormVideoLogoDetectorGamma(parameters, templateFiles_2.get(logoIndex), logoIndex, maxAdditionTemp));
         }
-        System.out.println("tPatchProcessorDelta.prepare, with 2nd-logos: " + detectors_2.size() + ", maxAdditionTemp: " + maxAdditionTemp);
+        System.out.println("PatchProcessorFoxChangeLogo.prepare, with 2nd-logos: " + detectors_2.size() + ", maxAdditionTemp: " + maxAdditionTemp);
 
         detectors = detectors_1;
-        System.out.println("tPatchProcessorDelta.prepare, detectors.size(): " + detectors.size());
+        System.out.println("PatchProcessorFoxChangeLogo.prepare, detectors.size(): " + detectors.size());
 
         opencv_core.IplImage fk = new opencv_core.IplImage();
     }
