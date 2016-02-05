@@ -108,12 +108,10 @@ public class AggResultCalculator {
 
     private void parseQueueResult(Map<String, Number> queueMetrics, QueueAggResult queueResult) {
         long totalArrivalCnt = queueMetrics.getOrDefault("totalCount", Integer.valueOf(0)).longValue();
-        if (totalArrivalCnt > 0) {
             int sampleCnt = queueMetrics.getOrDefault("sampleCount", Integer.valueOf(0)).intValue();
             long totalQLen = queueMetrics.getOrDefault("totalQueueLen", Integer.valueOf(0)).longValue();
             // long duration = queueMetrics.getOrDefault("duration", Integer.valueOf(0)).longValue();
             queueResult.add(totalArrivalCnt, totalQLen, sampleCnt);
-        }
     }
 
     public void calCMVStat() {

@@ -8,6 +8,8 @@ public class QueueAggResult implements Cloneable {
     private long arrivalCount;
     private long totalQueueLength;
     private int totalSampleCount;
+    private double arrIntervalSum;
+    private double arrIntervalSum2;
 
     public QueueAggResult(long arrivalCount, long totalQueueLength, int totalSampleCount) {
         this.arrivalCount = arrivalCount;
