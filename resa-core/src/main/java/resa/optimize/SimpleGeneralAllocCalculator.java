@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
  */
 public class SimpleGeneralAllocCalculator extends AllocCalculator {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleGeneralAllocCalculator.class);
-    private HistoricalCollectedData spoutAregatedData;
-    private HistoricalCollectedData boltAregatedData;
+    private HistoricalCollectedData spoutHistoricalData;
+    private HistoricalCollectedData boltHistoricalData;
     private int historySize;
     private int currHistoryCursor;
 
@@ -26,22 +26,22 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         super.init(conf, currAllocation, rawTopology);
         historySize = ConfigUtil.getInt(conf, "resa.opt.win.history.size", 1);
         currHistoryCursor = ConfigUtil.getInt(conf, "resa.opt.win.history.size.ignore", 0);
-        spoutAregatedData = new HistoricalCollectedData(rawTopology, historySize);
-        boltAregatedData = new HistoricalCollectedData(rawTopology, historySize);
+        spoutHistoricalData = new HistoricalCollectedData(rawTopology, historySize);
+        boltHistoricalData = new HistoricalCollectedData(rawTopology, historySize);
     }
 
     @Override
     public AllocResult calc(Map<String, AggResult[]> executorAggResults, int maxAvailableExecutors) {
         executorAggResults.entrySet().stream().filter(e -> rawTopology.get_spouts().containsKey(e.getKey()))
-                .forEach(e -> spoutAregatedData.putResult(e.getKey(), e.getValue()));
+                .forEach(e -> spoutHistoricalData.putResult(e.getKey(), e.getValue()));
         executorAggResults.entrySet().stream().filter(e -> rawTopology.get_bolts().containsKey(e.getKey()))
-                .forEach(e -> boltAregatedData.putResult(e.getKey(), e.getValue()));
+                .forEach(e -> boltHistoricalData.putResult(e.getKey(), e.getValue()));
         // check history size. Ensure we have enough history data before we run the optimize function
         currHistoryCursor++;
         if (currHistoryCursor < historySize) {
             LOG.info("currHistoryCursor < historySize, curr: " + currHistoryCursor + ", Size: " + historySize
                     + ", DataHistorySize: "
-                    + spoutAregatedData.compHistoryResults.entrySet().stream().findFirst().get().getValue().size());
+                    + spoutHistoricalData.compHistoryResults.entrySet().stream().findFirst().get().getValue().size());
             return null;
         } else {
             currHistoryCursor = historySize;
@@ -59,7 +59,7 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         double componentSampelRate = ConfigUtil.getDouble(conf, "resa.comp.sample.rate", 1.0);
 
 //        Map<String, Map<String, Object>> queueMetric = new HashMap<>();
-        Map<String, SourceNode> spInfos = spoutAregatedData.compHistoryResults.entrySet().stream()
+        Map<String, SourceNode> spInfos = spoutHistoricalData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     SpoutAggResult hisCar = AggResult.getHorizontalCombinedResult(new SpoutAggResult(), e.getValue());
                     int numberExecutor = currAllocation.get(e.getKey());
@@ -97,7 +97,7 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
 
         SourceNode spInfo = spInfos.entrySet().stream().findFirst().get().getValue();
 
-        Map<String, ServiceNode> queueingNetwork = boltAregatedData.compHistoryResults.entrySet().stream()
+        Map<String, ServiceNode> queueingNetwork = boltHistoricalData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     BoltAggResult hisCar = AggResult.getHorizontalCombinedResult(new BoltAggResult(), e.getValue());
                     int numberExecutor = currAllocation.get(e.getKey());
@@ -171,8 +171,8 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
     @Override
     public void allocationChanged(Map<String, Integer> newAllocation) {
         super.allocationChanged(newAllocation);
-        spoutAregatedData.clear();
-        boltAregatedData.clear();
+        spoutHistoricalData.clear();
+        boltHistoricalData.clear();
         currHistoryCursor = ConfigUtil.getInt(conf, "resa.opt.win.history.size.ignore", 0);
     }
 }
