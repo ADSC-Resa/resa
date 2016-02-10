@@ -78,7 +78,6 @@ public class RedisMetricAnalyzer {
             Utils.sleep(sleepTime);
 
             topoInfo = nimbus.getTopologyInfo(topoId);
-
             Map<String, Integer> updatedAllocation = topoInfo.get_executors().stream().filter(e -> !Utils.isSystemId(e.get_component_id()))
                     .collect(Collectors.groupingBy(e -> e.get_component_id(),
                             Collectors.reducing(0, e -> 1, (i1, i2) -> i1 + i2)));
@@ -92,13 +91,8 @@ public class RedisMetricAnalyzer {
             resultCalculator.calCMVStat();
 
             System.out.println("-------------Report on: " + System.currentTimeMillis() + "------------------------------");
-            Objects.requireNonNull(currAllocation);
-            Objects.requireNonNull(updatedAllocation);
             if (currAllocation.equals(updatedAllocation)) {
-                Map<String, AggResult[]> tmp = resultCalculator.getComp2ExecutorResults();
-                Objects.requireNonNull(tmp);
-                AllocResult ret = smdm.calc(tmp, allewedExecutorNum);
-                System.out.println(currAllocation + "-->" + (Objects.isNull(ret) ? "null" : ret));
+                System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getComp2ExecutorResults(), allewedExecutorNum));
             } else {
                 currAllocation = updatedAllocation;
                 smdm.allocationChanged(currAllocation);
