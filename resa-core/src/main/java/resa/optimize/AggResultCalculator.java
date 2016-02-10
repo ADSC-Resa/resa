@@ -109,13 +109,16 @@ public class AggResultCalculator {
 
     private void parseQueueResult(Map<String, Number> queueMetrics, QueueAggResult queueResult) {
         long totalArrivalCnt = queueMetrics.getOrDefault("totalCount", Integer.valueOf(0)).longValue();
-        int sampleCnt = queueMetrics.getOrDefault("sampleCount", Integer.valueOf(0)).intValue();
-        long totalQLen = queueMetrics.getOrDefault("totalQueueLen", Integer.valueOf(0)).longValue();
-            // long duration = queueMetrics.getOrDefault("duration", Integer.valueOf(0)).longValue();
-        double arrIntervalSum = queueMetrics.getOrDefault("arrIntervalSum", Double.valueOf(0)).doubleValue();
-        double arrIntervalSum2 = queueMetrics.getOrDefault("arrIntervalSum2", Double.valueOf(0)).doubleValue();
 
-        queueResult.add(totalArrivalCnt, totalQLen, sampleCnt, arrIntervalSum, arrIntervalSum2);
+        if (totalArrivalCnt > 0) {
+            int sampleCnt = queueMetrics.getOrDefault("sampleCount", Integer.valueOf(0)).intValue();
+            long totalQLen = queueMetrics.getOrDefault("totalQueueLen", Integer.valueOf(0)).longValue();
+            // long duration = queueMetrics.getOrDefault("duration", Integer.valueOf(0)).longValue();
+            double arrIntervalSum = queueMetrics.getOrDefault("arrIntervalSum", Double.valueOf(0)).doubleValue();
+            double arrIntervalSum2 = queueMetrics.getOrDefault("arrIntervalSum2", Double.valueOf(0)).doubleValue();
+
+            queueResult.add(totalArrivalCnt, totalQLen, sampleCnt, arrIntervalSum, arrIntervalSum2);
+        }
     }
 
     public void calCMVStat() {
