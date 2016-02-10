@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
  */
 public class SimpleChainAllocCalculator extends AllocCalculator {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleChainAllocCalculator.class);
-    private AggregatedData spoutAregatedData;
-    private AggregatedData boltAregatedData;
+    private HistoricalCollectedData spoutAregatedData;
+    private HistoricalCollectedData boltAregatedData;
     private int historySize;
     private int currHistory;
 
@@ -25,8 +25,8 @@ public class SimpleChainAllocCalculator extends AllocCalculator {
         super.init(conf, currAllocation, rawTopology);
         historySize = ConfigUtil.getInt(conf, "resa.opt.win.history.size", 1);
         currHistory = 0;
-        spoutAregatedData = new AggregatedData(rawTopology, historySize);
-        boltAregatedData = new AggregatedData(rawTopology, historySize);
+        spoutAregatedData = new HistoricalCollectedData(rawTopology, historySize);
+        boltAregatedData = new HistoricalCollectedData(rawTopology, historySize);
     }
 
     @Override
@@ -54,14 +54,14 @@ public class SimpleChainAllocCalculator extends AllocCalculator {
 
         double avgCompleteHis = spoutAregatedData.compHistoryResults.entrySet().stream().mapToDouble(e -> {
             Iterable<AggResult> results = e.getValue();
-            SpoutAggResult hisCar = AggResult.getCombinedResult(new SpoutAggResult(), results);
+            SpoutAggResult hisCar = AggResult.getHorizontalCombinedResult(new SpoutAggResult(), results);
             CntMeanVar hisCarCombined = hisCar.getCombinedCompletedLatency();
             return hisCarCombined.getAvg();
         }).average().getAsDouble();
         Map<String, ServiceNode> queueingNetwork = boltAregatedData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     Iterable<AggResult> results = e.getValue();
-                    BoltAggResult hisCar = AggResult.getCombinedResult(new BoltAggResult(), results);
+                    BoltAggResult hisCar = AggResult.getHorizontalCombinedResult(new BoltAggResult(), results);
                     CntMeanVar hisCarCombined = hisCar.getCombinedProcessedResult();
 
                     double avgSendQLenHis = hisCar.getSendQueueResult().getAvgQueueLength();

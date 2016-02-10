@@ -194,7 +194,7 @@ public class SimpleChainServiceModel {
         LOG.info("Find out minReqAllocation under QoS requirement.");
         Map<String, Integer> minReqAllocation = getMinReqServerAllocation(queueingNetwork, targetQoSMilliSec / 1000.0,
                 underEstimateRatio);
-        AllocResult.Status status = AllocResult.Status.FEASIBALE;
+        AllocResult.Status status = AllocResult.Status.FEASIBLE;
         if (minReqAllocation == null) {
             status = AllocResult.Status.INFEASIBLE;
         }

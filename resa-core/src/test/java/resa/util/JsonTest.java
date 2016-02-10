@@ -27,7 +27,7 @@ public class JsonTest {
 
     @Test
     public void writeAllocResult() throws IOException {
-        System.out.println(mapper.writeValueAsString(new AllocResult(AllocResult.Status.FEASIBALE,
+        System.out.println(mapper.writeValueAsString(new AllocResult(AllocResult.Status.FEASIBLE,
                 Collections.singletonMap("bolt", 1), Collections.singletonMap("bolt", 2))
                 .setContext(Collections.singletonMap("lambda", 1))));
     }

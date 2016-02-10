@@ -26,21 +26,21 @@ public class TAWordCounter2Path extends TASleepBolt {
 
         super.execute(tuple);
         String sid = tuple.getString(0);
-        String word = tuple.getString(1);        
-        
+        String word = tuple.getString(1);
+
         double prob = rand.nextDouble();
         if (prob < this.p){
-        	collector.emit("Bolt-P", tuple, new Values(sid, word));
+            collector.emit("P-Stream", tuple, new Values(sid, word + "!"));
         }
         else{
-        	collector.emit("Bolt-NotP", new Values(word + "!!"));
-        }        
+            collector.emit("NotP-Stream", new Values(word));
+        }
         collector.ack(tuple);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream("Bolt-P", new Fields("sid", "word"));
-        declarer.declareStream("Bolt-NotP", new Fields("word!"));
+        declarer.declareStream("P-Stream", new Fields("sid", "word"));
+        declarer.declareStream("NotP-Stream", new Fields("word-finished"));
     }
 }

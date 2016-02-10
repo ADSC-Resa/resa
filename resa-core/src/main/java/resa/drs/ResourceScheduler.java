@@ -91,7 +91,7 @@ public class ResourceScheduler {
                 // set a return value (count) from calculator.calCMVStat()
                 // if the count == maxProcessedDataSize (current is 500, say), we need to do something,
                 // since otherwise, the measurement data is too obsolete
-                Map<String, Integer> newAllocation = calcNewAllocation(calculator.getResults());
+                Map<String, Integer> newAllocation = calcNewAllocation(calculator.getComp2ExecutorResults());
                 if (newAllocation != null && !newAllocation.equals(currAllocation)) {
                     LOG.info("Detected topology allocation changed, request rebalance....");
                     LOG.info("Old allc is {}, new allc is {}", currAllocation, newAllocation);

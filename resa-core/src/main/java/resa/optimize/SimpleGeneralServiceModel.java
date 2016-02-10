@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 /**
  * Created by Tom.fu on 23/4/2014.
  * Chain topology and not tuple split
+ * TODO: the current implementation has adjustRatio, in future, we will design general regression model
+ * TODO: or prediction method to replace this.
+ *
+ * TODO: sn.getI2oRatio() can be INFINITY, i.e., special case, there is no input data
  */
 public class SimpleGeneralServiceModel {
 
@@ -119,7 +123,7 @@ public class SimpleGeneralServiceModel {
                     LOG.debug((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: "
                             + newAllocate);
                 } else {
-                    LOG.info("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
+                    LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
                     for (Map.Entry<String, ServiceNode> e : components.entrySet()) {
                         String cid = e.getKey();
                         ServiceNode sn = e.getValue();
@@ -128,7 +132,7 @@ public class SimpleGeneralServiceModel {
                         double beforeAddT = sn.estErlangT(currentAllocated);
                         double afterAddT = sn.estErlangT(currentAllocated + 1);
 
-                        LOG.info(cid + ", currentAllocated: " + currentAllocated
+                        LOG.debug(cid + ", currentAllocated: " + currentAllocated
                                 + ", beforeAddT: " + beforeAddT
                                 + ", afterAddT: " + afterAddT);
                     }
@@ -174,9 +178,8 @@ public class SimpleGeneralServiceModel {
                 currAllocation = suggestAllocationGeneralTop(components, totalMinReq);
                 currTime = getErlangGeneralTopCompleteTime(components, currAllocation) * adjRatio;
 
-                LOG.info("getMinReqServAllcQoS: " + maxAllowedCompleteTime * 1000.0 + ", currTime(ms): "
-                        + currTime * 1000.0 / adjRatio + ", currAdj(ms): "
-                        + currTime * 1000.0 + ", totalMinReqQoS: " + totalMinReq);
+                LOG.debug(String.format("getMinReqServAllcQoS(ms): %.4f, rawCompleteTime(ms): %.4f, afterAdjust(ms): %.4f, totalMinReqQoS: %d",
+                        maxAllowedCompleteTime * 1000.0, currTime * 1000.0 / adjRatio, currTime * 1000.0, totalMinReq));
 
                 totalMinReq++;
                 //check: we need to check totalMinReq to avoid infinite loop!
@@ -223,12 +226,12 @@ public class SimpleGeneralServiceModel {
 
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSec / estimatedLatencyMilliSec);
-        LOG.info("estLatency(ms): " + estimatedLatencyMilliSec + ", realLatency(ms)" + realLatencyMilliSec
-                + ", underEstRatio: " + underEstimateRatio);
+        LOG.info(String.format("estLatency(ms): %.4f, realLatency(ms): %.4f, underEstRatio: %.4f",
+                estimatedLatencyMilliSec, realLatencyMilliSec, underEstimateRatio));
         LOG.info("Find out minReqAllocation under QoS requirement.");
         Map<String, Integer> minReqAllocation = getMinReqServerAllocationGeneralTop(queueingNetwork,
                 targetQoSMilliSec / 1000.0, underEstimateRatio, maxAvailable4Bolt * 2);
-        AllocResult.Status status = AllocResult.Status.FEASIBALE;
+        AllocResult.Status status = AllocResult.Status.FEASIBLE;
         if (minReqAllocation == null) {
             status = AllocResult.Status.INFEASIBLE;
         }

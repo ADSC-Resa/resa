@@ -21,10 +21,11 @@ public class TASplitSentence extends TASleepBolt {
         super.execute(tuple);
         String sid = tuple.getString(0);
         String sentence = tuple.getString(1);
-        StringTokenizer tokenizer = new StringTokenizer(sentence);
-        while (tokenizer.hasMoreTokens()) {
-            collector.emit(tuple, new Values(sid, tokenizer.nextToken()));
-        }
+//        StringTokenizer tokenizer = new StringTokenizer(sentence);
+//        while (tokenizer.hasMoreTokens()) {
+//            collector.emit(tuple, new Values(sid, tokenizer.nextToken()));
+//        }
+        collector.emit(tuple, new Values(sid, sentence));
         collector.ack(tuple);
     }
 

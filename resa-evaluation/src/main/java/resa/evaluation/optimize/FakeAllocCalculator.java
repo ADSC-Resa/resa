@@ -24,6 +24,6 @@ public class FakeAllocCalculator extends AllocCalculator {
         int newThreads = System.currentTimeMillis() % 2 == 0 ? old + 1 : old - 1;
         entry.setValue(newThreads);
         System.out.println(entry.getKey() + ": Old is " + old + ", new is " + newThreads);
-        return new AllocResult(AllocResult.Status.FEASIBALE, ret, ret);
+        return new AllocResult(AllocResult.Status.FEASIBLE, ret, ret);
     }
 }

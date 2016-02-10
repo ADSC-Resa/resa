@@ -12,21 +12,22 @@ import java.util.stream.Collectors;
 
 /**
  * Created by ding on 14-4-30.
+ * Modified by Tom Fu on Feb-10-2016
  */
 public class SimpleGeneralAllocCalculator extends AllocCalculator {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleGeneralAllocCalculator.class);
-    private AggregatedData spoutAregatedData;
-    private AggregatedData boltAregatedData;
+    private HistoricalCollectedData spoutAregatedData;
+    private HistoricalCollectedData boltAregatedData;
     private int historySize;
-    private int currHistory;
+    private int currHistoryCursor;
 
     @Override
     public void init(Map<String, Object> conf, Map<String, Integer> currAllocation, StormTopology rawTopology) {
         super.init(conf, currAllocation, rawTopology);
         historySize = ConfigUtil.getInt(conf, "resa.opt.win.history.size", 1);
-        currHistory = ConfigUtil.getInt(conf, "resa.opt.win.history.size.ignore", 0);
-        spoutAregatedData = new AggregatedData(rawTopology, historySize);
-        boltAregatedData = new AggregatedData(rawTopology, historySize);
+        currHistoryCursor = ConfigUtil.getInt(conf, "resa.opt.win.history.size.ignore", 0);
+        spoutAregatedData = new HistoricalCollectedData(rawTopology, historySize);
+        boltAregatedData = new HistoricalCollectedData(rawTopology, historySize);
     }
 
     @Override
@@ -36,17 +37,18 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         executorAggResults.entrySet().stream().filter(e -> rawTopology.get_bolts().containsKey(e.getKey()))
                 .forEach(e -> boltAregatedData.putResult(e.getKey(), e.getValue()));
         // check history size. Ensure we have enough history data before we run the optimize function
-        currHistory++;
-        if (currHistory < historySize) {
-            LOG.info("currHistory < historySize, curr: " + currHistory + ", Size: " + historySize
+        currHistoryCursor++;
+        if (currHistoryCursor < historySize) {
+            LOG.info("currHistoryCursor < historySize, curr: " + currHistoryCursor + ", Size: " + historySize
                     + ", DataHistorySize: "
                     + spoutAregatedData.compHistoryResults.entrySet().stream().findFirst().get().getValue().size());
             return null;
         } else {
-            currHistory = historySize;
+            currHistoryCursor = historySize;
         }
 
-        ///Temp use, assume only one running topology!
+        ///TODO: Here we assume only one spout, how to extend to multiple spouts?
+        ///TODO: here we assume only one running topology, how to extend to multiple running topologies?
         double targetQoSMs = ConfigUtil.getDouble(conf, "resa.opt.smd.qos.ms", 5000.0);
         int maxSendQSize = ConfigUtil.getInt(conf, Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE, 1024);
         int maxRecvQSize = ConfigUtil.getInt(conf, Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE, 1024);
@@ -55,79 +57,87 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         double recvQSizeThresh = recvQSizeThreshRatio * maxRecvQSize;
 
         double componentSampelRate = ConfigUtil.getDouble(conf, "resa.comp.sample.rate", 1.0);
-///Here we assume only one spout
 
-        Map<String, Map<String, Object>> queueMetric = new HashMap<>();
-
+//        Map<String, Map<String, Object>> queueMetric = new HashMap<>();
         Map<String, SourceNode> spInfos = spoutAregatedData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
-                    Iterable<AggResult> results = e.getValue();
-                    SpoutAggResult hisCar = AggResult.getCombinedResult(new SpoutAggResult(), results);
-                    CntMeanVar hisCarCombined = hisCar.getCombinedCompletedLatency();
-
+                    SpoutAggResult hisCar = AggResult.getHorizontalCombinedResult(new SpoutAggResult(), e.getValue());
+                    int numberExecutor = currAllocation.get(e.getKey());
                     double avgSendQLenHis = hisCar.getSendQueueResult().getAvgQueueLength();
                     double avgRecvQLenHis = hisCar.getRecvQueueResult().getAvgQueueLength();
 
-                    double departRateHis = hisCar.getDepartureRatePerSec();
-
-                    double avgCompleteHis = hisCarCombined.getAvg();///unit is millisecond
-
-                    double totalComplteTupleCnt = hisCarCombined.getCount();
-                    double totalDuration = hisCar.getDuration();
-
-                    ///TODO: here are some problem not solved yet. calculation is incorrect.
-                    double tupleCompleteRate
-                            = totalComplteTupleCnt * 1000.0 / (totalDuration * componentSampelRate);
-
-                    int numberExecutor = currAllocation.get(e.getKey());
                     ///TODO: there we multiply 1/2 for this particular implementation
+                    ///TODO: this shall be adjusted and configurable for ackering mechanism
+                    double departRateHis = hisCar.getDepartureRatePerSec();
                     double tupleEmitRate = departRateHis * numberExecutor / 2.0;
+                    double arrivalRateHis = hisCar.getArrivalRatePerSec();
+                    double externalTupleArrivalRate = arrivalRateHis * numberExecutor;
+                    double tupleEmitRateByInterArrival = hisCar.getSendQueueResult().getAvgArrivalRatePerSecond()* numberExecutor;
+                    double tupleEmitInterArrivalScv = hisCar.getSendQueueResult().getScvInterArrivalTimes();
+                    double externalRateByInterArrival = hisCar.getRecvQueueResult().getAvgArrivalRatePerSecond()* numberExecutor;
+                    double externalTupleInterArrivalScv = hisCar.getRecvQueueResult().getScvInterArrivalTimes();
 
-                    LOG.info("exec(ID, eNum): (" + e.getKey() + "," + numberExecutor
-                            + "), tupleFinCnt: " + totalComplteTupleCnt + ", sumDur: " + totalDuration
-                            + ", hisSize: " + e.getValue().size()
-                            + ", compSampelRate: " + componentSampelRate + ", tupleFinRate: " + tupleCompleteRate);
-                    LOG.info("avgSQLenHis: " + avgSendQLenHis + ",avgRQLenHis: " + avgRecvQLenHis
-                            + ", SQarrRateHis: " + departRateHis);
-                    LOG.info("avgCompleHis: " + avgCompleteHis + ", tupleEmitRate: " + tupleEmitRate);
+                    double avgCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getAvg();///unit is millisecond
 
-                    return new SourceNode(avgCompleteHis, totalComplteTupleCnt, totalDuration, tupleEmitRate);
+                    double totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
+                    double totalDurationSecond  = hisCar.getDurationSeconds();
+                    double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSecond * componentSampelRate);
+
+                    LOG.info(String.format("Component(ID, eNum):(%s,%d), tupleFinCnt: %d, sumMeasuredDur: %.1f, hisSize: %d, sampleRate: %.1f, tupleFinRate: %.3f",
+                            e.getKey(), numberExecutor, totalCompleteTupleCnt, totalDurationSecond, e.getValue().size(), componentSampelRate, tupleCompleteRate));
+                    LOG.info(String.format("avgSQLenHis: %.1f, avgRQLenHis: %.1f, RQarrRateHis: %.4f, SQarrRateHis: %.4f",
+                            avgSendQLenHis, avgRecvQLenHis, arrivalRateHis, departRateHis));
+                    LOG.info(String.format("avgCompleteHis: %.4f, tupleEmitRate: %.4f, exArrivalRate: %.4f",
+                            avgCompleteLatencyHis, tupleEmitRate, externalTupleArrivalRate));
+                    LOG.info(String.format("tupleEmitRateBIA: %.4f, tupleEmitScv: %.4f, exArrivalRateBIA: %.4f, exArrivalScv: %.4f",
+                            tupleEmitRateByInterArrival, tupleEmitInterArrivalScv, externalRateByInterArrival, externalTupleInterArrivalScv));
+
+                    return new SourceNode(avgCompleteLatencyHis, totalCompleteTupleCnt, hisCar.getDurationMilliSeconds(), tupleEmitRate);
                 }));
 
         SourceNode spInfo = spInfos.entrySet().stream().findFirst().get().getValue();
 
         Map<String, ServiceNode> queueingNetwork = boltAregatedData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
-                    Iterable<AggResult> results = e.getValue();
-                    BoltAggResult hisCar = AggResult.getCombinedResult(new BoltAggResult(), results);
-                    CntMeanVar hisCarCombined = hisCar.getCombinedProcessedResult();
+                    BoltAggResult hisCar = AggResult.getHorizontalCombinedResult(new BoltAggResult(), e.getValue());
+                    int numberExecutor = currAllocation.get(e.getKey());
 
                     double avgSendQLenHis = hisCar.getSendQueueResult().getAvgQueueLength();
                     double avgRecvQLenHis = hisCar.getRecvQueueResult().getAvgQueueLength();
                     double arrivalRateHis = hisCar.getArrivalRatePerSec();
-                    double avgServTimeHis = hisCarCombined.getAvg();///unit is millisecond
+                    double arrivalByInterArrival = hisCar.getRecvQueueResult().getAvgArrivalRatePerSecond() * numberExecutor;
+                    double interArrivalScv = hisCar.getRecvQueueResult().getScvInterArrivalTimes();
+                    double avgServTimeHis = hisCar.getCombinedProcessedResult().getAvg();///unit is millisecond
+                    double avgServTimeScv = hisCar.getCombinedProcessedResult().getScv();
 
-                    double lambdaHis = arrivalRateHis * currAllocation.get(e.getKey());
+                    long totalProcessTupleCnt = hisCar.getCombinedProcessedResult().getCount();
+                    double totalDurationSecond = hisCar.getDurationSeconds();
+                    double tupleProcessRate = totalProcessTupleCnt * numberExecutor / (totalDurationSecond * componentSampelRate);
+
+                    double lambdaHis = arrivalRateHis * numberExecutor;
                     double muHis = 1000.0 / avgServTimeHis;
-                    //TODO: when processed tuple count is very small (e.g. there is no input tuple),
+                    //TODO: when processed tuple count is very small (e.g. there is no input tuple, avgServTimeHis outputs zero),
                     // avgServTime becomes zero and mu becomes infinity, this will cause problematic SN.
                     double rhoHis = lambdaHis / muHis;
 
                     boolean sendQLenNormalHis = avgSendQLenHis < sendQSizeThresh;
                     boolean recvQlenNormalHis = avgRecvQLenHis < recvQSizeThresh;
 
+                    ///TODO: here i2oRatio can be INFINITY, when there is no data sent from Spout.
+                    ///TODO: here we shall deside whether to use external Arrival rate, or tupleLeaveRateOnSQ!!
+                    ///TODO: major differences 1) when there is max-pending control, tupleLeaveRateOnSQ becomes the
+                    ///TODO: the tupleEmit Rate, rather than the external tuple arrival rate (implicit load shading)
+                    ///TODO: if use tupleLeaveRateOnSQ(), be careful to check if ACKing mechanism is on, i.e.,
+                    ///TODO: there are ack tuples. othersize, devided by tow becomes meaningless.
+                    ///TODO: shall we put this i2oRatio calculation here, or later to inside ServiceModel?
                     double i2oRatio = lambdaHis / spInfo.getTupleLeaveRateOnSQ();
-                    int numberExecutor = currAllocation.get(e.getKey());
 
-                    double totalComplteTupleCnt = hisCarCombined.getCount();
-                    double totalDuration = hisCar.getDuration();
-
-                    LOG.info("exec(ID, eNum): (" + e.getKey() + "," + numberExecutor
-                            + "), tupleCompCnt: " + totalComplteTupleCnt
-                            + ", sumDur: " + totalDuration + ", hisSize: " + e.getValue().size());
-                    LOG.info("avgSQLenHis: " + avgSendQLenHis + ",avgRQLenHis: " + avgRecvQLenHis + ", arrRateHis: "
-                            + arrivalRateHis + ", avgServTimeHis(ms): " + avgServTimeHis);
-                    LOG.info("rhoHis: " + rhoHis + ", lambdaHis: " + lambdaHis + ", muHis: " + muHis + ", ratio: " + i2oRatio);
+                    LOG.info(String.format("Component(ID, eNum):(%s,%d), tupleProcCnt: %d, sumMeasuredDur: %.1f, hisSize: %d, sampleRate: %.1f, tupleProcRate: %.3f",
+                            e.getKey(), numberExecutor, totalProcessTupleCnt, totalDurationSecond, e.getValue().size(), componentSampelRate, tupleProcessRate));
+                    LOG.info(String.format("avgSQLenHis: %.1f, avgRQLenHis: %.1f, arrRateHis: %.4f, arrRateScv: %.4f, avgServTimeHis(ms): %.4f, avgServTimeScv: %.4f",
+                            avgSendQLenHis, avgRecvQLenHis, arrivalRateHis, interArrivalScv, avgServTimeHis, avgServTimeScv));
+                    LOG.info(String.format("rhoHis: %.4f, lambdaHis: %.4f, lambdaBIA: %.4f, muHis: %.4f, ratio: %.4f",
+                            rhoHis, lambdaHis, arrivalByInterArrival, muHis, i2oRatio));
 
                     return new ServiceNode(lambdaHis, muHis, ServiceNode.ServiceType.EXPONENTIAL, i2oRatio);
                 }));
@@ -163,6 +173,6 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         super.allocationChanged(newAllocation);
         spoutAregatedData.clear();
         boltAregatedData.clear();
-        currHistory = ConfigUtil.getInt(conf, "resa.opt.win.history.size.ignore", 0);
+        currHistoryCursor = ConfigUtil.getInt(conf, "resa.opt.win.history.size.ignore", 0);
     }
 }

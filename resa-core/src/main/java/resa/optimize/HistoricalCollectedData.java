@@ -10,10 +10,11 @@ import java.util.Queue;
 
 /**
  * Created by ding on 14-4-30.
+ * Modified by Tom Fu on Feb-10-2016,
  */
-class AggregatedData {
+class HistoricalCollectedData {
 
-    public AggregatedData(StormTopology rawTopology, int historySize) {
+    public HistoricalCollectedData(StormTopology rawTopology, int historySize) {
         this.rawTopology = rawTopology;
         this.historySize = historySize;
     }
@@ -23,9 +24,11 @@ class AggregatedData {
     public final Map<String, Queue<AggResult>> compHistoryResults = new HashMap<>();
 
     public void putResult(String comp, AggResult[] exeAggResult) {
-        AggResult aggResult = rawTopology.get_spouts().containsKey(comp) ? new SpoutAggResult() : new BoltAggResult();
-        AggResult.getCombinedResult(aggResult, Arrays.asList(exeAggResult));
-        compHistoryResults.computeIfAbsent(comp, (k) -> new FixedSizeQueue(historySize)).add(aggResult);
+        AggResult CompAggResult  = rawTopology.get_spouts().containsKey(comp) ? new SpoutAggResult() : new BoltAggResult();
+        ///First aggregate executorResults to Component results, vertical combine.
+        AggResult.getVerticalCombinedResult(CompAggResult, Arrays.asList(exeAggResult));
+        ///Next, add aggregated component results to history window
+        compHistoryResults.computeIfAbsent(comp, (k) -> new FixedSizeQueue(historySize)).add(CompAggResult );
     }
 
     public void clear() {

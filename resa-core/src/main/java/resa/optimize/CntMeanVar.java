@@ -27,9 +27,12 @@ public class CntMeanVar {
     void addCMV(CntMeanVar cmv) {
         ///cmv should not be null here
         Objects.requireNonNull(cmv);
-        count += cmv.count;
-        sum += cmv.sum;
-        squareSum += cmv.squareSum;
+
+        if (cmv != null) {
+            count += cmv.count;
+            sum += cmv.sum;
+            squareSum += cmv.squareSum;
+        }
     }
 
     void clear() {
@@ -47,21 +50,20 @@ public class CntMeanVar {
     }
 
     double getAvg() {
-        return count == 0 ? 0.0 : sum / (double) count;
+        return count > 0 ? sum / (double) count : 0.0;
     }
 
     double getAvg2() {
-        return count == 0 ? 0.0 : squareSum / (double) count;
+        return count > 0 ? squareSum / (double) count : 0.0;
     }
 
     double getVar() {
-        double avg = getAvg();
-        return getAvg2() - avg * avg;
+        return count > 0 ? getAvg2() - getAvg() * getAvg() : 0.0;
     }
 
-    ///Square coefficient of variation (Scv), scv(X) = Var(X) / [E(X)*E(X)];
+    ///Square coefficient of variation (Scv), scv(X) = Var(X) / [E(X)*E(X)] = (E(X_2) / [E(X)*E(X)]) - 1.0;
     double getScv() {
-        return count == 0 ? 0.0 : (getAvg2() / (getAvg() * getAvg()) - 1.0);
+        return count > 0 ? (getAvg2() / (getAvg() * getAvg()) - 1.0) : 0.0;
     }
 
     String toCMVString() {

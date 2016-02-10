@@ -4,6 +4,7 @@ import java.util.Map;
 
 /**
  * Created by ding on 14-4-29.
+ * Modified by Tom Fu on Feb-10-2016
  */
 public class AllocResult {
 
@@ -12,7 +13,7 @@ public class AllocResult {
     // (e.g. consider expected rebalance gain vs. cost)
 
     public static enum Status {
-        INFEASIBLE, FEASIBALE
+        INFEASIBLE, FEASIBLE
     }
 
     public final Status status;
