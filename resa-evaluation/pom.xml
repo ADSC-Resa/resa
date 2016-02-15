@@ -47,6 +47,12 @@
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20141113</version>
+        </dependency>
     </dependencies>
 
     <build>
