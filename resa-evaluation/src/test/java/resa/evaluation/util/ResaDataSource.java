@@ -34,7 +34,7 @@ public class ResaDataSource {
             while ((line = jedis.lpop(queue)) != null && count++ < maxLen) {
                 String[] tmp = line.split("->");
                 if (tmp[0].startsWith("task.")) {
-                    String[] head = tmp[0].split(".");
+                    String[] head = tmp[0].split("\\.");
                     ret.add(new MeasuredData(head[1], Integer.valueOf(head[2]), System.currentTimeMillis(),
                             objectMapper.readValue(tmp[1], Map.class)));
                 } else {
@@ -64,7 +64,7 @@ public class ResaDataSource {
                 line = strings.next();
                 String[] tmp = line.split("->");
                 if (tmp[0].startsWith("task.")) {
-                    String[] head = tmp[0].split(".");
+                    String[] head = tmp[0].split("\\.");
                     ret.add(new MeasuredData(head[1], Integer.valueOf(head[2]), System.currentTimeMillis(),
                             objectMapper.readValue(tmp[1], Map.class)));
                 } else {
