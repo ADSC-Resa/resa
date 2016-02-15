@@ -71,7 +71,7 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
                     double departRateHis = hisCar.getDepartureRatePerSec();
                     double tupleEmitRate = departRateHis * numberExecutor / 2.0;
                     double arrivalRateHis = hisCar.getArrivalRatePerSec();
-                    double externalTupleArrivalRate = arrivalRateHis * numberExecutor;
+                    double externalTupleArrivalRate = arrivalRateHis * (double)numberExecutor;
                     double tupleEmitRateByInterArrival = hisCar.getSendQueueResult().getAvgArrivalRatePerSecond()* numberExecutor;
                     double tupleEmitInterArrivalScv = hisCar.getSendQueueResult().getScvInterArrivalTimes();
                     double externalRateByInterArrival = hisCar.getRecvQueueResult().getAvgArrivalRatePerSecond()* numberExecutor;
@@ -79,7 +79,7 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
 
                     double avgCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getAvg();///unit is millisecond
 
-                    double totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
+                    long totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
                     double totalDurationSecond  = hisCar.getDurationSeconds();
                     double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSecond * componentSampelRate);
 
