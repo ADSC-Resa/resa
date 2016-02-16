@@ -5,24 +5,24 @@ package resa.optimize;
  */
 public class SourceNode {
 
-    private double realLatencyMilliSec;
+    private double realLatencyMilliSecond;
     private double numCompleteTuples;
     private double sumDuration;
     private double tupleLeaveRateOnSQ;
 
     public SourceNode(double l, double n, double d, double r) {
-        realLatencyMilliSec = l;
+        realLatencyMilliSecond = l;
         numCompleteTuples = n;
         sumDuration = d;
         tupleLeaveRateOnSQ = r;
     }
 
-    public double getRealLatencyMilliSec(){
-        return realLatencyMilliSec;
+    public double getRealLatencyMilliSecond(){
+        return realLatencyMilliSecond;
     }
 
     public double getRealLatencySec(){
-        return realLatencyMilliSec / 1000.0;
+        return realLatencyMilliSecond / 1000.0;
     }
 
     public double getNumCompleteTuples(){

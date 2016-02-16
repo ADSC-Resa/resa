@@ -11,11 +11,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by ding on 14-4-30.
- * Modified by Tom Fu on Feb-10-2016
+ * Created by Tom Fu on Feb-15-2016
  */
-public class SimpleGeneralAllocCalculator extends AllocCalculator {
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleGeneralAllocCalculator.class);
+public class GeneralAllocCalculator extends AllocCalculator {
+    private static final Logger LOG = LoggerFactory.getLogger(GeneralAllocCalculator.class);
     private HistoricalCollectedData spoutHistoricalData;
     private HistoricalCollectedData boltHistoricalData;
     private int historySize;
@@ -56,10 +55,9 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
         double recvQSizeThreshRatio = ConfigUtil.getDouble(conf, "resa.opt.smd.rq.thresh.ratio", 0.6);
         double recvQSizeThresh = recvQSizeThreshRatio * maxRecvQSize;
 
-        double componentSampelRate = ConfigUtil.getDouble(conf, "resa.comp.sample.rate", 1.0);
+        double compSampleRate = ConfigUtil.getDouble(conf, "resa.comp.sample.rate", 1.0);
 
-//        Map<String, Map<String, Object>> queueMetric = new HashMap<>();
-        Map<String, SourceNode> spInfos = spoutHistoricalData.compHistoryResults.entrySet().stream()
+        Map<String, GeneralSourceNode> spInfos = spoutHistoricalData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     SpoutAggResult hisCar = AggResult.getHorizontalCombinedResult(new SpoutAggResult(), e.getValue());
                     int numberExecutor = currAllocation.get(e.getKey());
@@ -69,6 +67,7 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
                     ///TODO: there we multiply 1/2 for this particular implementation
                     ///TODO: this shall be adjusted and configurable for ackering mechanism
                     double departRateHis = hisCar.getDepartureRatePerSec();
+                    //if (ackerIsEnabled)
                     double tupleEmitRate = departRateHis * numberExecutor / 2.0;
                     double arrivalRateHis = hisCar.getArrivalRatePerSec();
                     double externalTupleArrivalRate = arrivalRateHis * numberExecutor;
@@ -78,77 +77,73 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
                     double externalTupleInterArrivalScv = hisCar.getRecvQueueResult().getScvInterArrivalTimes();
 
                     double avgCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getAvg();///unit is millisecond
+                    double scvCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getScv();
 
                     long totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
-                    double totalDurationSecond  = hisCar.getDurationSeconds();
-                    double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSecond * componentSampelRate);
+                    double totalDurationSeconds  = hisCar.getDurationSeconds();
+                    double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSeconds * compSampleRate);
 
-                    LOG.info(String.format("Component(ID, eNum):(%s,%d), tupleFinCnt: %d, sumMeasuredDur: %.1f, hisSize: %d, sampleRate: %.1f, tupleFinRate: %.3f",
-                            e.getKey(), numberExecutor, totalCompleteTupleCnt, totalDurationSecond, e.getValue().size(), componentSampelRate, tupleCompleteRate));
-                    LOG.info(String.format("avgSQLenHis: %.1f, avgRQLenHis: %.1f, RQarrRateHis: %.4f, SQarrRateHis: %.4f",
-                            avgSendQLenHis, avgRecvQLenHis, arrivalRateHis, departRateHis));
-                    LOG.info(String.format("avgCompleteHis: %.4f, tupleEmitRate: %.4f, exArrivalRate: %.4f",
-                            avgCompleteLatencyHis, tupleEmitRate, externalTupleArrivalRate));
-                    LOG.info(String.format("tupleEmitRateBIA: %.4f, tupleEmitScv: %.4f, exArrivalRateBIA: %.4f, exArrivalScv: %.4f",
-                            tupleEmitRateByInterArrival, tupleEmitInterArrivalScv, externalRateByInterArrival, externalTupleInterArrivalScv));
-
-                    return new SourceNode(avgCompleteLatencyHis, totalCompleteTupleCnt, hisCar.getDurationMilliSeconds(), tupleEmitRate);
+                    return new GeneralSourceNode(
+                            e.getKey(), numberExecutor, compSampleRate, avgSendQLenHis, avgRecvQLenHis, avgCompleteLatencyHis, scvCompleteLatencyHis,
+                            totalCompleteTupleCnt, totalDurationSeconds, tupleCompleteRate,
+                            tupleEmitRate, tupleEmitRateByInterArrival, tupleEmitInterArrivalScv,
+                            externalTupleArrivalRate, externalRateByInterArrival, externalTupleInterArrivalScv);
                 }));
 
-        SourceNode spInfo = spInfos.entrySet().stream().findFirst().get().getValue();
+        GeneralSourceNode spInfo = spInfos.entrySet().stream().findFirst().get().getValue();
 
-        Map<String, ServiceNode> queueingNetwork = boltHistoricalData.compHistoryResults.entrySet().stream()
+        Map<String, GeneralServiceNode> queueingNetwork = boltHistoricalData.compHistoryResults.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     BoltAggResult hisCar = AggResult.getHorizontalCombinedResult(new BoltAggResult(), e.getValue());
                     int numberExecutor = currAllocation.get(e.getKey());
 
                     double avgSendQLenHis = hisCar.getSendQueueResult().getAvgQueueLength();
                     double avgRecvQLenHis = hisCar.getRecvQueueResult().getAvgQueueLength();
+
+                    double avgServTimeHis = hisCar.getCombinedProcessedResult().getAvg();///unit is millisecond
+                    double scvServTimeHis = hisCar.getCombinedProcessedResult().getScv();
+
                     double arrivalRateHis = hisCar.getArrivalRatePerSec();
+                    double lambdaHis = arrivalRateHis * numberExecutor;
                     double arrivalByInterArrival = hisCar.getRecvQueueResult().getAvgArrivalRatePerSecond() * numberExecutor;
                     double interArrivalScv = hisCar.getRecvQueueResult().getScvInterArrivalTimes();
-                    double avgServTimeHis = hisCar.getCombinedProcessedResult().getAvg();///unit is millisecond
-                    double avgServTimeScv = hisCar.getCombinedProcessedResult().getScv();
 
                     long totalProcessTupleCnt = hisCar.getCombinedProcessedResult().getCount();
                     double totalDurationSecond = hisCar.getDurationSeconds();
-                    double tupleProcessRate = totalProcessTupleCnt * numberExecutor / (totalDurationSecond * componentSampelRate);
-
-                    double lambdaHis = arrivalRateHis * numberExecutor;
-                    double muHis = 1000.0 / avgServTimeHis;
-                    //TODO: when processed tuple count is very small (e.g. there is no input tuple, avgServTimeHis outputs zero),
-                    // avgServTime becomes zero and mu becomes infinity, this will cause problematic SN.
-                    double rhoHis = lambdaHis / muHis;
-
-                    boolean sendQLenNormalHis = avgSendQLenHis < sendQSizeThresh;
-                    boolean recvQlenNormalHis = avgRecvQLenHis < recvQSizeThresh;
+                    double tupleProcessRate = totalProcessTupleCnt * numberExecutor / (totalDurationSecond * compSampleRate);
 
                     ///TODO: here i2oRatio can be INFINITY, when there is no data sent from Spout.
-                    ///TODO: here we shall deside whether to use external Arrival rate, or tupleLeaveRateOnSQ!!
+                    ///TODO: here we shall decide whether to use external Arrival rate, or tupleLeaveRateOnSQ!!
                     ///TODO: major differences 1) when there is max-pending control, tupleLeaveRateOnSQ becomes the
                     ///TODO: the tupleEmit Rate, rather than the external tuple arrival rate (implicit load shading)
                     ///TODO: if use tupleLeaveRateOnSQ(), be careful to check if ACKing mechanism is on, i.e.,
-                    ///TODO: there are ack tuples. othersize, devided by tow becomes meaningless.
+                    ///TODO: there are ack tuple. otherwise, divided by tow becomes meaningless.
                     ///TODO: shall we put this i2oRatio calculation here, or later to inside ServiceModel?
-                    double i2oRatio = lambdaHis / spInfo.getTupleLeaveRateOnSQ();
+                    ///double i2oRatio = lambdaHis / spInfo.getTupleLeaveRateOnSQ();
 
-                    LOG.info(String.format("Component(ID, eNum):(%s,%d), tupleProcCnt: %d, sumMeasuredDur: %.1f, hisSize: %d, sampleRate: %.1f, tupleProcRate: %.3f",
-                            e.getKey(), numberExecutor, totalProcessTupleCnt, totalDurationSecond, e.getValue().size(), componentSampelRate, tupleProcessRate));
-                    LOG.info(String.format("avgSQLenHis: %.1f, avgRQLenHis: %.1f, arrRateHis: %.4f, arrRateScv: %.4f, avgServTimeHis(ms): %.4f, avgServTimeScv: %.4f",
-                            avgSendQLenHis, avgRecvQLenHis, arrivalRateHis, interArrivalScv, avgServTimeHis, avgServTimeScv));
-                    LOG.info(String.format("rhoHis: %.4f, lambdaHis: %.4f, lambdaBIA: %.4f, muHis: %.4f, ratio: %.4f",
-                            rhoHis, lambdaHis, arrivalByInterArrival, muHis, i2oRatio));
-
-                    return new ServiceNode(lambdaHis, muHis, ServiceNode.ServiceType.EXPONENTIAL, i2oRatio);
+                    return new GeneralServiceNode(
+                            e.getKey(), numberExecutor, compSampleRate, avgSendQLenHis, avgRecvQLenHis,
+                            avgServTimeHis, scvServTimeHis,
+                            totalProcessTupleCnt, totalDurationSecond, tupleProcessRate,
+                            lambdaHis, arrivalByInterArrival, interArrivalScv,
+                            spInfo.getExArrivalRate(), spInfo.getExArrivalRateByInterArrival());
                 }));
-        int maxThreadAvailable4Bolt = maxAvailableExecutors - currAllocation.entrySet().stream()
-                .filter(e -> rawTopology.get_spouts().containsKey(e.getKey()))
-                .mapToInt(Map.Entry::getValue).sum();
+
         Map<String, Integer> boltAllocation = currAllocation.entrySet().stream()
                 .filter(e -> rawTopology.get_bolts().containsKey(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        AllocResult allocResult = SimpleGeneralServiceModel.checkOptimized(queueingNetwork,
-                spInfo.getRealLatencyMilliSecond(), targetQoSMs, boltAllocation, maxThreadAvailable4Bolt);
+
+        ///totalAvailableExecutors - spoutExecutors, currently, it is assumed that there is only one spout
+        ///Kmax
+        int maxThreadAvailable4Bolt = maxAvailableExecutors - currAllocation.entrySet().stream()
+                .filter(e -> rawTopology.get_spouts().containsKey(e.getKey()))
+                .mapToInt(Map.Entry::getValue).sum();
+
+        int currentUsedThreadByBolts = currAllocation.entrySet().stream()
+                .filter(e -> rawTopology.get_bolts().containsKey(e.getKey())).mapToInt(Map.Entry::getValue).sum();
+
+        AllocResult allocResult = GeneralServiceModel.checkOptimized(queueingNetwork,
+                spInfo.getRealLatencyMilliSeconds(), targetQoSMs, boltAllocation, maxThreadAvailable4Bolt);
         Map<String, Integer> retCurrAllocation = new HashMap<>(currAllocation);
         // merge the optimized decision into source allocation
         retCurrAllocation.putAll(allocResult.currOptAllocation);
