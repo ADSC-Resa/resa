@@ -23,25 +23,18 @@ public class AllocResult {
     }
 
     public final Status status;
+//    public final double minAchievableLatency;
     public final Map<String, Integer> minReqOptAllocation;
-    public final Map<String, Integer> kMaxOptAllocation;
     public final Map<String, Integer> currOptAllocation;
+    public final Map<String, Integer> kMaxOptAllocation;
     private Object context = null;
 
     public AllocResult(Status status, Map<String, Integer> minReqOptAllocation,
-                       Map<String, Integer> kMaxOptAllocation, Map<String, Integer> currOptAllocation) {
+                       Map<String, Integer> currOptAllocation, Map<String, Integer> kMaxOptAllocation) {
         this.status = status;
         this.minReqOptAllocation = minReqOptAllocation;
-        this.kMaxOptAllocation = kMaxOptAllocation;
         this.currOptAllocation = currOptAllocation;
-    }
-
-    public AllocResult(Status status, Map<String, Integer> currOptAllocation) {
-        this(status, null, null, currOptAllocation);
-    }
-
-    public AllocResult(Status status, Map<String, Integer> minReqOptAllocation, Map<String, Integer> currOptAllocation) {
-        this(status, minReqOptAllocation, null, currOptAllocation);
+        this.kMaxOptAllocation = kMaxOptAllocation;
     }
 
     public Object getContext() {

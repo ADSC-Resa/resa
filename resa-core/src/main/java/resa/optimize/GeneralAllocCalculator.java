@@ -142,6 +142,8 @@ public class GeneralAllocCalculator extends AllocCalculator {
         int currentUsedThreadByBolts = currAllocation.entrySet().stream()
                 .filter(e -> rawTopology.get_bolts().containsKey(e.getKey())).mapToInt(Map.Entry::getValue).sum();
 
+
+
         AllocResult allocResult = GeneralServiceModel.checkOptimized(queueingNetwork,
                 spInfo.getRealLatencyMilliSeconds(), targetQoSMs, boltAllocation, maxThreadAvailable4Bolt);
         Map<String, Integer> retCurrAllocation = new HashMap<>(currAllocation);
