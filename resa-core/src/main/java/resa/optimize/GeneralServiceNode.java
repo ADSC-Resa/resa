@@ -94,7 +94,7 @@ public class GeneralServiceNode {
 //                ratio, ratioByInterArrival, rho, rhoBIA);
 
         return String.format(
-                "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Duration: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, \n" +
+                "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, \n" +
                 "arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
                 componentID, executorNumber, tupleCompleteRate, avgServTimeHis, scvServTimeHis, mu, numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
                 lambda, lambdaByInterArrival, interArrivalScv, ratio, ratioByInterArrival, rho, rhoBIA);

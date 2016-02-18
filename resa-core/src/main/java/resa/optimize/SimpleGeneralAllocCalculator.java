@@ -83,13 +83,13 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
                     double totalDurationSecond  = hisCar.getDurationSeconds();
                     double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSecond * componentSampelRate);
 
-                    LOG.info(String.format("Component(ID, eNum):(%s,%d), tupleFinCnt: %d, sumMeasuredDur: %.1f, hisSize: %d, sampleRate: %.1f, tupleFinRate: %.3f",
+                    LOG.info(String.format("(ID, eNum):(%s,%d), FinCnt: %d, Dur: %.1f, hSize: %d, sample: %.1f, FinRate: %.3f",
                             e.getKey(), numberExecutor, totalCompleteTupleCnt, totalDurationSecond, e.getValue().size(), componentSampelRate, tupleCompleteRate));
-                    LOG.info(String.format("avgSQLenHis: %.1f, avgRQLenHis: %.1f, RQarrRateHis: %.4f, SQarrRateHis: %.4f",
+                    LOG.info(String.format("SQLen: %.1f, RQLen: %.1f, arrRateRQ: %.3f, arrRateSQ: %.3f",
                             avgSendQLenHis, avgRecvQLenHis, arrivalRateHis, departRateHis));
-                    LOG.info(String.format("avgCompleteHis: %.4f, tupleEmitRate: %.4f, exArrivalRate: %.4f",
+                    LOG.info(String.format("avgCTime: %.3f, EmitRate: %.3f, eArrRate: %.3f",
                             avgCompleteLatencyHis, tupleEmitRate, externalTupleArrivalRate));
-                    LOG.info(String.format("tupleEmitRateBIA: %.4f, tupleEmitScv: %.4f, exArrivalRateBIA: %.4f, exArrivalScv: %.4f",
+                    LOG.info(String.format("EmitRateBIA: %.3f, EmitScv: %.3f, eArrRateBIA: %.3f, exArrScv: %.3f",
                             tupleEmitRateByInterArrival, tupleEmitInterArrivalScv, externalRateByInterArrival, externalTupleInterArrivalScv));
 
                     return new SourceNode(avgCompleteLatencyHis, totalCompleteTupleCnt, hisCar.getDurationMilliSeconds(), tupleEmitRate);
@@ -132,11 +132,11 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
                     ///TODO: shall we put this i2oRatio calculation here, or later to inside ServiceModel?
                     double i2oRatio = lambdaHis / spInfo.getTupleLeaveRateOnSQ();
 
-                    LOG.info(String.format("Component(ID, eNum):(%s,%d), tupleProcCnt: %d, sumMeasuredDur: %.1f, hisSize: %d, sampleRate: %.1f, tupleProcRate: %.3f",
+                    LOG.info(String.format("(ID, eNum):(%s,%d), ProcCnt: %d, Dur: %.1f, hSize: %d, sample: %.1f, ProcRate: %.3f",
                             e.getKey(), numberExecutor, totalProcessTupleCnt, totalDurationSecond, e.getValue().size(), componentSampelRate, tupleProcessRate));
-                    LOG.info(String.format("avgSQLenHis: %.1f, avgRQLenHis: %.1f, arrRateHis: %.4f, arrRateScv: %.4f, avgServTimeHis(ms): %.4f, avgServTimeScv: %.4f",
+                    LOG.info(String.format("SQLen: %.1f, RQLen: %.1f, arrRate: %.3f, arrRateScv: %.3f, avgSTime(ms): %.3f, avgSTimeScv: %.3f",
                             avgSendQLenHis, avgRecvQLenHis, arrivalRateHis, interArrivalScv, avgServTimeHis, avgServTimeScv));
-                    LOG.info(String.format("rhoHis: %.4f, lambdaHis: %.4f, lambdaBIA: %.4f, muHis: %.4f, ratio: %.4f",
+                    LOG.info(String.format("rho: %.3f, lambda: %.3f, lambdaBIA: %.3f, mu: %.3f, ratio: %.3f",
                             rhoHis, lambdaHis, arrivalByInterArrival, muHis, i2oRatio));
 
                     return new ServiceNode(lambdaHis, muHis, ServiceNode.ServiceType.EXPONENTIAL, i2oRatio);

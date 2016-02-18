@@ -84,7 +84,7 @@ public class GeneralSourceNode {
 //                exArrivalRate, exArrivalRateByInterArrival, exArrivalScvByInterArrival);
 
         return String.format(
-                "(ID, eNum):(%s,%d), FinRate: %.3f, avgCTime: %.3f, scvCTime: %.3f, FinCnt: %.1f, Duration: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, \n" +
+                "(ID, eNum):(%s,%d), FinRate: %.3f, avgCTime: %.3f, scvCTime: %.3f, FinCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, \n" +
                         "rateSQ: %.3f, rateSQBIA: %.3f, rateSQScv: %.3f, eArr: %.3f, eArrBIA: %.3f, eArrScv: %.3f",
                 componentID, executorNumber, tupleCompleteRate, realLatencyMilliSeconds, scvRealLatency, numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
                 tupleEmitRateOnSQ, tupleEmitRateByInterArrival, tupleEmitScvByInterArrival,
