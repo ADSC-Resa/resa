@@ -7,6 +7,7 @@ import java.util.Map;
 
 /**
  * Created by ding on 14-6-20.
+ * Notice to the updates on the class AllocResult by Tom Fu on Feb 18, 2016
  */
 public interface DecisionMaker {
 

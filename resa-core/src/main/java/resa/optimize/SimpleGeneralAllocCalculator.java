@@ -151,7 +151,8 @@ public class SimpleGeneralAllocCalculator extends AllocCalculator {
                 spInfo.getRealLatencyMilliSecond(), targetQoSMs, boltAllocation, maxThreadAvailable4Bolt);
         Map<String, Integer> retCurrAllocation = new HashMap<>(currAllocation);
         // merge the optimized decision into source allocation
-        retCurrAllocation.putAll(allocResult.currOptAllocation);
+        //The class AllocResult is updated on Feb 18, 2016 by Tom Fu, the adjustments are accordingly.
+        retCurrAllocation.putAll(allocResult.kMaxOptAllocation);
         LOG.info(currAllocation + "-->" + retCurrAllocation);
         LOG.info("minReq: " + allocResult.minReqOptAllocation + ", status: " + allocResult.status);
         Map<String, Integer> retMinReqAllocation = null;
