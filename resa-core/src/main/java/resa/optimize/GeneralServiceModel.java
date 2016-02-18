@@ -693,7 +693,12 @@ public class GeneralServiceModel {
         LOG.info("GGKCApprBIA, currOptAllo: " + allocResult[4].currOptAllocation);
         LOG.info("GGKCApprBIA, kMaxOptAllo: " + allocResult[4].kMaxOptAllocation);
 
-        return allocResult[retAlloType.getValue()];
+        Map<String, Object> context = new HashMap<>();
+        for (int i = 0; i < allocResult.length; i ++){
+                context.putAll((Map<String, Object>)allocResult[i].getContext());
+        }
+
+        return allocResult[retAlloType.getValue()].setContext(context);
     }
 
     /**
