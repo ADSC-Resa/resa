@@ -7,13 +7,18 @@ import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
 import resa.optimize.AggResultCalculator;
+import resa.optimize.AllocCalculator;
+import resa.optimize.GeneralAllocCalculator;
 import resa.optimize.SimpleGeneralAllocCalculator;
 import resa.util.ResaConfig;
+import resa.util.ResaUtils;
 import resa.util.TopologyHelper;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static resa.util.ResaConfig.ALLOC_CALC_CLASS;
 
 /**
  * Created by Tom.fu on 5/5/2014.
@@ -72,7 +77,9 @@ public class ResaMetricAnalyzer {
                 .collect(Collectors.groupingBy(e -> e.get_component_id(),
                         Collectors.reducing(0, e -> 1, (i1, i2) -> i1 + i2)));
 
-        SimpleGeneralAllocCalculator smdm = new SimpleGeneralAllocCalculator();
+//        AllocCalculator smdm = new SimpleGeneralAllocCalculator();
+        AllocCalculator smdm = new GeneralAllocCalculator();
+
         smdm.init(conf, currAllocation, nimbus.getUserTopology(topoId));
 
         for (int i = 0; i < 10000; i++) {
