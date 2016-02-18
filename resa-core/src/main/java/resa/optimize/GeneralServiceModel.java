@@ -20,10 +20,23 @@ import java.util.stream.Collectors;
 public class GeneralServiceModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(GeneralServiceModel.class);
+    public enum ServiceModelType {
+        MMK(0), GGK_SimpleAppr(1), GGK_SimpleApprBIA(2), GGK_ComplexAppr(3), GGK_ComplexApprBIA(4);
+        private static final int totalTypeCount = 5;
+        private final int value;
+        ServiceModelType(int value) {
+            this.value = value;
+        }
+        public int getValue() {
+            return value;
+        }
+    }
 
     /**
      * We assume the stability check for each node is done beforehand!
      * Jackson OQN assumes all the arrival and departure are iid and exponential
+     *
+     * Note, the return time unit is in Second!
      *
      * @param serviceNodes, the service node configuration, in this function, chain topology is assumed.
      * @param allocation,   the target allocation to be analyzed
@@ -147,7 +160,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply M/M/K, totalResourceCount: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.info("Apply M/M/K, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -200,7 +213,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_SimpleAppr, totalResourceCount: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.info("Apply GGK_SimpleAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -253,7 +266,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_SimpleApprBIA, totalResourceCount: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.info("Apply GGK_SimpleApprBIA, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -306,7 +319,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_ComplexAppr, totalResourceCount: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.info("Apply GGK_ComplexAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -359,7 +372,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_ComplexApprBIA, totalResourceCount: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.info("Apply GGK_ComplexApprBIA, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -482,7 +495,7 @@ public class GeneralServiceModel {
         ///Caution about the time unit!, second is used in all the functions of calculation
         /// millisecond is used in the output display!
         double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_MMK = getExpectedTotalSojournTimeForJacksonOQN(queueingNetwork, currBoltAllocation);
+        double estTotalSojournTimeMilliSec_MMK = 1000.0 * getExpectedTotalSojournTimeForJacksonOQN(queueingNetwork, currBoltAllocation);
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_MMK);
         ///relativeError (rE)
@@ -518,7 +531,7 @@ public class GeneralServiceModel {
         ///Caution about the time unit!, second is used in all the functions of calculation
         /// millisecond is used in the output display!
         double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_GGK_SAppr = getExpectedTotalSojournTimeForGeneralizedOQN_SimpleAppr(queueingNetwork, currBoltAllocation);
+        double estTotalSojournTimeMilliSec_GGK_SAppr = 1000.0 * getExpectedTotalSojournTimeForGeneralizedOQN_SimpleAppr(queueingNetwork, currBoltAllocation);
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_GGK_SAppr);
         ///relativeError (rE)
@@ -554,7 +567,7 @@ public class GeneralServiceModel {
         ///Caution about the time unit!, second is used in all the functions of calculation
         /// millisecond is used in the output display!
         double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_GGK_SApprBIA = getExpectedTotalSojournTimeForGeneralizedOQN_SimpleApprBIA(queueingNetwork, currBoltAllocation);
+        double estTotalSojournTimeMilliSec_GGK_SApprBIA = 1000.0 * getExpectedTotalSojournTimeForGeneralizedOQN_SimpleApprBIA(queueingNetwork, currBoltAllocation);
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_GGK_SApprBIA);
         ///relativeError (rE)
@@ -590,7 +603,7 @@ public class GeneralServiceModel {
         ///Caution about the time unit!, second is used in all the functions of calculation
         /// millisecond is used in the output display!
         double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_GGK_CAppr = getExpectedTotalSojournTimeForGeneralizedOQN_ComplexAppr(queueingNetwork, currBoltAllocation);
+        double estTotalSojournTimeMilliSec_GGK_CAppr = 1000.0 * getExpectedTotalSojournTimeForGeneralizedOQN_ComplexAppr(queueingNetwork, currBoltAllocation);
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_GGK_CAppr);
         ///relativeError (rE)
@@ -626,7 +639,7 @@ public class GeneralServiceModel {
         ///Caution about the time unit!, second is used in all the functions of calculation
         /// millisecond is used in the output display!
         double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_GGK_CApprBIA = getExpectedTotalSojournTimeForGeneralizedOQN_ComplexApprBIA(queueingNetwork, currBoltAllocation);
+        double estTotalSojournTimeMilliSec_GGK_CApprBIA = 1000.0 * getExpectedTotalSojournTimeForGeneralizedOQN_ComplexApprBIA(queueingNetwork, currBoltAllocation);
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_GGK_CApprBIA);
         ///relativeError (rE)
@@ -651,6 +664,36 @@ public class GeneralServiceModel {
         context.put("urGGKCApprBIA", underEstimateRatio);
         context.put("reGGKCApprBIA", relativeError);
         return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
+    }
+
+    public static AllocResult checkOptimized(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
+                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                             int maxAvailable4Bolt, int currentUsedThreadByBolts, ServiceModelType retAlloType){
+
+        AllocResult allocResult[] = new AllocResult[ServiceModelType.totalTypeCount];
+
+        allocResult[0] = checkOptimized_MMK(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("MMK, minReqStatus: " + allocResult[0].status + ", minReq: " + allocResult[0].minReqOptAllocation);
+        LOG.info("MMK, currOptAllo: " + allocResult[0].currOptAllocation);
+        LOG.info("MMK, kMaxOptAllo: " + allocResult[0].kMaxOptAllocation);
+        allocResult[1] = checkOptimized_GGK_SimpleAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKSAppr, minReqStatus: " + allocResult[1].status + ", minReq: " + allocResult[1].minReqOptAllocation);
+        LOG.info("GGKSAppr, currOptAllo: " + allocResult[1].currOptAllocation);
+        LOG.info("GGKSAppr, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
+        allocResult[2] = checkOptimized_GGK_SimpleApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKSApprBIA, minReqStatus: " + allocResult[2].status + ", minReq: " + allocResult[2].minReqOptAllocation);
+        LOG.info("GGKSApprBIA, currOptAllo: " + allocResult[2].currOptAllocation);
+        LOG.info("GGKSApprBIA, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
+        allocResult[3] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCAppr, minReqStatus: " + allocResult[3].status + ", minReq: " + allocResult[3].minReqOptAllocation);
+        LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
+        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
+        allocResult[4] = checkOptimized_GGK_ComplexApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCApprBIA, minReqStatus: " + allocResult[4].status + ", minReq: " + allocResult[4].minReqOptAllocation);
+        LOG.info("GGKCApprBIA, currOptAllo: " + allocResult[4].currOptAllocation);
+        LOG.info("GGKCApprBIA, kMaxOptAllo: " + allocResult[4].kMaxOptAllocation);
+
+        return allocResult[retAlloType.getValue()];
     }
 
     /**
@@ -799,7 +842,7 @@ public class GeneralServiceModel {
 
 
     public static double sojournTime_MM1(double lambda, double mu) {
-        return sojournTime_MMK(lambda, mu, 1);
+        return 1.0 / (mu - lambda);
     }
 
     private static int factorial(int n) {

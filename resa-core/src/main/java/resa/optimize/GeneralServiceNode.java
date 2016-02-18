@@ -83,16 +83,21 @@ public class GeneralServiceNode {
 
     @Override
     public String toString() {
+//        return String.format(
+//                "Component(ID, eNum):(%s,%d), tupleProcCnt: %.1f, sumMeasuredDur: %.1f, sampleRate: %.1f, tupleProcRate: %.3f, " +
+//                        "avgSendQLen: %.1f, avgRecvQLen: %.1f, avgServTimeMS: %.3f, scvServTime: %.3f, mu: %.3f, " +
+//                        "arrRateHis: %.3f, arrRateBIA: %.3f, interArrivalScv: %.3f, " +
+//                        "ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
+//                componentID, executorNumber, numCompleteTuples, sumDurationSeconds, compSampleRate, tupleCompleteRate,
+//                avgSendQueueLength, avgRecvQueueLength, avgServTimeHis, scvServTimeHis, mu,
+//                lambda, lambdaByInterArrival, interArrivalScv,
+//                ratio, ratioByInterArrival, rho, rhoBIA);
 
         return String.format(
-                "Component(ID, eNum):(%s,%d), tupleProcCnt: %d, sumMeasuredDur: %.1f, sampleRate: %.1f, tupleProcRate: %.3f, " +
-                        "avgSendQLen: %.1f, avgRecvQLen: %.1f, avgServTimeMS: %.4f, scvServTime: %.4f, mu: %.4f" +
-                        "arrRateHis: %.4f, arrRateBIA: %.4f, interArrivalScv: %.4f " +
-                        "ratio: %.4f, ratioBIA: %.4f, rho: %.4f, rhoBIA: %.4f",
-                componentID, executorNumber, numCompleteTuples, sumDurationSeconds, compSampleRate, tupleCompleteRate,
-                avgSendQueueLength, avgRecvQueueLength, avgServTimeHis, scvServTimeHis, mu,
-                lambda, lambdaByInterArrival, interArrivalScv,
-                ratio, ratioByInterArrival, rho, rhoBIA);
+                "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Duration: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, \n" +
+                "arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
+                componentID, executorNumber, tupleCompleteRate, avgServTimeHis, scvServTimeHis, mu, numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
+                lambda, lambdaByInterArrival, interArrivalScv, ratio, ratioByInterArrival, rho, rhoBIA);
     }
 
     public String getComponentID() {

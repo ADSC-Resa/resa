@@ -73,13 +73,20 @@ public class GeneralSourceNode {
     @Override
     public String toString() {
 
+//        return String.format(
+//                "Component(ID, eNum):(%s,%d), tupleFinCnt: %.1f, sumMeasuredDur: %.1f, sampleRate: %.1f, tupleFinRate: %.3f, " +
+//                        "avgSendQLen: %.1f, avgRecvQLen: %.1f, avgCompleteHis: %.3f, scvCompleteHis: %.3f, " +
+//                        "tupleEmitRateOnSQ: %.3f, tupleEmitRateBIA: %.3f, tupleEmitScvBIA: %.3f, " +
+//                        "exArrivalRate: %.3f, exArrivalRateBIA: %.3f, exArrivalScvBIA: %.3f",
+//                componentID, executorNumber, numCompleteTuples, sumDurationSeconds, compSampleRate, tupleCompleteRate,
+//                avgSendQueueLength, avgRecvQueueLength, realLatencyMilliSeconds, scvRealLatency,
+//                tupleEmitRateOnSQ, tupleEmitRateByInterArrival, tupleEmitScvByInterArrival,
+//                exArrivalRate, exArrivalRateByInterArrival, exArrivalScvByInterArrival);
+
         return String.format(
-                "Component(ID, eNum):(%s,%d), tupleFinCnt: %d, sumMeasuredDur: %.1f, sampleRate: %.1f, tupleFinRate: %.3f, " +
-                        "avgSendQLen: %.1f, avgRecvQLen: %.1f, avgCompleteHis: %.4f, scvCompleteHis: %.4f, " +
-                        "tupleEmitRateOnSQ: %.4f, tupleEmitRateBIA: %.4f, tupleEmitScvBIA: %.4f, " +
-                        "exArrivalRate: %.4f, exArrivalRateBIA: %.4f, exArrivalScvBIA: %.4f",
-                componentID, executorNumber, numCompleteTuples, sumDurationSeconds, compSampleRate, tupleCompleteRate,
-                avgSendQueueLength, avgRecvQueueLength, realLatencyMilliSeconds, scvRealLatency,
+                "(ID, eNum):(%s,%d), FinRate: %.3f, avgCTime: %.3f, scvCTime: %.3f, FinCnt: %.1f, Duration: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, \n" +
+                        "rateSQ: %.3f, rateSQBIA: %.3f, rateSQScv: %.3f, eArr: %.3f, eArrBIA: %.3f, eArrScv: %.3f",
+                componentID, executorNumber, tupleCompleteRate, realLatencyMilliSeconds, scvRealLatency, numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
                 tupleEmitRateOnSQ, tupleEmitRateByInterArrival, tupleEmitScvByInterArrival,
                 exArrivalRate, exArrivalRateByInterArrival, exArrivalScvByInterArrival);
     }

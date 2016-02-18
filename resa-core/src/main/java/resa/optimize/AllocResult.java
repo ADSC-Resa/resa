@@ -37,6 +37,10 @@ public class AllocResult {
         this.kMaxOptAllocation = kMaxOptAllocation;
     }
 
+    public AllocResult(Status status, Map<String, Integer> minReqOptAllocation, Map<String, Integer> kMaxOptAllocation) {
+       this(status, minReqOptAllocation, null, kMaxOptAllocation);
+    }
+
     public Object getContext() {
         return context;
     }

@@ -79,7 +79,7 @@ public class GeneralAllocCalculator extends AllocCalculator {
                     double avgCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getAvg();///unit is millisecond
                     double scvCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getScv();
 
-                    long totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
+                    double totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
                     double totalDurationSeconds  = hisCar.getDurationSeconds();
                     double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSeconds * compSampleRate);
 
@@ -108,7 +108,7 @@ public class GeneralAllocCalculator extends AllocCalculator {
                     double arrivalByInterArrival = hisCar.getRecvQueueResult().getAvgArrivalRatePerSecond() * numberExecutor;
                     double interArrivalScv = hisCar.getRecvQueueResult().getScvInterArrivalTimes();
 
-                    long totalProcessTupleCnt = hisCar.getCombinedProcessedResult().getCount();
+                    double totalProcessTupleCnt = hisCar.getCombinedProcessedResult().getCount();
                     double totalDurationSecond = hisCar.getDurationSeconds();
                     double tupleProcessRate = totalProcessTupleCnt * numberExecutor / (totalDurationSecond * compSampleRate);
 
@@ -142,27 +142,25 @@ public class GeneralAllocCalculator extends AllocCalculator {
         int currentUsedThreadByBolts = currAllocation.entrySet().stream()
                 .filter(e -> rawTopology.get_bolts().containsKey(e.getKey())).mapToInt(Map.Entry::getValue).sum();
 
+        LOG.info("Run Optimization, tQos: " + targetQoSMs + ", currUsed: " + currentUsedThreadByBolts + ", kMax: " + maxThreadAvailable4Bolt + ", currAllo: " + currAllocation);
+        AllocResult allocResult = GeneralServiceModel.checkOptimized(
+                spInfo, queueingNetwork, targetQoSMs, boltAllocation, maxThreadAvailable4Bolt, currentUsedThreadByBolts, GeneralServiceModel.ServiceModelType.MMK);
 
-
-        AllocResult allocResult = GeneralServiceModel.checkOptimized(queueingNetwork,
-                spInfo.getRealLatencyMilliSeconds(), targetQoSMs, boltAllocation, maxThreadAvailable4Bolt);
         Map<String, Integer> retCurrAllocation = new HashMap<>(currAllocation);
         // merge the optimized decision into source allocation
         retCurrAllocation.putAll(allocResult.currOptAllocation);
-        LOG.info(currAllocation + "-->" + retCurrAllocation);
-        LOG.info("minReq: " + allocResult.minReqOptAllocation + ", status: " + allocResult.status);
+        Map<String, Integer> retKMaxAllocation = new HashMap<>(currAllocation);
+        retKMaxAllocation.putAll(allocResult.kMaxOptAllocation);
         Map<String, Integer> retMinReqAllocation = null;
         if (allocResult.minReqOptAllocation != null) {
             retMinReqAllocation = new HashMap<>(currAllocation);
-            // merge the optimized decision into source allocation
             retMinReqAllocation.putAll(allocResult.minReqOptAllocation);
         }
         Map<String, Object> ctx = new HashMap<>();
         ctx.put("latency", allocResult.getContext());
         ctx.put("spout", spInfo);
         ctx.put("bolt", queueingNetwork);
-        return new AllocResult(allocResult.status, retMinReqAllocation, retCurrAllocation)
-                .setContext(ctx);
+        return new AllocResult(allocResult.status, retMinReqAllocation, retCurrAllocation, retKMaxAllocation).setContext(ctx);
     }
 
     @Override
