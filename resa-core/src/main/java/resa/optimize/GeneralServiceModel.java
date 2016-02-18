@@ -160,7 +160,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply M/M/K, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.debug("Apply M/M/K, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -213,7 +213,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_SimpleAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.debug("Apply GGK_SimpleAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -266,7 +266,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_SimpleApprBIA, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.debug("Apply GGK_SimpleApprBIA, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -319,7 +319,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_ComplexAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.debug("Apply GGK_ComplexAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -372,7 +372,7 @@ public class GeneralServiceModel {
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
-        LOG.info("Apply GGK_ComplexApprBIA, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        LOG.debug("Apply GGK_ComplexApprBIA, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
         if (topMinReq <= totalResourceCount) {
             int remainCount = totalResourceCount - topMinReq;
             for (int i = 0; i < remainCount; i++) {
@@ -673,23 +673,23 @@ public class GeneralServiceModel {
         AllocResult allocResult[] = new AllocResult[ServiceModelType.totalTypeCount];
 
         allocResult[0] = checkOptimized_MMK(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("MMK, minReqStatus: " + allocResult[0].status + ", minReq: " + allocResult[0].minReqOptAllocation);
+        LOG.info("MMK,  minReqAllo: " + allocResult[0].minReqOptAllocation + ", minReqStatus: " + allocResult[0].status);
         LOG.info("MMK, currOptAllo: " + allocResult[0].currOptAllocation);
         LOG.info("MMK, kMaxOptAllo: " + allocResult[0].kMaxOptAllocation);
         allocResult[1] = checkOptimized_GGK_SimpleAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKSAppr, minReqStatus: " + allocResult[1].status + ", minReq: " + allocResult[1].minReqOptAllocation);
+        LOG.info("GGKSAppr,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
         LOG.info("GGKSAppr, currOptAllo: " + allocResult[1].currOptAllocation);
         LOG.info("GGKSAppr, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
-        allocResult[2] = checkOptimized_GGK_SimpleApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKSApprBIA, minReqStatus: " + allocResult[2].status + ", minReq: " + allocResult[2].minReqOptAllocation);
-        LOG.info("GGKSApprBIA, currOptAllo: " + allocResult[2].currOptAllocation);
-        LOG.info("GGKSApprBIA, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
         allocResult[3] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKCAppr, minReqStatus: " + allocResult[3].status + ", minReq: " + allocResult[3].minReqOptAllocation);
+        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
         LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
         LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
+        allocResult[2] = checkOptimized_GGK_SimpleApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKSApprBIA,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
+        LOG.info("GGKSApprBIA, currOptAllo: " + allocResult[2].currOptAllocation);
+        LOG.info("GGKSApprBIA, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
         allocResult[4] = checkOptimized_GGK_ComplexApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKCApprBIA, minReqStatus: " + allocResult[4].status + ", minReq: " + allocResult[4].minReqOptAllocation);
+        LOG.info("GGKCApprBIA,  minReqAllo: " + allocResult[4].minReqOptAllocation + ", minReqStatus: " + allocResult[4].status);
         LOG.info("GGKCApprBIA, currOptAllo: " + allocResult[4].currOptAllocation);
         LOG.info("GGKCApprBIA, kMaxOptAllo: " + allocResult[4].kMaxOptAllocation);
 
