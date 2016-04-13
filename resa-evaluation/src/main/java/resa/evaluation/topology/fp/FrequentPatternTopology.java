@@ -71,7 +71,7 @@ public class FrequentPatternTopology implements Constant {
             System.out.println("RedisMetricsCollector is registered");
         }
 
-        StormSubmitter.submitTopology(args[0], resaConfig, builder.createTopology());
+        StormSubmitter.submitTopology("resa-fp-test", resaConfig, builder.createTopology());
     }
 
 }

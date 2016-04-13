@@ -18,15 +18,17 @@ import java.util.stream.Collectors;
  * TODO: sn.getI2oRatio() can be INFINITY, i.e., special case, there is no input data
  *
  * TODO: we have already tried in this version! when we calculate Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
+ * The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
  */
 public class GeneralServiceModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(GeneralServiceModel.class);
     public enum ServiceModelType {
-        ///MMK(0), GGK_SimpleAppr(1), GGK_SimpleApprBIA(2), GGK_ComplexAppr(3), GGK_ComplexApprBIA(4);
-        ///private static final int totalTypeCount = 5;
-        MMK(0), GGK_SimpleAppr(1), GGK_SimpleAdj(2);
-        private static final int totalTypeCount = 3;
+        MMK(0), GGK_SimpleAppr(1), GGK_SimpleApprBIA(2), GGK_ComplexAppr(3), GGK_ComplexApprBIA(4);
+        private static final int totalTypeCount = 5;
+//        The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
+//        MMK(0), GGK_SimpleAppr(1), GGK_SimpleAdj(2);
+//        private static final int totalTypeCount = 3;
         private final int value;
         ServiceModelType(int value) {
             this.value = value;
@@ -84,6 +86,7 @@ public class GeneralServiceModel {
     }
 
     /**
+     * The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
      * Here we tried new calculation on Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
      * We assume the stability check for each node is done beforehand!
      * Only assume iid with general distribution on interarrival times and service times
@@ -289,7 +292,8 @@ public class GeneralServiceModel {
         return retVal;
     }
 
-    //Here we tried new calculation on Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
+    /// Here we tried new calculation on Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
+    /// The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
     public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
         Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                 e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
@@ -641,7 +645,8 @@ public class GeneralServiceModel {
         return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
     }
 
-    ///Make adjustment on Var(X) when X are samples from the original distribution
+    /// Make adjustment on Var(X) when X are samples from the original distribution
+    /// The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
     public static AllocResult checkOptimized_GGK_SimpleApprAdj(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
                                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
                                                             int maxAvailable4Bolt, int currentUsedThreadByBolts) {
@@ -786,6 +791,7 @@ public class GeneralServiceModel {
         return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
     }
 
+    /// The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
     public static AllocResult checkOptimized(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
                                              double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
                                              int maxAvailable4Bolt, int currentUsedThreadByBolts, ServiceModelType retAlloType){
@@ -800,15 +806,10 @@ public class GeneralServiceModel {
         LOG.info("GGKSAppr,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
         LOG.info("GGKSAppr, currOptAllo: " + allocResult[1].currOptAllocation);
         LOG.info("GGKSAppr, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
-        allocResult[2] = checkOptimized_GGK_SimpleApprAdj(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKSApprAdj,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
-        LOG.info("GGKSApprAdj, currOptAllo: " + allocResult[2].currOptAllocation);
-        LOG.info("GGKSApprAdj, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
-
-//        allocResult[3] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-//        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
-//        LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
-//        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
+        allocResult[3] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
+        LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
+        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
 //        allocResult[2] = checkOptimized_GGK_SimpleApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 //        LOG.info("GGKSApprBIA,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
 //        LOG.info("GGKSApprBIA, currOptAllo: " + allocResult[2].currOptAllocation);
@@ -819,9 +820,18 @@ public class GeneralServiceModel {
 //        LOG.info("GGKCApprBIA, kMaxOptAllo: " + allocResult[4].kMaxOptAllocation);
 
         Map<String, Object> context = new HashMap<>();
-        for (int i = 0; i < allocResult.length; i ++){
-                context.putAll((Map<String, Object>)allocResult[i].getContext());
-        }
+//        for (int i = 0; i < allocResult.length; i ++){
+//                context.putAll((Map<String, Object>)allocResult[i].getContext());
+//        }
+        context.putAll((Map<String, Object>)allocResult[0].getContext());
+        context.putAll((Map<String, Object>)allocResult[1].getContext());
+        context.putAll((Map<String, Object>)allocResult[3].getContext());
+
+
+//        allocResult[2] = checkOptimized_GGK_SimpleApprAdj(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+//        LOG.info("GGKSApprAdj,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
+//        LOG.info("GGKSApprAdj, currOptAllo: " + allocResult[2].currOptAllocation);
+//        LOG.info("GGKSApprAdj, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
 
         return allocResult[retAlloType.getValue()].setContext(context);
     }
