@@ -11,6 +11,9 @@ import resa.util.ResaConfig;
 
 import java.io.File;
 
+import static resa.evaluation.topology.tomVLD.StormConfigManager.getInt;
+import static resa.evaluation.topology.tomVLD.StormConfigManager.readConfig;
+
 /**
  * Created by ding on 14-6-6.
  */
@@ -18,19 +21,14 @@ public class FrequentPatternTopology implements Constant {
 
     public static void main(String[] args) throws Exception {
 
-        Config conf = ConfigUtil.readConfig(new File(args[1]));
-
-        if (conf == null) {
-            throw new RuntimeException("cannot find conf file " + args[1]);
+        if (args.length != 1) {
+            System.out.println("Enter path to config file!");
+            System.exit(0);
         }
-        ResaConfig resaConfig = ResaConfig.create();
-        resaConfig.putAll(conf);
+        Config conf = readConfig(args[0]);
 
 //        TopologyBuilder builder = new WritableTopologyBuilder();
         TopologyBuilder builder = new ResaTopologyBuilder();
-
-        int numWorkers = ConfigUtil.getInt(conf, "fp-worker.count", 1);
-        resaConfig.setNumWorkers(numWorkers);
 
         String host = (String) conf.get("redis.host");
         int port = ConfigUtil.getInt(conf, "redis.port", 6379);
@@ -52,6 +50,15 @@ public class FrequentPatternTopology implements Constant {
         builder.setBolt("reporter", new PatternReporter(), ConfigUtil.getInt(conf, "fp.reporter.parallelism", 1))
                 .fieldsGrouping("detector", REPORT_STREAM, new Fields(PATTERN_FIELD))
                 .setNumTasks(ConfigUtil.getInt(conf, "fp.reporter.tasks", 1));
+
+
+        int numWorkers = ConfigUtil.getInt(conf, "fp-worker.count", 1);
+        conf.setNumWorkers(numWorkers);
+        conf.setMaxSpoutPending(getInt(conf, "fp-MaxSpoutPending"));
+        conf.setStatsSampleRate(1.0);
+
+        ResaConfig resaConfig = ResaConfig.create();
+        resaConfig.putAll(conf);
 
         if (ConfigUtil.getBoolean(conf, "fp.metric.resa", false)) {
             resaConfig.addDrsSupport();

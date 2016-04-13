@@ -49,6 +49,10 @@ public class CntMeanVar {
         return sum;
     }
 
+    double getSquareSum() {
+        return squareSum;
+    }
+
     double getAvg() {
         return count > 0 ? sum / (double) count : 0.0;
     }
@@ -61,9 +65,18 @@ public class CntMeanVar {
         return count > 0 ? getAvg2() - getAvg() * getAvg() : 0.0;
     }
 
+    double getStd() {
+        return count > 0 ? Math.sqrt(getVar()) : 0.0;
+    }
+
     ///Square coefficient of variation (Scv), scv(X) = Var(X) / [E(X)*E(X)] = (E(X_2) / [E(X)*E(X)]) - 1.0;
     double getScv() {
         return count > 0 ? (getAvg2() / (getAvg() * getAvg()) - 1.0) : 0.0;
+    }
+
+    ///Make adjustment on Var(X) when X are samples from the original distribution
+    double getScvAdjust() {
+        return count > 1 ? getScv() * count / (count - 1) : getScv();
     }
 
     String toCMVString() {

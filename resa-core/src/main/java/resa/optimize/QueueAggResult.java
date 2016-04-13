@@ -44,9 +44,18 @@ public class QueueAggResult implements Cloneable {
     ///Square coefficient of variation (Scv), scv(X) = Var(X) / [E(X)*E(X)] = (E(X_2) / [E(X)*E(X)]) - 1.0;
     public double getScvInterArrivalTimes() {
         if (totalSampleCount > 0) {
-            return (double)totalSampleCount * arrIntervalSum2 / (arrIntervalSum * arrIntervalSum);
+            return (double) totalSampleCount * arrIntervalSum2 / (arrIntervalSum * arrIntervalSum);
         } else {
             return 0.0;
+        }
+    }
+
+    ///Make adjustment on Var(X) when X are samples from the original distribution
+    public double getScvInterArrivalTimesAdjust() {
+        if (totalSampleCount > 1) {
+            return getScvInterArrivalTimes() * totalSampleCount / (totalSampleCount - 1);
+        } else {
+            return getScvInterArrivalTimes();
         }
     }
 
