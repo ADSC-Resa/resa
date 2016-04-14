@@ -40,17 +40,18 @@ public class ResaMetricAnalyzer {
             int maxAllowedExecutors = Integer.parseInt(args[3]);
             double qos = Double.parseDouble(args[4]);
             int historySize = Integer.parseInt(args[5]);
+            int ignoreSize = Integer.parseInt(args[6]);
             System.out.println("Topology name: " + topName + ", metricQueue: " + metricQueue
                     + ", sleepTime: " + sleepTime + ", maxAllowed: " + maxAllowedExecutors + ", qos: " + qos);
             ResaMetricAnalyzer rt = new ResaMetricAnalyzer();
-            rt.testMakeUsingTopologyHelperForkTopology(topName, metricQueue, sleepTime, maxAllowedExecutors, qos, historySize);
+            rt.testMakeUsingTopologyHelperForkTopology(topName, metricQueue, sleepTime, maxAllowedExecutors, qos, historySize, ignoreSize);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void testMakeUsingTopologyHelperForkTopology(String topoName, String metricQueue,
-                                                        long sleepTime, int allewedExecutorNum, double qos, int historySize) throws Exception {
+    public void testMakeUsingTopologyHelperForkTopology(
+            String topoName, String metricQueue, long sleepTime, int allewedExecutorNum, double qos, int historySize, int ignoreSize) throws Exception {
 
         conf.put(Config.NIMBUS_HOST, "192.168.0.31");
         conf.put(Config.NIMBUS_THRIFT_PORT, 6627);
@@ -58,7 +59,7 @@ public class ResaMetricAnalyzer {
 
         conf.put("resa.opt.smd.qos.ms", qos);
         conf.put("resa.opt.win.history.size", historySize);
-        conf.put("resa.opt.win.history.size.ignore", 0);
+        conf.put("resa.opt.win.history.size.ignore", ignoreSize);
         conf.put("resa.comp.sample.rate", 1.0);
 
         conf.put(ResaConfig.ALLOWED_EXECUTOR_NUM, allewedExecutorNum);
