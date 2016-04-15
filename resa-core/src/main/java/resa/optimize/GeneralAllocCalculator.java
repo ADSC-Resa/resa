@@ -148,11 +148,17 @@ public class GeneralAllocCalculator extends AllocCalculator {
         AllocResult allocResult = GeneralServiceModel.checkOptimized(
                 spInfo, queueingNetwork, targetQoSMs, boltAllocation, maxThreadAvailable4Bolt, currentUsedThreadByBolts, GeneralServiceModel.ServiceModelType.MMK);
 
-        Map<String, Integer> retCurrAllocation = new HashMap<>(currAllocation);
-        // merge the optimized decision into source allocation
-        retCurrAllocation.putAll(allocResult.currOptAllocation);
-        Map<String, Integer> retKMaxAllocation = new HashMap<>(currAllocation);
-        retKMaxAllocation.putAll(allocResult.kMaxOptAllocation);
+
+        Map<String, Integer> retCurrAllocation = null;
+        if (allocResult.currOptAllocation != null) {
+            retCurrAllocation = new HashMap<>(currAllocation);
+            retCurrAllocation.putAll(allocResult.currOptAllocation);
+        }
+        Map<String, Integer> retKMaxAllocation = null;
+        if (allocResult.kMaxOptAllocation != null) {
+            retKMaxAllocation = new HashMap<>(currAllocation);
+            retKMaxAllocation.putAll(allocResult.kMaxOptAllocation);
+        }
         Map<String, Integer> retMinReqAllocation = null;
         if (allocResult.minReqOptAllocation != null) {
             retMinReqAllocation = new HashMap<>(currAllocation);
