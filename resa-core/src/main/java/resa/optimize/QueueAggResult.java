@@ -50,15 +50,6 @@ public class QueueAggResult implements Cloneable {
         }
     }
 
-    ///Make adjustment on Var(X) when X are samples from the original distribution
-    public double getScvInterArrivalTimesAdjust() {
-        if (totalSampleCount > 1) {
-            return getScvInterArrivalTimes() * totalSampleCount / (totalSampleCount - 1);
-        } else {
-            return getScvInterArrivalTimes();
-        }
-    }
-
     public long getArrivalCount() {
         return arrivalCount;
     }

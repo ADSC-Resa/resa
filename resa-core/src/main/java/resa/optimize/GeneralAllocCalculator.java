@@ -80,14 +80,13 @@ public class GeneralAllocCalculator extends AllocCalculator {
 
                     double avgCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getAvg();///unit is millisecond
                     double scvCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getScv();
-                    double stdCompleteLatencyHis = hisCar.getCombinedCompletedLatency().getStd();///for output and figure plotting purpose
 
                     double totalCompleteTupleCnt = hisCar.getCombinedCompletedLatency().getCount();
                     double totalDurationSeconds  = hisCar.getDurationSeconds();
                     double tupleCompleteRate = totalCompleteTupleCnt * numberExecutor / (totalDurationSeconds * compSampleRate);
 
                     return new GeneralSourceNode(
-                            e.getKey(), numberExecutor, compSampleRate, avgSendQLenHis, avgRecvQLenHis, avgCompleteLatencyHis, scvCompleteLatencyHis, stdCompleteLatencyHis,
+                            e.getKey(), numberExecutor, compSampleRate, avgSendQLenHis, avgRecvQLenHis, avgCompleteLatencyHis, scvCompleteLatencyHis,
                             totalCompleteTupleCnt, totalDurationSeconds, tupleCompleteRate,
                             tupleEmitRate, tupleEmitRateByInterArrival, tupleEmitInterArrivalScv,
                             externalTupleArrivalRate, externalRateByInterArrival, externalTupleInterArrivalScv);
@@ -105,13 +104,11 @@ public class GeneralAllocCalculator extends AllocCalculator {
 
                     double avgServTimeHis = hisCar.getCombinedProcessedResult().getAvg();///unit is millisecond
                     double scvServTimeHis = hisCar.getCombinedProcessedResult().getScv();
-                    double scvServTimeHisAdjust = hisCar.getCombinedProcessedResult().getScvAdjust();
 
                     double arrivalRateHis = hisCar.getArrivalRatePerSec();
                     double lambdaHis = arrivalRateHis * numberExecutor;
                     double arrivalByInterArrival = hisCar.getRecvQueueResult().getAvgArrivalRatePerSecond() * numberExecutor;
                     double interArrivalScv = hisCar.getRecvQueueResult().getScvInterArrivalTimes();
-                    double interArrivalScvAdjust = hisCar.getRecvQueueResult().getScvInterArrivalTimesAdjust();
 
                     double totalProcessTupleCnt = hisCar.getCombinedProcessedResult().getCount();
                     double totalDurationSecond = hisCar.getDurationSeconds();
@@ -128,9 +125,9 @@ public class GeneralAllocCalculator extends AllocCalculator {
 
                     return new GeneralServiceNode(
                             e.getKey(), numberExecutor, compSampleRate, avgSendQLenHis, avgRecvQLenHis,
-                            avgServTimeHis, scvServTimeHis, scvServTimeHisAdjust,
+                            avgServTimeHis, scvServTimeHis,
                             totalProcessTupleCnt, totalDurationSecond, tupleProcessRate,
-                            lambdaHis, arrivalByInterArrival, interArrivalScv, interArrivalScvAdjust,
+                            lambdaHis, arrivalByInterArrival, interArrivalScv,
                             spInfo.getExArrivalRate(), spInfo.getExArrivalRateByInterArrival());
                 }));
 

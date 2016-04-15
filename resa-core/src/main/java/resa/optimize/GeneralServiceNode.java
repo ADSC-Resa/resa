@@ -19,7 +19,6 @@ public class GeneralServiceNode {
 
     private double avgServTimeHis;
     private double scvServTimeHis;
-    private double scvServTimeHisAdjust;
     private double mu;
 
     private double numCompleteTuples;
@@ -30,7 +29,6 @@ public class GeneralServiceNode {
     private double lambda;
     private double lambdaByInterArrival;
     private double interArrivalScv;
-    private double interArrivalScvAdjust;
 
     private double exArrivalRate;
     private double exArrivalRateByInterArrival;
@@ -49,14 +47,12 @@ public class GeneralServiceNode {
             double avgRecvQueueLength,
             double avgServTimeHis,
             double scvServTimeHis,
-            double scvServTimeHisAdjust,
             double numCompleteTuples,
             double sumDurationSeconds,
             double tupleCompleteRate,
             double lambda,
             double lambdaByInterArrival,
             double interArrivalScv,
-            double interArrivalScvAdjust,
             double exArrivalRate,
             double exArrivalRateByInterArrival) {
         this.componentID = componentID;
@@ -66,14 +62,12 @@ public class GeneralServiceNode {
         this.avgRecvQueueLength = avgRecvQueueLength;
         this.avgServTimeHis = avgServTimeHis;
         this.scvServTimeHis = scvServTimeHis;
-        this.scvServTimeHisAdjust = scvServTimeHisAdjust;
         this.numCompleteTuples = numCompleteTuples;
         this.sumDurationSeconds = sumDurationSeconds;
         this.tupleCompleteRate = tupleCompleteRate;
         this.lambda = lambda;
         this.lambdaByInterArrival = lambdaByInterArrival;
         this.interArrivalScv = interArrivalScv;
-        this.interArrivalScvAdjust = interArrivalScvAdjust;
         this.exArrivalRate = exArrivalRate;
         this.exArrivalRateByInterArrival = exArrivalRateByInterArrival;
 
@@ -100,11 +94,11 @@ public class GeneralServiceNode {
 //                ratio, ratioByInterArrival, rho, rhoBIA);
 
         return String.format(
-                "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, scvSTimeAdj: %.3f, mu: %.3f, ProcCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, " +
-                "-----> arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, arrScvAdj: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
-                componentID, executorNumber, tupleCompleteRate, avgServTimeHis, scvServTimeHis, scvServTimeHisAdjust, mu,
+                "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, " +
+                "-----> arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
+                componentID, executorNumber, tupleCompleteRate, avgServTimeHis, scvServTimeHis, mu,
                 numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
-                lambda, lambdaByInterArrival, interArrivalScv, interArrivalScvAdjust, ratio, ratioByInterArrival, rho, rhoBIA);
+                lambda, lambdaByInterArrival, interArrivalScv, ratio, ratioByInterArrival, rho, rhoBIA);
     }
 
     public String getComponentID() {
@@ -135,10 +129,6 @@ public class GeneralServiceNode {
         return scvServTimeHis;
     }
 
-    public double getScvServTimeHisAdjust() {
-        return scvServTimeHisAdjust;
-    }
-
     public double getNumCompleteTuples() {
         return numCompleteTuples;
     }
@@ -161,10 +151,6 @@ public class GeneralServiceNode {
 
     public double getInterArrivalScv() {
         return interArrivalScv;
-    }
-
-    public double getInterArrivalScvAdjust() {
-        return interArrivalScvAdjust;
     }
 
     public double getExArrivalRate() {

@@ -74,11 +74,6 @@ public class CntMeanVar {
         return count > 0 ? (getAvg2() / (getAvg() * getAvg()) - 1.0) : 0.0;
     }
 
-    ///Make adjustment on Var(X) when X are samples from the original distribution
-    double getScvAdjust() {
-        return count > 1 ? getScv() * count / (count - 1) : getScv();
-    }
-
     String toCMVString() {
         return "Count: " + getCount()
                 + String.format(", sum: %.2f", getSum())

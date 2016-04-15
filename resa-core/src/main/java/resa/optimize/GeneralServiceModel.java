@@ -95,19 +95,19 @@ public class GeneralServiceModel {
      * @param allocation,   the target allocation to be analyzed
      * @return here we should assume all the components are stable, the stability check shall be done outside this function
      */
-    public static double getExpectedTotalSojournTimeForGeneralizedOQN_SimpleApprAdj(Map<String, GeneralServiceNode> serviceNodes, Map<String, Integer> allocation) {
-
-        double retVal = 0.0;
-        for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
-            String cid = e.getKey();
-            GeneralServiceNode serviceNode = e.getValue();
-            int serverCount = allocation.get(cid).intValue();
-            double avgSojournTime = sojournTime_GGK_SimpleAppr(
-                    serviceNode.getLambda(), serviceNode.getInterArrivalScvAdjust(), serviceNode.getMu(), serviceNode.getScvServTimeHisAdjust(), serverCount);
-            retVal += (avgSojournTime * serviceNode.getRatio());
-        }
-        return retVal;
-    }
+//    public static double getExpectedTotalSojournTimeForGeneralizedOQN_SimpleApprAdj(Map<String, GeneralServiceNode> serviceNodes, Map<String, Integer> allocation) {
+//
+//        double retVal = 0.0;
+//        for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+//            String cid = e.getKey();
+//            GeneralServiceNode serviceNode = e.getValue();
+//            int serverCount = allocation.get(cid).intValue();
+//            double avgSojournTime = sojournTime_GGK_SimpleAppr(
+//                    serviceNode.getLambda(), serviceNode.getInterArrivalScvAdjust(), serviceNode.getMu(), serviceNode.getScvServTimeHisAdjust(), serverCount);
+//            retVal += (avgSojournTime * serviceNode.getRatio());
+//        }
+//        return retVal;
+//    }
 
     public static double getExpectedTotalSojournTimeForGeneralizedOQN_ComplexAppr(Map<String, GeneralServiceNode> serviceNodes, Map<String, Integer> allocation) {
 
@@ -294,58 +294,58 @@ public class GeneralServiceModel {
 
     /// Here we tried new calculation on Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
     /// The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
-    public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
-        Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
-        int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
-
-        LOG.debug("Apply GGK_SimpleAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
-        if (topMinReq <= totalResourceCount) {
-            int remainCount = totalResourceCount - topMinReq;
-            for (int i = 0; i < remainCount; i++) {
-                double maxDiff = -1;
-                String maxDiffCid = null;
-
-                for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
-                    String cid = e.getKey();
-                    GeneralServiceNode sn = e.getValue();
-                    int currentAllocated = retVal.get(e.getKey());
-
-                    double beforeAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated);
-                    double afterAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated + 1);
-
-                    double diff = (beforeAddT - afterAddT) * sn.getRatio();
-                    if (diff > maxDiff) {
-                        maxDiff = diff;
-                        maxDiffCid = cid;
-                    }
-                }
-                if (maxDiffCid != null) {
-                    int newAllocate = retVal.compute(maxDiffCid, (k, count) -> count + 1);
-                    LOG.debug((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
-                } else {
-                    LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
-                    for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
-                        String cid = e.getKey();
-                        GeneralServiceNode sn = e.getValue();
-                        int currentAllocated = retVal.get(cid);
-
-                        double beforeAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated);
-                        double afterAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated + 1);
-
-                        LOG.debug(cid + ", currentAllocated: " + currentAllocated
-                                + ", beforeAddT: " + beforeAddT
-                                + ", afterAddT: " + afterAddT);
-                    }
-                    return retVal;
-                }
-            }
-        } else {
-            LOG.info(String.format("topMinReq (%d) > totalResourceCount (%d)", topMinReq, totalResourceCount));
-            return null;
-        }
-        return retVal;
-    }
+//    public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
+//        Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+//                e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
+//        int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
+//
+//        LOG.debug("Apply GGK_SimpleAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+//        if (topMinReq <= totalResourceCount) {
+//            int remainCount = totalResourceCount - topMinReq;
+//            for (int i = 0; i < remainCount; i++) {
+//                double maxDiff = -1;
+//                String maxDiffCid = null;
+//
+//                for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+//                    String cid = e.getKey();
+//                    GeneralServiceNode sn = e.getValue();
+//                    int currentAllocated = retVal.get(e.getKey());
+//
+//                    double beforeAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated);
+//                    double afterAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated + 1);
+//
+//                    double diff = (beforeAddT - afterAddT) * sn.getRatio();
+//                    if (diff > maxDiff) {
+//                        maxDiff = diff;
+//                        maxDiffCid = cid;
+//                    }
+//                }
+//                if (maxDiffCid != null) {
+//                    int newAllocate = retVal.compute(maxDiffCid, (k, count) -> count + 1);
+//                    LOG.debug((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
+//                } else {
+//                    LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
+//                    for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+//                        String cid = e.getKey();
+//                        GeneralServiceNode sn = e.getValue();
+//                        int currentAllocated = retVal.get(cid);
+//
+//                        double beforeAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated);
+//                        double afterAddT = sojournTime_GGK_SimpleAppr(sn.getLambda(), sn.getInterArrivalScvAdjust(), sn.getMu(), sn.getScvServTimeHisAdjust(), currentAllocated + 1);
+//
+//                        LOG.debug(cid + ", currentAllocated: " + currentAllocated
+//                                + ", beforeAddT: " + beforeAddT
+//                                + ", afterAddT: " + afterAddT);
+//                    }
+//                    return retVal;
+//                }
+//            }
+//        } else {
+//            LOG.info(String.format("topMinReq (%d) > totalResourceCount (%d)", topMinReq, totalResourceCount));
+//            return null;
+//        }
+//        return retVal;
+//    }
 
 
     public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_SimpleApprBIA(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
@@ -647,41 +647,41 @@ public class GeneralServiceModel {
 
     /// Make adjustment on Var(X) when X are samples from the original distribution
     /// The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
-    public static AllocResult checkOptimized_GGK_SimpleApprAdj(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                            double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                            int maxAvailable4Bolt, int currentUsedThreadByBolts) {
-
-        ///Todo we need to do the stability check first here!
-        ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
-        ///Caution about the time unit!, second is used in all the functions of calculation
-        /// millisecond is used in the output display!
-        double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_GGK_SApprAdj = 1000.0 * getExpectedTotalSojournTimeForGeneralizedOQN_SimpleApprAdj(queueingNetwork, currBoltAllocation);
-        ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
-        double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_GGK_SApprAdj);
-        ///relativeError (rE)
-        double relativeError = Math.abs(realLatencyMilliSeconds - estTotalSojournTimeMilliSec_GGK_SApprAdj) * 100.0 / realLatencyMilliSeconds;
-
-        LOG.info(String.format("realLatency(ms): %.4f, estGGKSApprAdj: %.4f, urGGKSApprAdj: %.4f, reGGKSApprAdj: %.4f",
-                realLatencyMilliSeconds, estTotalSojournTimeMilliSec_GGK_SApprAdj, underEstimateRatio, relativeError));
-
-        LOG.debug("Find out minReqAllocation under QoS requirement.");
-        Map<String, Integer> minReqAllocation = getMinReqServerAllocationGeneralTopApplyMMK(queueingNetwork,
-                targetQoSMilliSec / 1000.0, underEstimateRatio, maxAvailable4Bolt * 2);
-        AllocResult.Status status = AllocResult.Status.FEASIBLE;
-        if (minReqAllocation == null) {
-            status = AllocResult.Status.INFEASIBLE;
-        }
-        LOG.debug("Find out best allocation given available executors.");
-        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(queueingNetwork, maxAvailable4Bolt);
-        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(queueingNetwork, currentUsedThreadByBolts);
-        Map<String, Object> context = new HashMap<>();
-        context.put("realLatency", realLatencyMilliSeconds);
-        context.put("estGGKSApprAdj", estTotalSojournTimeMilliSec_GGK_SApprAdj);
-        context.put("urGGKSApprAdj", underEstimateRatio);
-        context.put("reGGKSApprAdj", relativeError);
-        return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
-    }
+//    public static AllocResult checkOptimized_GGK_SimpleApprAdj(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
+//                                                            double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+//                                                            int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+//
+//        ///Todo we need to do the stability check first here!
+//        ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
+//        ///Caution about the time unit!, second is used in all the functions of calculation
+//        /// millisecond is used in the output display!
+//        double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
+//        double estTotalSojournTimeMilliSec_GGK_SApprAdj = 1000.0 * getExpectedTotalSojournTimeForGeneralizedOQN_SimpleApprAdj(queueingNetwork, currBoltAllocation);
+//        ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
+//        double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_GGK_SApprAdj);
+//        ///relativeError (rE)
+//        double relativeError = Math.abs(realLatencyMilliSeconds - estTotalSojournTimeMilliSec_GGK_SApprAdj) * 100.0 / realLatencyMilliSeconds;
+//
+//        LOG.info(String.format("realLatency(ms): %.4f, estGGKSApprAdj: %.4f, urGGKSApprAdj: %.4f, reGGKSApprAdj: %.4f",
+//                realLatencyMilliSeconds, estTotalSojournTimeMilliSec_GGK_SApprAdj, underEstimateRatio, relativeError));
+//
+//        LOG.debug("Find out minReqAllocation under QoS requirement.");
+//        Map<String, Integer> minReqAllocation = getMinReqServerAllocationGeneralTopApplyMMK(queueingNetwork,
+//                targetQoSMilliSec / 1000.0, underEstimateRatio, maxAvailable4Bolt * 2);
+//        AllocResult.Status status = AllocResult.Status.FEASIBLE;
+//        if (minReqAllocation == null) {
+//            status = AllocResult.Status.INFEASIBLE;
+//        }
+//        LOG.debug("Find out best allocation given available executors.");
+//        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(queueingNetwork, maxAvailable4Bolt);
+//        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyGGK_SimpleApprAdj(queueingNetwork, currentUsedThreadByBolts);
+//        Map<String, Object> context = new HashMap<>();
+//        context.put("realLatency", realLatencyMilliSeconds);
+//        context.put("estGGKSApprAdj", estTotalSojournTimeMilliSec_GGK_SApprAdj);
+//        context.put("urGGKSApprAdj", underEstimateRatio);
+//        context.put("reGGKSApprAdj", relativeError);
+//        return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
+//    }
 
     public static AllocResult checkOptimized_GGK_SimpleApprBIA(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
                                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
