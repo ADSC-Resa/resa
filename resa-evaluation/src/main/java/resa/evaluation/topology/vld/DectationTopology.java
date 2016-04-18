@@ -8,6 +8,7 @@ import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import resa.evaluation.topology.tomVLD.StormConfigManager;
 import resa.metrics.RedisMetricsCollector;
 import resa.topology.ResaTopologyBuilder;
 import resa.util.ConfigUtil;
@@ -44,32 +45,49 @@ public class DectationTopology implements Constant {
         return builder.createTopology();
     }
 
-    public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
-        Config conf = readConfig(new File(args[1]));
-
-        if (conf == null) {
-            throw new RuntimeException("cannot find conf file " + args[1]);
+    public static void main(String[] args) throws Exception {
+        if (args.length != 1) {
+            System.out.println("Enter path to config file!");
+            System.exit(0);
         }
+        Config conf = StormConfigManager.readConfig(args[0]);
+
+//        TopologyBuilder builder = new WritableTopologyBuilder();
+        TopologyBuilder builder = new ResaTopologyBuilder();
+
+        String host = (String) conf.get("redis.host");
+        int port = ConfigUtil.getInt(conf, "redis.port", 6379);
+        String queue = (String) conf.get("redis.queue");
+
+        builder.setSpout("image-input", new ImageSource(host, port, queue), getInt(conf, "vd.spout.parallelism", 1));
+
+        builder.setBolt("feat-ext", new FeatureExtracter(), getInt(conf, "vd.feat-ext.parallelism", 1))
+                .shuffleGrouping("image-input", STREAM_IMG_OUTPUT)
+                .setNumTasks(getInt(conf, "vd.feat-ext.tasks", 1));
+        builder.setBolt("matcher", new Matcher(), getInt(conf, "vd.matcher.parallelism", 1))
+                .allGrouping("feat-ext", STREAM_FEATURE_DESC)
+                .setNumTasks(getInt(conf, "vd.matcher.tasks", 1));
+        builder.setBolt("aggregator", new Aggregater(), getInt(conf, "vd.aggregator.parallelism", 1))
+                .fieldsGrouping("feat-ext", STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID))
+                .fieldsGrouping("matcher", STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID))
+                .setNumTasks(getInt(conf, "vd.aggregator.tasks", 1));
+
+        int numWorkers = ConfigUtil.getInt(conf, "vd-worker.count", 1);
+        conf.setNumWorkers(numWorkers);
+        conf.setMaxSpoutPending(ConfigUtil.getInt(conf, "vd-MaxSpoutPending", 0));
+        conf.setStatsSampleRate(1.0);
+
         ResaConfig resaConfig = ResaConfig.create();
         resaConfig.putAll(conf);
-        StormTopology topology = createTopology(conf);
-        if (args[0].equals("[local]")) {
-            resaConfig.setDebug(false);
-            LocalCluster localCluster = new LocalCluster();
-            localCluster.submitTopology("local", resaConfig, topology);
-        } else {
-            if (ConfigUtil.getBoolean(conf, "vd.metric.resa", false)) {
-                resaConfig.addDrsSupport();
-                resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
-                System.out.println("ResaMetricsCollector is registered");
-            }
 
-            if (ConfigUtil.getBoolean(conf, "vd.metric.redis", true)) {
-                resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
-                System.out.println("RedisMetricsCollector is registered");
-            }
-            StormSubmitter.submitTopology(args[0], resaConfig, topology);
+        if (ConfigUtil.getBoolean(conf, "vd.metric.resa", false)) {
+            resaConfig.addDrsSupport();
+            resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
+            System.out.println("ResaMetricsCollector is registered");
         }
+
+        StormSubmitter.submitTopology("resa-vd-JB", resaConfig, builder.createTopology());
+
     }
 
 }

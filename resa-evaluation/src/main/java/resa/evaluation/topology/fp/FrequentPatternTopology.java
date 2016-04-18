@@ -54,7 +54,7 @@ public class FrequentPatternTopology implements Constant {
 
         int numWorkers = ConfigUtil.getInt(conf, "fp-worker.count", 1);
         conf.setNumWorkers(numWorkers);
-        conf.setMaxSpoutPending(getInt(conf, "fp-MaxSpoutPending"));
+        conf.setMaxSpoutPending(ConfigUtil.getInt(conf, "fp-MaxSpoutPending", 0));
         conf.setStatsSampleRate(1.0);
 
         ResaConfig resaConfig = ResaConfig.create();
@@ -64,11 +64,6 @@ public class FrequentPatternTopology implements Constant {
             resaConfig.addDrsSupport();
             resaConfig.put(ResaConfig.REBALANCE_WAITING_SECS, 0);
             System.out.println("ResaMetricsCollector is registered");
-        }
-
-        if (ConfigUtil.getBoolean(conf, "fp.metric.redis", true)) {
-            resaConfig.registerMetricsConsumer(RedisMetricsCollector.class);
-            System.out.println("RedisMetricsCollector is registered");
         }
 
         StormSubmitter.submitTopology("resa-fp-test", resaConfig, builder.createTopology());
