@@ -79,7 +79,7 @@ public class DectationTopologyBeta implements Constant {
             System.out.println("ResaMetricsCollector is registered");
         }
 
-        StormSubmitter.submitTopology("resa-vd-JB", resaConfig, builder.createTopology());
+        StormSubmitter.submitTopology("resa-vd-JB-beta", resaConfig, builder.createTopology());
 
     }
 
