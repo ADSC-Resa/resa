@@ -44,26 +44,30 @@ public class AggregaterBeta extends BaseRichBolt implements Constant {
             }
         }
 
+//        boolean isFinish() {
+//            return indexPieces == curr && featDescCount != 0;
+//        }
+
         boolean isFinish() {
-            return indexPieces == curr && featDescCount != 0;
+            return featDescCount > 0 && curr == featDescCount;
         }
     }
 
     private Map<String, FrameContext> pendingFrames;
     private OutputCollector collector;
     private double minPercentage;
-    private int indexPieces;
+//    private int indexPieces;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         pendingFrames = new HashMap<>();
         this.collector = collector;
         minPercentage = ConfigUtil.getDouble(stormConf, CONF_MATCH_RATIO, 0.5);
-        String srcComp = context.getThisSources().keySet().stream()
-                .filter(stream -> stream.get_streamId().equals(STREAM_MATCH_IMAGES))
-                .map(GlobalStreamId::get_componentId)
-                .findFirst().orElseThrow(() -> new RuntimeException("Can not find source comp"));
-        indexPieces = context.getComponentTasks(srcComp).size();
+//        String srcComp = context.getThisSources().keySet().stream()
+//                .filter(stream -> stream.get_streamId().equals(STREAM_MATCH_IMAGES))
+//                .map(GlobalStreamId::get_componentId)
+//                .findFirst().orElseThrow(() -> new RuntimeException("Can not find source comp"));
+//        indexPieces = context.getComponentTasks(srcComp).size();
     }
 
     @Override

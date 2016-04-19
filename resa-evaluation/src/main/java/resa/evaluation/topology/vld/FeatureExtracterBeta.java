@@ -60,15 +60,18 @@ public class FeatureExtracterBeta extends BaseRichBolt {
             }
             selected.add(siftFeat);
         }
+
         String frameId = input.getStringByField(FIELD_FRAME_ID);
-        collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, selected));
+        for (int i = 0; i < selected.size(); i++) {
+            collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, selected.get(i), selected.size()));
+        }
         //collector.emit(STREAM_FEATURE_COUNT, input, new Values(frameId, selected.size()));
         collector.ack(input);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream(STREAM_FEATURE_DESC, new Fields(FIELD_FRAME_ID, FIELD_FEATURE_DESC));
+        declarer.declareStream(STREAM_FEATURE_DESC, new Fields(FIELD_FRAME_ID, FIELD_FEATURE_DESC, FIELD_FEATURE_CNT));
         //declarer.declareStream(STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID, FIELD_FEATURE_CNT));
     }
 }

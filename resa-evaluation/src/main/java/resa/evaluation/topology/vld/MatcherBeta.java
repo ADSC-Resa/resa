@@ -38,7 +38,8 @@ public class MatcherBeta extends BaseRichBolt {
 
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         featDesc2Image = new HashMap<>();
-        loadIndex(context.getThisTaskIndex(), context.getComponentTasks(context.getThisComponentId()).size());
+//        loadIndex(context.getThisTaskIndex(), context.getComponentTasks(context.getThisComponentId()).size());
+        loadFullIndex();
         this.collector = collector;
         distThreshold = ConfigUtil.getDouble(stormConf, CONF_FEAT_DIST_THRESHOLD, 100);
     }
@@ -69,13 +70,37 @@ public class MatcherBeta extends BaseRichBolt {
                 + featDesc2Image.size());
     }
 
+    private void loadFullIndex() {
+        int count = 0;
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(this.getClass().getResourceAsStream("/index.txt")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                StringTokenizer tokenizer = new StringTokenizer(line);
+                String[] tmp = StringUtils.split(tokenizer.nextToken(), ',');
+                byte[] feat = new byte[tmp.length];
+                for (int i = 0; i < feat.length; i++) {
+                    feat[i] = (byte) (((int) Double.parseDouble(tmp[i])) & 0xFF);
+                }
+                int[] images = Stream.of(StringUtils.split(tokenizer.nextToken(), ',')).mapToInt(Integer::parseInt)
+                        .toArray();
+                featDesc2Image.put(feat, images);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        LOG.info("loadFullIndex, load=" + featDesc2Image.size());
+    }
+
     @Override
     public void execute(Tuple input) {
         String frameId = input.getStringByField(FIELD_FRAME_ID);
-        List<byte[]> desc = (List<byte[]>) input.getValueByField(FIELD_FEATURE_DESC);
-        int feaDescCnt = desc.size();
-        Map<Integer, Long> image2Freq = desc.stream().flatMap(imgDesc -> findMatches(imgDesc).stream())
-                .flatMap(imgList -> IntStream.of(imgList).boxed())
+        //List<byte[]> desc = (List<byte[]>) input.getValueByField(FIELD_FEATURE_DESC);
+        byte[] desc = (byte[]) input.getValueByField(FIELD_FEATURE_DESC);
+        int feaDescCnt = input.getIntegerByField(FIELD_FEATURE_CNT);
+
+        Map<Integer, Long> image2Freq =
+                findMatches(desc).stream().flatMap(imgList -> IntStream.of(imgList).boxed())
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
         int[] matches = image2Freq.isEmpty() ? EMPTY_MATCH : new int[image2Freq.size() * 2];
         int i = 0;
