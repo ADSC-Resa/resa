@@ -14,29 +14,9 @@ import static resa.util.ConfigUtil.getInt;
 
 /**
  * Created by ding on 14-7-3.
+ * Modified by Tom Fu on April 2016
  */
 public class DectationTopologyBeta implements Constant {
-
-    private static StormTopology createTopology(Config conf) {
-        TopologyBuilder builder = new ResaTopologyBuilder();
-
-        String host = (String) conf.get("redis.host");
-        int port = ((Number) conf.get("redis.port")).intValue();
-        String queue = (String) conf.get("redis.queue");
-        builder.setSpout("image-input", new ImageSource(host, port, queue), getInt(conf, "vd.spout.parallelism", 1));
-
-        builder.setBolt("feat-ext", new FeatureExtracterBeta(), getInt(conf, "vd.feat-ext.parallelism", 1))
-                .shuffleGrouping("image-input", STREAM_IMG_OUTPUT)
-                .setNumTasks(getInt(conf, "vd.feat-ext.tasks", 1));
-        builder.setBolt("matcher", new MatcherBeta(), getInt(conf, "vd.matcher.parallelism", 1))
-                .allGrouping("feat-ext", STREAM_FEATURE_DESC)
-                .setNumTasks(getInt(conf, "vd.matcher.tasks", 1));
-        builder.setBolt("aggregator", new AggregaterBeta(), getInt(conf, "vd.aggregator.parallelism", 1))
-                //.fieldsGrouping("feat-ext", STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID))
-                .fieldsGrouping("matcher", STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID))
-                .setNumTasks(getInt(conf, "vd.aggregator.tasks", 1));
-        return builder.createTopology();
-    }
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
@@ -54,14 +34,14 @@ public class DectationTopologyBeta implements Constant {
 
         builder.setSpout("image-input", new ImageSource(host, port, queue), getInt(conf, "vd.spout.parallelism", 1));
 
-        builder.setBolt("feat-ext", new FeatureExtracter(), getInt(conf, "vd.feat-ext.parallelism", 1))
+        builder.setBolt("feat-ext", new FeatureExtracterBeta(), getInt(conf, "vd.feat-ext.parallelism", 1))
                 .shuffleGrouping("image-input", STREAM_IMG_OUTPUT)
                 .setNumTasks(getInt(conf, "vd.feat-ext.tasks", 1));
-        builder.setBolt("matcher", new Matcher(), getInt(conf, "vd.matcher.parallelism", 1))
+        builder.setBolt("matcher", new MatcherBeta(), getInt(conf, "vd.matcher.parallelism", 1))
                 .allGrouping("feat-ext", STREAM_FEATURE_DESC)
                 .setNumTasks(getInt(conf, "vd.matcher.tasks", 1));
-        builder.setBolt("aggregator", new Aggregater(), getInt(conf, "vd.aggregator.parallelism", 1))
-                .fieldsGrouping("feat-ext", STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID))
+        builder.setBolt("aggregator", new AggregaterBeta(), getInt(conf, "vd.aggregator.parallelism", 1))
+                //.fieldsGrouping("feat-ext", STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID))
                 .fieldsGrouping("matcher", STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID))
                 .setNumTasks(getInt(conf, "vd.aggregator.tasks", 1));
 
