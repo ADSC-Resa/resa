@@ -95,13 +95,15 @@ public class MatcherBeta extends BaseRichBolt {
     @Override
     public void execute(Tuple input) {
         String frameId = input.getStringByField(FIELD_FRAME_ID);
-        //List<byte[]> desc = (List<byte[]>) input.getValueByField(FIELD_FEATURE_DESC);
-        byte[] desc = (byte[]) input.getValueByField(FIELD_FEATURE_DESC);
+        List<byte[]> desc = (List<byte[]>) input.getValueByField(FIELD_FEATURE_DESC);
+//        byte[] desc = (byte[]) input.getValueByField(FIELD_FEATURE_DESC);
         int feaDescCnt = input.getIntegerByField(FIELD_FEATURE_CNT);
-
-        Map<Integer, Long> image2Freq =
-                findMatches(desc).stream().flatMap(imgList -> IntStream.of(imgList).boxed())
+        Map<Integer, Long> image2Freq = desc.stream().flatMap(imgDesc -> findMatches(imgDesc).stream())
+                .flatMap(imgList -> IntStream.of(imgList).boxed())
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
+//        Map<Integer, Long> image2Freq =
+//                findMatches(desc).stream().flatMap(imgList -> IntStream.of(imgList).boxed())
+//                .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
         int[] matches = image2Freq.isEmpty() ? EMPTY_MATCH : new int[image2Freq.size() * 2];
         int i = 0;
         for (Map.Entry<Integer, Long> m : image2Freq.entrySet()) {

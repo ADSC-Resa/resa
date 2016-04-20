@@ -1,5 +1,6 @@
 package resa.evaluation.topology.vld;
 
+import backtype.storm.generated.GlobalStreamId;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -28,12 +29,14 @@ public class FeatureExtracterBeta extends BaseRichBolt {
     private SIFT sift;
     private double[] buf;
     private OutputCollector collector;
+    private int targetTaskNumber;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         sift = new SIFT(500, 3, 0.05, 12, 1.6);
         buf = new double[128];
         this.collector = collector;
+        targetTaskNumber = context.getComponentTasks("matcher").size();
     }
 
     @Override
@@ -50,7 +53,15 @@ public class FeatureExtracterBeta extends BaseRichBolt {
         } catch (Exception e) {
         }
         int rows = featureDesc.rows();
-        List<byte[]> selected = new ArrayList<>(rows);
+        int totalCount = 0;
+
+//        List<byte[]> selected = new ArrayList<>(rows);
+
+        List<List<byte[]>> toSend = new ArrayList<>();
+        for (int i = 0; i < targetTaskNumber; i ++){
+            List<byte[]> selected = new ArrayList<>();
+            toSend.add(selected);
+        }
         for (int i = 0; i < rows; i++) {
             featureDesc.rows(i).asCvMat().get(buf);
             // compress data
@@ -58,12 +69,16 @@ public class FeatureExtracterBeta extends BaseRichBolt {
             for (int j = 0; j < buf.length; j++) {
                 siftFeat[j] = (byte) (((int) buf[j]) & 0xFF);
             }
-            selected.add(siftFeat);
+//            selected.add(siftFeat);
+
+            int tIndex = i % targetTaskNumber;
+            toSend.get(tIndex).add(siftFeat);
+            totalCount ++;
         }
 
         String frameId = input.getStringByField(FIELD_FRAME_ID);
-        for (int i = 0; i < selected.size(); i++) {
-            collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, selected.get(i), selected.size()));
+        for (int i = 0; i < toSend.size(); i++) {
+            collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, toSend.get(i), totalCount));
         }
         //collector.emit(STREAM_FEATURE_COUNT, input, new Values(frameId, selected.size()));
         collector.ack(input);
