@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 /**
  * Created by ding on 14-7-3.
  * <p>
- * Modified by Tom Fu, on April 2016
+ * This beta version is Modified by Tom Fu, on April 2016
+ * We mainly re-design the topology to remove those broadcasting issue (all grouping), here for experimental purpose
  */
 public class AggregaterBeta extends BaseRichBolt implements Constant {
 
@@ -47,10 +48,6 @@ public class AggregaterBeta extends BaseRichBolt implements Constant {
         boolean isFinish() {
             return indexPieces == curr && featDescCount != 0;
         }
-
-//        boolean isFinish() {
-//            return featDescCount > 0 && curr == featDescCount;
-//        }
     }
 
     private Map<String, FrameContext> pendingFrames;
@@ -77,10 +74,12 @@ public class AggregaterBeta extends BaseRichBolt implements Constant {
 
         fCtx.update((int[]) input.getValueByField(FIELD_MATCH_IMAGES));
 
+        String out = fCtx.frameId + ":" + fCtx.imageCounter.entrySet().stream()
+                .filter(e -> (double) e.getValue().get() / fCtx.featDescCount > minPercentage)
+                .map(e -> e.getKey().toString()).collect(Collectors.joining(","));
+
         if (fCtx.isFinish()) {
-            String out = fCtx.frameId + ":" + fCtx.imageCounter.entrySet().stream()
-                    .filter(e -> (double) e.getValue().get() / fCtx.featDescCount > minPercentage)
-                    .map(e -> e.getKey().toString()).collect(Collectors.joining(","));
+
             System.out.println(out);
             // just for metrics output
             collector.emit(new Values(out));

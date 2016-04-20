@@ -14,7 +14,8 @@ import static resa.util.ConfigUtil.getInt;
 
 /**
  * Created by ding on 14-7-3.
- * Modified by Tom Fu on April 2016
+ * This beta version is Modified by Tom Fu, on April 2016
+ * We mainly re-design the topology to remove those broadcasting issue (all grouping), here for experimental purpose
  */
 public class DectationTopologyBeta implements Constant {
 

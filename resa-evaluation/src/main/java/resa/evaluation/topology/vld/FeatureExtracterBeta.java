@@ -23,6 +23,8 @@ import static resa.evaluation.topology.vld.Constant.*;
 
 /**
  * Created by ding on 14-7-3.
+ * This beta version is Modified by Tom Fu, on April 2016
+ * We mainly re-design the topology to remove those broadcasting issue (all grouping), here for experimental purpose
  */
 public class FeatureExtracterBeta extends BaseRichBolt {
 
@@ -55,8 +57,6 @@ public class FeatureExtracterBeta extends BaseRichBolt {
         int rows = featureDesc.rows();
         int totalCount = 0;
 
-//        List<byte[]> selected = new ArrayList<>(rows);
-
         List<List<byte[]>> toSend = new ArrayList<>();
         for (int i = 0; i < targetTaskNumber; i ++){
             List<byte[]> selected = new ArrayList<>();
@@ -69,8 +69,6 @@ public class FeatureExtracterBeta extends BaseRichBolt {
             for (int j = 0; j < buf.length; j++) {
                 siftFeat[j] = (byte) (((int) buf[j]) & 0xFF);
             }
-//            selected.add(siftFeat);
-
             int tIndex = i % targetTaskNumber;
             toSend.get(tIndex).add(siftFeat);
             totalCount ++;
@@ -80,13 +78,11 @@ public class FeatureExtracterBeta extends BaseRichBolt {
         for (int i = 0; i < toSend.size(); i++) {
             collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, toSend.get(i), totalCount));
         }
-        //collector.emit(STREAM_FEATURE_COUNT, input, new Values(frameId, selected.size()));
         collector.ack(input);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declareStream(STREAM_FEATURE_DESC, new Fields(FIELD_FRAME_ID, FIELD_FEATURE_DESC, FIELD_FEATURE_CNT));
-        //declarer.declareStream(STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID, FIELD_FEATURE_CNT));
     }
 }

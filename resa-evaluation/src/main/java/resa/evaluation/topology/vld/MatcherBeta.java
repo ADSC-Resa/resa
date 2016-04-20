@@ -24,6 +24,9 @@ import static resa.evaluation.topology.vld.Constant.*;
 
 /**
  * Created by ding on 14-7-3.
+ *
+ * This beta version is Modified by Tom Fu, on April 2016
+ * We mainly re-design the topology to remove those broadcasting issue (all grouping), here for experimental purpose
  */
 public class MatcherBeta extends BaseRichBolt {
 
@@ -96,14 +99,10 @@ public class MatcherBeta extends BaseRichBolt {
     public void execute(Tuple input) {
         String frameId = input.getStringByField(FIELD_FRAME_ID);
         List<byte[]> desc = (List<byte[]>) input.getValueByField(FIELD_FEATURE_DESC);
-//        byte[] desc = (byte[]) input.getValueByField(FIELD_FEATURE_DESC);
         int feaDescCnt = input.getIntegerByField(FIELD_FEATURE_CNT);
         Map<Integer, Long> image2Freq = desc.stream().flatMap(imgDesc -> findMatches(imgDesc).stream())
                 .flatMap(imgList -> IntStream.of(imgList).boxed())
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
-//        Map<Integer, Long> image2Freq =
-//                findMatches(desc).stream().flatMap(imgList -> IntStream.of(imgList).boxed())
-//                .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
         int[] matches = image2Freq.isEmpty() ? EMPTY_MATCH : new int[image2Freq.size() * 2];
         int i = 0;
         for (Map.Entry<Integer, Long> m : image2Freq.entrySet()) {
@@ -136,7 +135,6 @@ public class MatcherBeta extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        ///declarer.declareStream(STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID, FIELD_MATCH_IMAGES));
         declarer.declareStream(STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID, FIELD_MATCH_IMAGES, FIELD_FEATURE_CNT));
     }
 
