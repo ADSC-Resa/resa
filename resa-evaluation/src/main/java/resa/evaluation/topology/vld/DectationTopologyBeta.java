@@ -42,7 +42,7 @@ public class DectationTopologyBeta implements Constant {
                 //.allGrouping("feat-ext", STREAM_FEATURE_DESC)
                 .shuffleGrouping("feat-ext", STREAM_FEATURE_DESC)
                 .setNumTasks(getInt(conf, "vd.matcher.tasks", 1));
-        builder.setBolt("aggregator", new AggregaterBeta(), getInt(conf, "vd.aggregator.parallelism", 1))
+        builder.setBolt("vd-aggregator", new AggregaterBeta(), getInt(conf, "vd.aggregator.parallelism", 1))
                 //.fieldsGrouping("feat-ext", STREAM_FEATURE_COUNT, new Fields(FIELD_FRAME_ID))
                 .fieldsGrouping("matcher", STREAM_MATCH_IMAGES, new Fields(FIELD_FRAME_ID))
                 .setNumTasks(getInt(conf, "vd.aggregator.tasks", 1));

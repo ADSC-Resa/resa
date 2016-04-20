@@ -75,7 +75,7 @@ public class AggregaterBeta extends BaseRichBolt implements Constant {
         fCtx.update((int[]) input.getValueByField(FIELD_MATCH_IMAGES));
 
         String out = fCtx.frameId + ":" + fCtx.imageCounter.entrySet().stream()
-                .filter(e -> (double) e.getValue().get() / fCtx.featDescCount > minPercentage)
+                .filter(e -> (double) e.getValue().get() >  fCtx.featDescCount * minPercentage)
                 .map(e -> e.getKey().toString()).collect(Collectors.joining(","));
 
         if (fCtx.isFinish()) {
