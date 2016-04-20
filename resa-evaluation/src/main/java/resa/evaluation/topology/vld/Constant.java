@@ -19,6 +19,8 @@ public interface Constant {
 
     public static String FIELD_FEATURE_CNT = "feat-cnt";
 
+    public static String SEND_GROUP_CNT = "group-cnt";
+
     public static String STREAM_FEATURE_DESC = "feat-desc";
 
     public static String STREAM_FEATURE_COUNT = "feat-cnt";
