@@ -40,7 +40,12 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
         buf = new double[128];
         this.collector = collector;
         targetTaskNumber = context.getComponentTasks("matcher").size();
-        groupNumber = Math.min(ConfigUtil.getInt(stormConf, "vd-group.count", 1), targetTaskNumber);
+
+        groupNumber = ConfigUtil.getInt(stormConf, "vd-group.count", -1);
+
+        if (groupNumber < 0) {
+            groupNumber = targetTaskNumber;
+        }
     }
 
     @Override
@@ -60,7 +65,7 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
         int totalCount = 0;
 
         List<List<byte[]>> toSend = new ArrayList<>();
-        for (int i = 0; i < groupNumber; i ++){
+        for (int i = 0; i < groupNumber; i++) {
             List<byte[]> selected = new ArrayList<>();
             toSend.add(selected);
         }
