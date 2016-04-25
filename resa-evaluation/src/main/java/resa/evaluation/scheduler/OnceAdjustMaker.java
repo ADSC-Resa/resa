@@ -45,13 +45,18 @@ public class OnceAdjustMaker implements DecisionMaker {
 //            ret.put("matcher", 8);
 //            ret.put("aggregater", 1);
 
+            ret.put("image-input", 1);
+            ret.put("feat-ext", 9);
+            ret.put("matcher", 12);
+            ret.put("vd-aggregater", 1);
+
             ///for resaVLD
-            ret.put("tVLDSpout", 1);
-            ret.put("tVLDPatchGen", 1);
-            ret.put("tVLDPatchProc", 20);
-            ret.put("tVLDPatchAgg", 1);
-            ret.put("tVLDPatchDraw", 1);
-            ret.put("tVLDRedisFrameOut", 1);
+//            ret.put("tVLDSpout", 1);
+//            ret.put("tVLDPatchGen", 1);
+//            ret.put("tVLDPatchProc", 20);
+//            ret.put("tVLDPatchAgg", 1);
+//            ret.put("tVLDPatchDraw", 1);
+//            ret.put("tVLDRedisFrameOut", 1);
 
             LOG.info("OnceAdjustMaker.make() is called with result allocation: " + ret);
             return ret;
