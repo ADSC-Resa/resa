@@ -47,8 +47,11 @@ public class AggregaterCharlie extends BaseRichBolt implements Constant {
             }
         }
 
+//        boolean isFinish() {
+//            return groupCount == curr && featDescCount != 0;
+//        }
         boolean isFinish() {
-            return groupCount == curr && featDescCount != 0;
+            return groupCount == curr;
         }
     }
 
