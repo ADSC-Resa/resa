@@ -72,14 +72,15 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
         int rows = featureDesc.rows();
         boolean toSample = true;
         int sampleCnt = 0;
+        int tempGroupNumber = groupNumber;
         if (rows > 0) {
-            if (rows < groupNumber * minGroupSize) {
-                groupNumber = (rows - 1) / minGroupSize + 1;
+            if (rows < tempGroupNumber * minGroupSize) {
+                tempGroupNumber = (rows - 1) / minGroupSize + 1;
                 toSample = false;
             }
 
             List<List<byte[]>> toSend = new ArrayList<>();
-            for (int i = 0; i < groupNumber; i++) {
+            for (int i = 0; i < tempGroupNumber; i++) {
                 List<byte[]> selected = new ArrayList<>();
                 toSend.add(selected);
             }
@@ -93,13 +94,13 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
                 for (int j = 0; j < buf.length; j++) {
                     siftFeat[j] = (byte) (((int) buf[j]) & 0xFF);
                 }
-                int tIndex = sampleCnt % groupNumber;
+                int tIndex = sampleCnt % tempGroupNumber;
                 toSend.get(tIndex).add(siftFeat);
                 sampleCnt ++;
             }
 
             for (int i = 0; i < toSend.size(); i++) {
-                collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, toSend.get(i), rows, groupNumber));
+                collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, toSend.get(i), rows, tempGroupNumber));
             }
         } else {
             ///rows == 0
