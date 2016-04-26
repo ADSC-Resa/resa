@@ -36,7 +36,11 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        sift = new SIFT(500, 3, 0.05, 12, 1.6);
+
+        int nfeatures = ConfigUtil.getInt(stormConf, "sift-nfeatures", 0);
+        double contrastThreshold = ConfigUtil.getDouble(stormConf, "sift-contrastThreshold", 0.04);
+        int edgeThreshold = ConfigUtil.getInt(stormConf, "sift-edgeThreshold", 10);
+        sift = new SIFT(nfeatures, 3, contrastThreshold, edgeThreshold, 1.6);
         buf = new double[128];
         this.collector = collector;
         targetTaskNumber = context.getComponentTasks("matcher").size();
@@ -62,7 +66,6 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
         } catch (Exception e) {
         }
         int rows = featureDesc.rows();
-        int totalCount = 0;
 
         List<List<byte[]>> toSend = new ArrayList<>();
         for (int i = 0; i < groupNumber; i++) {
@@ -84,6 +87,7 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
         for (int i = 0; i < toSend.size(); i++) {
             collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, toSend.get(i), rows, groupNumber));
         }
+        System.out.println("FrameID: " + frameId + ", rows: " + rows);
         collector.ack(input);
     }
 
