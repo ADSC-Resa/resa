@@ -11,6 +11,7 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.opencv_core.*;
 import org.bytedeco.javacpp.opencv_features2d.KeyPoint;
 import org.bytedeco.javacpp.opencv_nonfree.SIFT;
+import resa.util.ConfigUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,12 @@ public class FeatureExtracter extends BaseRichBolt {
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        sift = new SIFT(500, 3, 0.05, 12, 1.6);
+
+        int nfeatures = ConfigUtil.getInt(stormConf, "sift-nfeatures", 0);
+        double contrastThreshold = ConfigUtil.getDouble(stormConf, "sift-contrastThreshold", 0.05);
+        int edgeThreshold = ConfigUtil.getInt(stormConf, "sift-edgeThreshold", 12);
+        sift = new SIFT(nfeatures, 3, contrastThreshold, edgeThreshold, 1.6);
+        //sift = new SIFT(500, 3, 0.05, 12, 1.6);
         buf = new double[128];
         this.collector = collector;
     }
