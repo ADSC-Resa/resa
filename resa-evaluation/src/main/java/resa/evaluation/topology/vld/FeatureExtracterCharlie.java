@@ -74,9 +74,10 @@ public class FeatureExtracterCharlie extends BaseRichBolt {
         List<byte[]> sampleSend = new ArrayList<>();
 
         if (rows > 0) {
+            int sampleCnt = (int)(pSample * rows);
             boolean toSample = rows > groupNumber * minGroupSize;
             for (int i = 0; i < rows; i++) {
-                if (i > 0 && toSample && Math.random() > pSample){
+                if (toSample && i > sampleCnt){
                     ///ensure sampleSend has at least one element
                     continue;
                 }
