@@ -74,6 +74,8 @@ public class ResaMetricAnalyzer {
         String topoId = TopologyHelper.getTopologyId(nimbus, topoName);
         TopologyInfo topoInfo = nimbus.getTopologyInfo(topoId);
 
+        long startTime = System.currentTimeMillis();
+
         Map<String, Integer> currAllocation = topoInfo.get_executors().stream().filter(e -> !Utils.isSystemId(e.get_component_id()))
                 .collect(Collectors.groupingBy(e -> e.get_component_id(),
                         Collectors.reducing(0, e -> 1, (i1, i2) -> i1 + i2)));
@@ -99,7 +101,8 @@ public class ResaMetricAnalyzer {
                     ResaDataSource.readData(host, port, metricQueue, maxLen), comp2Executors, nimbus.getUserTopology(topoId));
             resultCalculator.calCMVStat();
 
-            System.out.println("-------------Report on: " + System.currentTimeMillis() + "------------------------------");
+            long currTime = System.currentTimeMillis();
+            System.out.println("------Report on: " + currTime + ",last for: " + (currTime - startTime)/60000 + " minutes, " + (currTime - startTime) + " secs.----------");
             if (currAllocation.equals(updatedAllocation)) {
                 System.out.println(currAllocation + "-->" + smdm.calc(resultCalculator.getComp2ExecutorResults(), allewedExecutorNum));
             } else {

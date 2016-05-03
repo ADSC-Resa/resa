@@ -69,6 +69,7 @@ public class FeatureExtracter extends BaseRichBolt {
         String frameId = input.getStringByField(FIELD_FRAME_ID);
         collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, selected));
         collector.emit(STREAM_FEATURE_COUNT, input, new Values(frameId, selected.size()));
+        System.out.println("FrameID: " + frameId + ", rows: " + rows);
         collector.ack(input);
     }
 

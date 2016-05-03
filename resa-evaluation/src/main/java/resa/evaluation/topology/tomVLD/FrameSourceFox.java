@@ -7,6 +7,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_imgproc;
+import resa.topology.RedisQueueSpout;
 
 import java.util.Map;
 
