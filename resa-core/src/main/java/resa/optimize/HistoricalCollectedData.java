@@ -19,8 +19,8 @@ class HistoricalCollectedData {
         this.historySize = historySize;
     }
 
-    private StormTopology rawTopology;
-    private int historySize;
+    protected StormTopology rawTopology;
+    protected int historySize;
     public final Map<String, Queue<AggResult>> compHistoryResults = new HashMap<>();
 
     public void putResult(String comp, AggResult[] exeAggResult) {

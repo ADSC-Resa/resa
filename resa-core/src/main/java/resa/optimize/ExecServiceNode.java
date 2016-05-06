@@ -6,42 +6,37 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Tom.fu on 23/4/2014.
  */
-public class GeneralServiceNode {
+public class ExecServiceNode {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GeneralServiceNode.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecServiceNode.class);
+    private double compSampleRate;
 
-    protected String componentID;
-    protected int executorNumber;
-    protected double compSampleRate;
+    private double avgSendQueueLength;
+    private double avgRecvQueueLength;
 
-    protected double avgSendQueueLength;
-    protected double avgRecvQueueLength;
+    private double avgServTimeHis;
+    private double scvServTimeHis;
+    private double mu;
 
-    protected double avgServTimeHis;
-    protected double scvServTimeHis;
-    protected double mu;
-
-    protected double numCompleteTuples;
-    protected double sumDurationSeconds;
-    protected double tupleCompleteRate;
+    private double numCompleteTuples;
+    private double sumDurationSeconds;
+    private double tupleCompleteRate;
 
     /*metrics on recv_queue*/
-    protected double lambda;
-    protected double lambdaByInterArrival;
-    protected double interArrivalScv;
+    private double lambda;
+    private double lambdaByInterArrival;
+    private double interArrivalScv;
 
-    protected double exArrivalRate;
-    protected double exArrivalRateByInterArrival;
+    private double exArrivalRate;
+    private double exArrivalRateByInterArrival;
 
-    protected double ratio;
-    protected double ratioByInterArrival;
+    private double ratio;
+    private double ratioByInterArrival;
 
-    protected double rho = lambda / (executorNumber * mu);
-    protected double rhoBIA = lambdaByInterArrival / (executorNumber * mu);
+    double rho = lambda / mu;
+    double rhoBIA = lambdaByInterArrival / mu;
 
-    public GeneralServiceNode(
-            String componentID,
-            int executorNumber,
+    public ExecServiceNode(
             double compSampleRate,
             double avgSendQueueLength,
             double avgRecvQueueLength,
@@ -55,8 +50,6 @@ public class GeneralServiceNode {
             double interArrivalScv,
             double exArrivalRate,
             double exArrivalRateByInterArrival) {
-        this.componentID = componentID;
-        this.executorNumber = executorNumber;
         this.compSampleRate = compSampleRate;
         this.avgSendQueueLength = avgSendQueueLength;
         this.avgRecvQueueLength = avgRecvQueueLength;
@@ -75,38 +68,20 @@ public class GeneralServiceNode {
         this.ratio = this.exArrivalRate > 0.0 ? (this.lambda / this.exArrivalRate) : 0;
         this.ratioByInterArrival = this.exArrivalRateByInterArrival > 0.0 ? (this.lambdaByInterArrival / this.exArrivalRateByInterArrival) : 0;
 
-        rho = this.lambda / (this.executorNumber * mu);
-        rhoBIA = this.lambdaByInterArrival / (this.executorNumber * mu);
+        rho = this.lambda / mu;
+        rhoBIA = this.lambdaByInterArrival / mu;
 
         LOG.info(toString());
     }
 
     @Override
     public String toString() {
-//        return String.format(
-//                "Component(ID, eNum):(%s,%d), tupleProcCnt: %.1f, sumMeasuredDur: %.1f, sampleRate: %.1f, tupleProcRate: %.3f, " +
-//                        "avgSendQLen: %.1f, avgRecvQLen: %.1f, avgServTimeMS: %.3f, scvServTime: %.3f, mu: %.3f, " +
-//                        "arrRateHis: %.3f, arrRateBIA: %.3f, interArrivalScv: %.3f, " +
-//                        "ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
-//                componentID, executorNumber, numCompleteTuples, sumDurationSeconds, compSampleRate, tupleCompleteRate,
-//                avgSendQueueLength, avgRecvQueueLength, avgServTimeHis, scvServTimeHis, mu,
-//                lambda, lambdaByInterArrival, interArrivalScv,
-//                ratio, ratioByInterArrival, rho, rhoBIA);
-
         return String.format(
-                "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, " +
+                "ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, " +
                 "-----> arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
-                componentID, executorNumber, tupleCompleteRate, avgServTimeHis, scvServTimeHis, mu,
+                tupleCompleteRate, avgServTimeHis, scvServTimeHis, mu,
                 numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
                 lambda, lambdaByInterArrival, interArrivalScv, ratio, ratioByInterArrival, rho, rhoBIA);
-    }
-
-    public String getComponentID() {
-        return componentID;
-    }
-
-    public int getExecutorNumber() {
-        return executorNumber;
     }
 
     public double getCompSampleRate() {

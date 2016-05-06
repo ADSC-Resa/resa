@@ -46,8 +46,8 @@ public class OnceAdjustMaker implements DecisionMaker {
 //            ret.put("aggregater", 1);
 
             ret.put("image-input", 1);
-            ret.put("feat-ext", 9);
-            ret.put("matcher", 12);
+            ret.put("feat-ext", 10);
+            ret.put("matcher", 11);
             ret.put("vd-aggregator", 1);
 
             ///for resaVLD
