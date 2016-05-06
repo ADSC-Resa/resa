@@ -30,6 +30,7 @@ class BoltHistoricalCollectedData extends HistoricalCollectedData {
 
         AggResult[] execResults = new BoltAggResult[exeAggResult.length];
         for (int i = 0; i < execResults.length; i ++){
+            execResults[i] = new BoltAggResult();
             AggResult.getVerticalCombinedResult(execResults[i], Arrays.asList(exeAggResult[i]));
         }
 
