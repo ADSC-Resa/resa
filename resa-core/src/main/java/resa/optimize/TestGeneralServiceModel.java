@@ -16,23 +16,26 @@ import java.util.stream.Collectors;
  * TODO: or prediction method to replace this.
  * <p>
  * TODO: sn.getI2oRatio() can be INFINITY, i.e., special case, there is no input data
- *
+ * <p>
  * TODO: we have already tried in this version! when we calculate Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
  * The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
  */
 public class TestGeneralServiceModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestGeneralServiceModel.class);
+
     public enum ServiceModelType {
         MMK(0), GGK_SimpleAppr(1), GGK_SimpleApprBIA(2), GGK_ComplexAppr(3), GGK_ComplexApprBIA(4), MMK_Ex(5), GGK_ComplexAppr_Ex(6);
         private static final int totalTypeCount = 7;
-//        The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
+        //        The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
 //        MMK(0), GGK_SimpleAppr(1), GGK_SimpleAdj(2);
 //        private static final int totalTypeCount = 3;
         private final int value;
+
         ServiceModelType(int value) {
             this.value = value;
         }
+
         public int getValue() {
             return value;
         }
@@ -41,7 +44,7 @@ public class TestGeneralServiceModel {
     /**
      * We assume the stability check for each node is done beforehand!
      * Jackson OQN assumes all the arrival and departure are iid and exponential
-     *
+     * <p>
      * Note, the return time unit is in Second!
      *
      * @param serviceNodes, the service node configuration, in this function, chain topology is assumed.
@@ -65,7 +68,7 @@ public class TestGeneralServiceModel {
     /**
      * We assume the stability check for each node is done beforehand!
      * Jackson OQN assumes all the arrival and departure are iid and exponential
-     *
+     * <p>
      * Note, the return time unit is in Second!
      *
      * @param serviceNodes, the service node configuration, in this function, chain topology is assumed.
@@ -78,25 +81,8 @@ public class TestGeneralServiceModel {
         for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
             String cid = e.getKey();
 
-            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode)e.getValue();
+            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode) e.getValue();
             int serverCount = allocation.get(cid).intValue();
-//            int maxI = 0;
-//            double maxAvgSojournTime = sojournTime_MMK(
-//                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda() * testGeneralServiceNode.executorNumber,
-//                    testGeneralServiceNode.execServiceNodeList.get(0).getMu(), serverCount);
-//
-//            for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
-//
-//                double avgSojournTime = sojournTime_MMK(
-//                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda() * testGeneralServiceNode.executorNumber,
-//                        testGeneralServiceNode.execServiceNodeList.get(i).getMu(), serverCount);
-//                if (avgSojournTime > maxAvgSojournTime){
-//                    maxAvgSojournTime = avgSojournTime;
-//                    maxI = i;
-//                }
-//            }
-
-//            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
             int maxIndex = testGeneralServiceNode.getMaxIndexByMMK();
             double maxAvgSojournTime = sojournTime_MMK(
                     testGeneralServiceNode.execServiceNodeList.get(maxIndex).getLambda() * serverCount,
@@ -109,39 +95,33 @@ public class TestGeneralServiceModel {
     /**
      * We assume the stability check for each node is done beforehand!
      * Jackson OQN assumes all the arrival and departure are iid and exponential
-     *
+     * <p>
      * Note, the return time unit is in Second!
      *
      * @param serviceNodes, the service node configuration, in this function, chain topology is assumed.
      * @param allocation,   the target allocation to be analyzed
      * @return here we should assume all the components are stable, the stability check shall be done outside this function
      */
-    public static double getExpectedTotalSojournTimeForJacksonOQN_exec1(Map<String, GeneralServiceNode> serviceNodes, Map<String, Integer> allocation) {
+    public static double getExpectedTotalSojournTimeForJacksonOQN_execAvg(Map<String, GeneralServiceNode> serviceNodes, Map<String, Integer> allocation) {
 
         double retVal = 0.0;
         for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
             String cid = e.getKey();
 
-            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode)e.getValue();
+            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode) e.getValue();
             int serverCount = allocation.get(cid).intValue();
-            int maxI = 0;
-            double maxAvgSojournTime = sojournTime_MMK(
-                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda(),
-                    testGeneralServiceNode.execServiceNodeList.get(0).getMu(), 1);
+            double maxAvgSojournTime = 0;
+            double totalLambda = 0;
 
-            for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
-
+            for (int i = 0; i < testGeneralServiceNode.execServiceNodeList.size(); i++) {
+                totalLambda += testGeneralServiceNode.execServiceNodeList.get(i).getLambda();
                 double avgSojournTime = sojournTime_MMK(
                         testGeneralServiceNode.execServiceNodeList.get(i).getLambda(),
                         testGeneralServiceNode.execServiceNodeList.get(i).getMu(), 1);
-                if (avgSojournTime > maxAvgSojournTime){
-                    maxAvgSojournTime = avgSojournTime;
-                    maxI = i;
-                }
+                maxAvgSojournTime += (avgSojournTime * testGeneralServiceNode.execServiceNodeList.get(i).getLambda());
             }
 
-            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
-            retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
+            retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio() / totalLambda);
         }
         return retVal;
     }
@@ -151,6 +131,7 @@ public class TestGeneralServiceModel {
      * We assume the stability check for each node is done beforehand!
      * Only assume iid with general distribution on interarrival times and service times
      * apply G/G/k service model
+     *
      * @param serviceNodes, the service node configuration, in this function, chain topology is assumed.
      * @param allocation,   the target allocation to be analyzed
      * @return here we should assume all the components are stable, the stability check shall be done outside this function
@@ -189,7 +170,7 @@ public class TestGeneralServiceModel {
         double retVal = 0.0;
         for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
             String cid = e.getKey();
-            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode)e.getValue();
+            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode) e.getValue();
             int serverCount = allocation.get(cid).intValue();
             int maxIndex = testGeneralServiceNode.getMaxIndexByGGK();
             double maxAvgSojournTime = sojournTime_GGK_ComplexAppr(
@@ -304,8 +285,8 @@ public class TestGeneralServiceModel {
                         GeneralServiceNode sn = e.getValue();
                         int currentAllocated = retVal.get(cid);
 
-                        double beforeAddT = sojournTime_MMK(sn.getLambda(), sn.getMu(), currentAllocated);
-                        double afterAddT = sojournTime_MMK(sn.getLambda(), sn.getMu(), currentAllocated + 1);
+                        double beforeAddT = sojournTime_MMK(sn.getLambda() * currentAllocated, sn.getMu(), currentAllocated);
+                        double afterAddT = sojournTime_MMK(sn.getLambda() * currentAllocated, sn.getMu(), currentAllocated + 1);
 
                         LOG.debug(cid + ", currentAllocated: " + currentAllocated
                                 + ", beforeAddT: " + beforeAddT
@@ -336,15 +317,16 @@ public class TestGeneralServiceModel {
 
                 for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
                     String cid = e.getKey();
-                    TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                    TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                     int currentAllocated = retVal.get(e.getKey());
                     int maxIndex = sn.getMaxIndexByMMK();
+                    int serverCnt = sn.getExecutorNumber();
 
                     double beforeAddT = sojournTime_MMK(
-                            sn.execServiceNodeList.get(maxIndex).getLambda(),
+                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
                             sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated);
                     double afterAddT = sojournTime_MMK(
-                            sn.execServiceNodeList.get(maxIndex).getLambda(),
+                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
                             sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated + 1);
 
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
@@ -360,15 +342,16 @@ public class TestGeneralServiceModel {
                     LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
                     for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
                         String cid = e.getKey();
-                        TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                        TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                         int currentAllocated = retVal.get(e.getKey());
                         int maxIndex = sn.getMaxIndexByMMK();
+                        int serverCnt = sn.getExecutorNumber();
 
                         double beforeAddT = sojournTime_MMK(
-                                sn.execServiceNodeList.get(maxIndex).getLambda(),
+                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
                                 sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated);
                         double afterAddT = sojournTime_MMK(
-                                sn.execServiceNodeList.get(maxIndex).getLambda(),
+                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
                                 sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated + 1);
 
                         LOG.debug(cid + ", currentAllocated: " + currentAllocated
@@ -559,16 +542,17 @@ public class TestGeneralServiceModel {
 
                 for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
                     String cid = e.getKey();
-                    TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                    TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                     int currentAllocated = retVal.get(e.getKey());
                     int maxIndex = sn.getMaxIndexByMMK();
+                    int serverCnt = sn.getExecutorNumber();
 
                     double beforeAddT = sojournTime_GGK_ComplexAppr(
-                            sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
                             sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated);
 
                     double afterAddT = sojournTime_GGK_ComplexAppr(
-                            sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
                             sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated + 1);
 
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
@@ -584,16 +568,17 @@ public class TestGeneralServiceModel {
                     LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
                     for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
                         String cid = e.getKey();
-                        TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                        TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                         int currentAllocated = retVal.get(e.getKey());
                         int maxIndex = sn.getMaxIndexByMMK();
+                        int serverCnt = sn.getExecutorNumber();
 
                         double beforeAddT = sojournTime_GGK_ComplexAppr(
-                                sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
                                 sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated);
 
                         double afterAddT = sojournTime_GGK_ComplexAppr(
-                                sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
                                 sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated + 1);
 
                         LOG.debug(cid + ", currentAllocated: " + currentAllocated
@@ -671,16 +656,16 @@ public class TestGeneralServiceModel {
      *
      * @param serviceNodes
      * @param maxAllowedCompleteTimeSeconds, the unit here is second! consistent with function getErlangChainTopCompleteTime()
-     * @param lowerBoundDelta,        this is to set the offset of the lowerBoundServiceTime, we require delta to be positive, and 0 as default.
-     * @param adjRatio,               this is to adjust the estimated ErlangServiceTime to fit more closely to the real measured complte time
+     * @param lowerBoundDelta,               this is to set the offset of the lowerBoundServiceTime, we require delta to be positive, and 0 as default.
+     * @param adjRatio,                      this is to adjust the estimated ErlangServiceTime to fit more closely to the real measured complte time
      * @return null if a) any service node is not in the valid state (mu = 0.0), this is not the case of rho > 1.0, just for checking mu
      * b) lowerBoundServiceTime > requiredQoS
      */
     public static Map<String, Integer> getMinReqServerAllocationGeneralTopApplyMMK(Map<String, GeneralServiceNode> serviceNodes,
-                                                                           double maxAllowedCompleteTimeSeconds,
-                                                                           double lowerBoundDelta,
-                                                                           double adjRatio,
-                                                                           int maxAvailableExec) {
+                                                                                   double maxAllowedCompleteTimeSeconds,
+                                                                                   double lowerBoundDelta,
+                                                                                   double adjRatio,
+                                                                                   int maxAvailableExec) {
         double lowerBoundServiceTime = 0.0;
         int totalMinReq = 0;
         for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
@@ -709,9 +694,9 @@ public class TestGeneralServiceModel {
     }
 
     public static Map<String, Integer> getMinReqServerAllocationGeneralTopApplyMMK(Map<String, GeneralServiceNode> serviceNodes,
-                                                                           double maxAllowedCompleteTime,
-                                                                           double adjRatio,
-                                                                           int maxAvailableExec) {
+                                                                                   double maxAllowedCompleteTime,
+                                                                                   double adjRatio,
+                                                                                   int maxAvailableExec) {
         return getMinReqServerAllocationGeneralTopApplyMMK(serviceNodes, maxAllowedCompleteTime, 0.0, adjRatio, maxAvailableExec);
     }
 
@@ -732,8 +717,8 @@ public class TestGeneralServiceModel {
      * after: the optimized allocation under given maxAvailable4Bolt
      */
     public static AllocResult checkOptimized_MMK(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                             int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                 double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                 int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///Caution about the time unit!, second is used in all the functions of calculation
@@ -778,8 +763,8 @@ public class TestGeneralServiceModel {
      * after: the optimized allocation under given maxAvailable4Bolt
      */
     public static AllocResult checkOptimized_MMK_exec(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                 double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                 int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                      double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                      int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///Caution about the time unit!, second is used in all the functions of calculation
@@ -823,21 +808,21 @@ public class TestGeneralServiceModel {
      * minReqAllocaiton, the minimum required resource (under optimized allocation) which can satisfy QoS
      * after: the optimized allocation under given maxAvailable4Bolt
      */
-    public static AllocResult checkOptimized_MMK_exec1(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                      double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                      int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+    public static AllocResult checkOptimized_MMK_execAvg(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
+                                                       double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                       int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///Caution about the time unit!, second is used in all the functions of calculation
         /// millisecond is used in the output display!
         double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
-        double estTotalSojournTimeMilliSec_MMK = 1000.0 * getExpectedTotalSojournTimeForJacksonOQN_exec1(queueingNetwork, currBoltAllocation);
+        double estTotalSojournTimeMilliSec_MMK = 1000.0 * getExpectedTotalSojournTimeForJacksonOQN_execAvg(queueingNetwork, currBoltAllocation);
         ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
         double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_MMK);
         ///relativeError (rE)
         double relativeError = Math.abs(realLatencyMilliSeconds - estTotalSojournTimeMilliSec_MMK) * 100.0 / realLatencyMilliSeconds;
 
-        LOG.info(String.format("realLatency(ms): %.4f, estMMKex: %.4f, urMMKex: %.4f, reMMKex: %.4f",
+        LOG.info(String.format("realLatency(ms): %.4f, estMMKexA: %.4f, urMMKexA: %.4f, reMMKexA: %.4f",
                 realLatencyMilliSeconds, estTotalSojournTimeMilliSec_MMK, underEstimateRatio, relativeError));
 
         LOG.debug("Find out minReqAllocation under QoS requirement.");
@@ -852,15 +837,15 @@ public class TestGeneralServiceModel {
         Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyMMK(queueingNetwork, currentUsedThreadByBolts);
         Map<String, Object> context = new HashMap<>();
         context.put("realLatency", realLatencyMilliSeconds);
-        context.put("estMMKex", estTotalSojournTimeMilliSec_MMK);
-        context.put("urMMKex", underEstimateRatio);
-        context.put("reMMKex", relativeError);
+        context.put("estMMKexA", estTotalSojournTimeMilliSec_MMK);
+        context.put("urMMKexA", underEstimateRatio);
+        context.put("reMMKexA", relativeError);
         return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
     }
 
     public static AllocResult checkOptimized_GGK_SimpleAppr(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                 double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                 int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                            double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                            int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
@@ -895,8 +880,8 @@ public class TestGeneralServiceModel {
     }
 
     public static AllocResult checkOptimized_GGK_SimpleApprBIA(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                            double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                            int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                               double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                               int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
@@ -931,8 +916,8 @@ public class TestGeneralServiceModel {
     }
 
     public static AllocResult checkOptimized_GGK_ComplexAppr(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                            double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                            int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                             int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
@@ -967,8 +952,8 @@ public class TestGeneralServiceModel {
     }
 
     public static AllocResult checkOptimized_GGK_ComplexAppr_exec(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                             int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                                  double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                                  int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
@@ -1003,8 +988,8 @@ public class TestGeneralServiceModel {
     }
 
     public static AllocResult checkOptimized_GGK_ComplexApprBIA(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
-                                                             double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                                             int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+                                                                double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                                int maxAvailable4Bolt, int currentUsedThreadByBolts) {
 
         ///Todo we need to do the stability check first here!
         ///TODO so far, we still use getMinReqServerAllocationGeneralTopApplyMMK to get minReqValue for temp use
@@ -1041,7 +1026,7 @@ public class TestGeneralServiceModel {
     /// The adjustment on Var(x) has been tested. The effect is too small (since n is quite large), therefore, we decide to ignore this.
     public static AllocResult checkOptimized(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
                                              double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
-                                             int maxAvailable4Bolt, int currentUsedThreadByBolts, ServiceModelType retAlloType){
+                                             int maxAvailable4Bolt, int currentUsedThreadByBolts, ServiceModelType retAlloType) {
 
         AllocResult allocResult[] = new AllocResult[ServiceModelType.totalTypeCount];
 
@@ -1055,7 +1040,7 @@ public class TestGeneralServiceModel {
         LOG.info("MMKEx, currOptAllo: " + allocResult[1].currOptAllocation);
         LOG.info("MMKEx, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
 
-//        allocResult[2] = checkOptimized_MMK_exec1(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        allocResult[4] = checkOptimized_MMK_execAvg(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 //        LOG.info("MMKex,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
 //        LOG.info("MMKex, currOptAllo: " + allocResult[1].currOptAllocation);
 //        LOG.info("MMKex, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
@@ -1085,10 +1070,10 @@ public class TestGeneralServiceModel {
 //        for (int i = 0; i < allocResult.length; i ++){
 //                context.putAll((Map<String, Object>)allocResult[i].getContext());
 //        }
-        context.putAll((Map<String, Object>)allocResult[0].getContext());
-        context.putAll((Map<String, Object>)allocResult[1].getContext());
-        context.putAll((Map<String, Object>)allocResult[2].getContext());
-        context.putAll((Map<String, Object>)allocResult[3].getContext());
+        context.putAll((Map<String, Object>) allocResult[0].getContext());
+        context.putAll((Map<String, Object>) allocResult[1].getContext());
+        context.putAll((Map<String, Object>) allocResult[2].getContext());
+        context.putAll((Map<String, Object>) allocResult[3].getContext());
 
 
 //        allocResult[2] = checkOptimized_GGK_SimpleApprAdj(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
@@ -1203,9 +1188,9 @@ public class TestGeneralServiceModel {
 //      simplified as:
         double Phy = (scvArrival >= scvService)
                 ? (f1 * (scvArrival - scvService) / (scvArrival - 0.75 * scvService)
-                    + Psi * scvService / (4.0 * scvArrival - 3.0 * scvService))
+                + Psi * scvService / (4.0 * scvArrival - 3.0 * scvService))
                 : (f3 * 0.5 * (scvService - scvArrival) / (scvArrival + scvService)
-                    + Psi * 0.5 * (scvService + 3.0 * scvArrival) / (scvArrival + scvService));
+                + Psi * 0.5 * (scvService + 3.0 * scvArrival) / (scvArrival + scvService));
 
         return avgQueueingTime_MMK(lambda, mu, serverCount) * adjust * Phy + 1.0 / mu;
     }

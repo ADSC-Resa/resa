@@ -19,6 +19,7 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
     private double maxAvgSojournTimeByGGK = 0.0;
     private int maxIndexByRho = 0;
     private double maxAvgSojournTimeByRho = 0.0;
+    private double totalLambda =0;
 
     public TestGeneralServiceNode(
             String componentID,
@@ -66,11 +67,14 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
                     maxRho = rho;
                     maxIndexByRho = i;
                 }
+
+                totalLambda += this.execServiceNodeList.get(i).getLambda();
             }
             maxAvgSojournTimeByRho = TestGeneralServiceModel.sojournTime_MMK(
                     this.execServiceNodeList.get(maxIndexByRho).getLambda() * executorNumber,
                     this.execServiceNodeList.get(maxIndexByRho).getMu(), executorNumber);
-            System.out.println("Comp: " + componentID + ", ExecNum: " + executorNumber + ", execNodeListSize: " + this.execServiceNodeList.size() + ", --> iMMK: + " + maxIndexByMMK + ", iGGK: " + maxIndexByGGK + ", iRho: " + maxRho);
+            System.out.println("Comp: " + componentID + ", ExecNum: " + executorNumber + ", execNodeListSize: "
+                    + this.execServiceNodeList.size() + ", --> iMMK: " + maxIndexByMMK + ", iGGK: " + maxIndexByGGK + ", iRho: " + maxIndexByRho + ", tLambda: " + this.totalLambda);
         }
     }
 
