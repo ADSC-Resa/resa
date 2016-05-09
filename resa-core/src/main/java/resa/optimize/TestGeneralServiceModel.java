@@ -122,13 +122,13 @@ public class TestGeneralServiceModel {
             int serverCount = allocation.get(cid).intValue();
             int maxI = 0;
             double maxAvgSojournTime = sojournTime_MMK(
-                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda() * testGeneralServiceNode.executorNumber,
+                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda(),
                     testGeneralServiceNode.execServiceNodeList.get(0).getMu(), 1);
 
             for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
 
                 double avgSojournTime = sojournTime_MMK(
-                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda() * testGeneralServiceNode.executorNumber,
+                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda(),
                         testGeneralServiceNode.execServiceNodeList.get(i).getMu(), 1);
                 if (avgSojournTime > maxAvgSojournTime){
                     maxAvgSojournTime = avgSojournTime;
