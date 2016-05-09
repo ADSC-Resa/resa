@@ -85,7 +85,7 @@ public class TestGeneralServiceModel {
             int serverCount = allocation.get(cid).intValue();
             int maxIndex = testGeneralServiceNode.getMaxIndexByMMK();
             double maxAvgSojournTime = sojournTime_MMK(
-                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getLambda() * serverCount,
+                    testGeneralServiceNode.getLambda(),
                     testGeneralServiceNode.execServiceNodeList.get(maxIndex).getMu(), serverCount);
             retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
         }
@@ -174,8 +174,8 @@ public class TestGeneralServiceModel {
             int serverCount = allocation.get(cid).intValue();
             int maxIndex = testGeneralServiceNode.getMaxIndexByGGK();
             double maxAvgSojournTime = sojournTime_GGK_ComplexAppr(
-                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getLambda() * serverCount,
-                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                    testGeneralServiceNode.getLambda(),
+                    testGeneralServiceNode.getInterArrivalScv(),
                     testGeneralServiceNode.execServiceNodeList.get(maxIndex).getMu(),
                     testGeneralServiceNode.execServiceNodeList.get(maxIndex).getScvServTimeHis(),
                     serverCount);
@@ -320,13 +320,12 @@ public class TestGeneralServiceModel {
                     TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                     int currentAllocated = retVal.get(e.getKey());
                     int maxIndex = sn.getMaxIndexByMMK();
-                    int serverCnt = sn.getExecutorNumber();
 
                     double beforeAddT = sojournTime_MMK(
-                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
+                            sn.getLambda(),
                             sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated);
                     double afterAddT = sojournTime_MMK(
-                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
+                            sn.getLambda(),
                             sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated + 1);
 
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
@@ -348,10 +347,10 @@ public class TestGeneralServiceModel {
                         int serverCnt = sn.getExecutorNumber();
 
                         double beforeAddT = sojournTime_MMK(
-                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
+                                sn.getLambda(),
                                 sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated);
                         double afterAddT = sojournTime_MMK(
-                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt,
+                                sn.getLambda(),
                                 sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated + 1);
 
                         LOG.debug(cid + ", currentAllocated: " + currentAllocated
@@ -548,11 +547,11 @@ public class TestGeneralServiceModel {
                     int serverCnt = sn.getExecutorNumber();
 
                     double beforeAddT = sojournTime_GGK_ComplexAppr(
-                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                            sn.getLambda(), sn.getInterArrivalScv(),
                             sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated);
 
                     double afterAddT = sojournTime_GGK_ComplexAppr(
-                            sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                            sn.getLambda(), sn.getInterArrivalScv(),
                             sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated + 1);
 
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
@@ -574,11 +573,11 @@ public class TestGeneralServiceModel {
                         int serverCnt = sn.getExecutorNumber();
 
                         double beforeAddT = sojournTime_GGK_ComplexAppr(
-                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                                sn.getLambda(), sn.getInterArrivalScv(),
                                 sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated);
 
                         double afterAddT = sojournTime_GGK_ComplexAppr(
-                                sn.execServiceNodeList.get(maxIndex).getLambda() * serverCnt, sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                                sn.getLambda(), sn.getInterArrivalScv(),
                                 sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated + 1);
 
                         LOG.debug(cid + ", currentAllocated: " + currentAllocated
