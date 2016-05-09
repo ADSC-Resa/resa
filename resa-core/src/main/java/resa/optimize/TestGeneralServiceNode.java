@@ -81,7 +81,7 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
 
                 totalLambda += this.execServiceNodeList.get(i).getLambda();
             }
-            minMu = this.execServiceNodeList.get(minIndexByMu).getLambda();
+            minMu = this.execServiceNodeList.get(minIndexByMu).getMu();
             minMuScv = this.execServiceNodeList.get(minIndexByMu).getScvServTimeHis();
             maxAvgSojournTimeByRho = TestGeneralServiceModel.sojournTime_MMK(
                     this.execServiceNodeList.get(maxIndexByRho).getLambda() * executorNumber,
