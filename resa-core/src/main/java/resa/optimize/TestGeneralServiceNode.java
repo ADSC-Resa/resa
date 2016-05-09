@@ -21,6 +21,8 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
     private double maxAvgSojournTimeByRho = 0.0;
     private double totalLambda = 0;
     private int minIndexByMu = 0;
+    private double minMu = 0.0;
+    private double minMuScv = 0.0;
 
     public TestGeneralServiceNode(
             String componentID,
@@ -79,12 +81,14 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
 
                 totalLambda += this.execServiceNodeList.get(i).getLambda();
             }
+            minMu = this.execServiceNodeList.get(minIndexByMu).getLambda();
+            minMuScv = this.execServiceNodeList.get(minIndexByMu).getScvServTimeHis();
             maxAvgSojournTimeByRho = TestGeneralServiceModel.sojournTime_MMK(
                     this.execServiceNodeList.get(maxIndexByRho).getLambda() * executorNumber,
                     this.execServiceNodeList.get(maxIndexByRho).getMu(), executorNumber);
             System.out.println("Comp: " + componentID + ", ExecNum: " + executorNumber + ", execNodeListSize: "
                     + this.execServiceNodeList.size() + ", --> iMMK: " + maxIndexByMMK + ", iGGK: " + maxIndexByGGK
-                    + ", iRho: " + maxIndexByRho + ", iMu: " + minIndexByMu + ", tLambda: " + this.totalLambda);
+                    + ", iRho: " + maxIndexByRho + ", iMu: " + minIndexByMu + ", tLambda: " + this.totalLambda + ", minMu: " + this.minMu + ", scvSTime: " + this.minMuScv);
         }
     }
 
@@ -98,6 +102,14 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
 
     public int getMaxIndexByRho() {
         return this.maxIndexByRho;
+    }
+
+    public double getMinMu(){
+        return this.minMu;
+    }
+
+    public double getMinMuScv(){
+        return this.minMuScv;
     }
 
     @Override
