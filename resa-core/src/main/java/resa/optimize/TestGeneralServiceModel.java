@@ -270,9 +270,9 @@ public class TestGeneralServiceModel {
                     double afterAddT = sojournTime_MMK(sn.getLambda(), sn.getMu(), currentAllocated + 1);
 
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
-                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMu() + ",before: " + beforeAddT);
-                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMu() + ",after: " + afterAddT);
-                    LOG.info(cid + "," + currentAllocated + ", ratio: " + sn.getRatio() + ", diff: " + diff);
+//                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMu() + ",before: " + beforeAddT);
+//                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMu() + ",after: " + afterAddT);
+//                    LOG.info(cid + "," + currentAllocated + ", ratio: " + sn.getRatio() + ", diff: " + diff);
                     if (diff > maxDiff) {
                         maxDiff = diff;
                         maxDiffCid = cid;
@@ -308,7 +308,7 @@ public class TestGeneralServiceModel {
 
     public static Map<String, Integer> suggestAllocationGeneralTopApplyMMK_exec(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
         Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
+                e -> getMinReqServerCount(e.getValue().getLambda(), ((TestGeneralServiceNode)e.getValue()).getMinMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
         LOG.debug("Apply M/M/K_Ex, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
@@ -324,12 +324,12 @@ public class TestGeneralServiceModel {
                     int currentAllocated = retVal.get(e.getKey());
 
                     double beforeAddT = sojournTime_MMK(sn.getLambda(), sn.getMinMu(), currentAllocated);
-                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMinMu() + ",before: " + beforeAddT);
                     double afterAddT = sojournTime_MMK(sn.getLambda(), sn.getMinMu(), currentAllocated + 1);
-                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMinMu() + ",after: " + afterAddT);
-
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
-                    LOG.info(cid + "," + currentAllocated + ", ratio: " + sn.getRatio() + ", diff: " + diff);
+
+//                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMinMu() + ",before: " + beforeAddT);
+//                    LOG.info(cid + "," + currentAllocated + ", lam: " + sn.getLambda() + ", mu: " + sn.getMinMu() + ",after: " + afterAddT);
+//                    LOG.info(cid + "," + currentAllocated + ", ratio: " + sn.getRatio() + ", diff: " + diff);
                     if (diff > maxDiff) {
                         maxDiff = diff;
                         maxDiffCid = cid;
