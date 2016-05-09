@@ -930,7 +930,7 @@ public class TestGeneralServiceModel {
         LOG.info("MMK, kMaxOptAllo: " + allocResult[0].kMaxOptAllocation);
 
         allocResult[1] = checkOptimized_MMK_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        allocResult[1] = checkOptimized_MMK_exec1(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        allocResult[2] = checkOptimized_MMK_exec1(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 //        LOG.info("MMKex,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
 //        LOG.info("MMKex, currOptAllo: " + allocResult[1].currOptAllocation);
 //        LOG.info("MMKex, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
