@@ -319,14 +319,9 @@ public class TestGeneralServiceModel {
                     String cid = e.getKey();
                     TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                     int currentAllocated = retVal.get(e.getKey());
-//                    int maxIndex = sn.getMaxIndexByMMK();
 
-                    double beforeAddT = sojournTime_MMK(
-                            sn.getLambda(),
-                            sn.getMinMu(), currentAllocated);
-                    double afterAddT = sojournTime_MMK(
-                            sn.getLambda(),
-                            sn.getMinMu(), currentAllocated + 1);
+                    double beforeAddT = sojournTime_MMK(sn.getLambda(), sn.getMinMu(), currentAllocated);
+                    double afterAddT = sojournTime_MMK(sn.getLambda(), sn.getMinMu(), currentAllocated + 1);
 
                     double diff = (beforeAddT - afterAddT) * sn.getRatio();
                     if (diff > maxDiff) {
@@ -336,7 +331,7 @@ public class TestGeneralServiceModel {
                 }
                 if (maxDiffCid != null) {
                     int newAllocate = retVal.compute(maxDiffCid, (k, count) -> count + 1);
-                    LOG.debug((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
+                    LOG.info((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
                 } else {
                     LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
                     for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
