@@ -103,6 +103,46 @@ public class TestGeneralServiceModel {
     }
 
     /**
+     * We assume the stability check for each node is done beforehand!
+     * Jackson OQN assumes all the arrival and departure are iid and exponential
+     *
+     * Note, the return time unit is in Second!
+     *
+     * @param serviceNodes, the service node configuration, in this function, chain topology is assumed.
+     * @param allocation,   the target allocation to be analyzed
+     * @return here we should assume all the components are stable, the stability check shall be done outside this function
+     */
+    public static double getExpectedTotalSojournTimeForJacksonOQN_exec1(Map<String, GeneralServiceNode> serviceNodes, Map<String, Integer> allocation) {
+
+        double retVal = 0.0;
+        for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+            String cid = e.getKey();
+
+            TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode)e.getValue();
+            int serverCount = allocation.get(cid).intValue();
+            int maxI = 0;
+            double maxAvgSojournTime = sojournTime_MMK(
+                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda() * testGeneralServiceNode.executorNumber,
+                    testGeneralServiceNode.execServiceNodeList.get(0).getMu(), 1);
+
+            for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
+
+                double avgSojournTime = sojournTime_MMK(
+                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda() * testGeneralServiceNode.executorNumber,
+                        testGeneralServiceNode.execServiceNodeList.get(i).getMu(), 1);
+                if (avgSojournTime > maxAvgSojournTime){
+                    maxAvgSojournTime = avgSojournTime;
+                    maxI = i;
+                }
+            }
+
+            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
+            retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
+        }
+        return retVal;
+    }
+
+    /**
      * TODO: Caution! we have tried new calculation on Var(X), where X are sampled results, Var(X) shall multiply n/(n-1), n is element counts of X.
      * We assume the stability check for each node is done beforehand!
      * Only assume iid with general distribution on interarrival times and service times
@@ -651,6 +691,52 @@ public class TestGeneralServiceModel {
         return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
     }
 
+    /**
+     * @param queueingNetwork
+     * @param queueingNetwork
+     * @param targetQoSMilliSec
+     * @param currBoltAllocation
+     * @param maxAvailable4Bolt
+     * @param currentUsedThreadByBolts
+     * @return status indicates whether the demanded QoS can be achieved or not
+     * minReqAllocaiton, the minimum required resource (under optimized allocation) which can satisfy QoS
+     * after: the optimized allocation under given maxAvailable4Bolt
+     */
+    public static AllocResult checkOptimized_MMK_exec1(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
+                                                      double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
+                                                      int maxAvailable4Bolt, int currentUsedThreadByBolts) {
+
+        ///Todo we need to do the stability check first here!
+        ///Caution about the time unit!, second is used in all the functions of calculation
+        /// millisecond is used in the output display!
+        double realLatencyMilliSeconds = sourceNode.getRealLatencyMilliSeconds();
+        double estTotalSojournTimeMilliSec_MMK = 1000.0 * getExpectedTotalSojournTimeForJacksonOQN_exec1(queueingNetwork, currBoltAllocation);
+        ///for better estimation, we remain (learn) this ratio, and assume that the estimated is always smaller than real.
+        double underEstimateRatio = Math.max(1.0, realLatencyMilliSeconds / estTotalSojournTimeMilliSec_MMK);
+        ///relativeError (rE)
+        double relativeError = Math.abs(realLatencyMilliSeconds - estTotalSojournTimeMilliSec_MMK) * 100.0 / realLatencyMilliSeconds;
+
+        LOG.info(String.format("realLatency(ms): %.4f, estMMKex: %.4f, urMMKex: %.4f, reMMKex: %.4f",
+                realLatencyMilliSeconds, estTotalSojournTimeMilliSec_MMK, underEstimateRatio, relativeError));
+
+        LOG.debug("Find out minReqAllocation under QoS requirement.");
+        Map<String, Integer> minReqAllocation = getMinReqServerAllocationGeneralTopApplyMMK(queueingNetwork,
+                targetQoSMilliSec / 1000.0, underEstimateRatio, maxAvailable4Bolt * 2);
+        AllocResult.Status status = AllocResult.Status.FEASIBLE;
+        if (minReqAllocation == null) {
+            status = AllocResult.Status.INFEASIBLE;
+        }
+        LOG.debug("Find out best allocation given available executors.");
+        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyMMK(queueingNetwork, maxAvailable4Bolt);
+        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyMMK(queueingNetwork, currentUsedThreadByBolts);
+        Map<String, Object> context = new HashMap<>();
+        context.put("realLatency", realLatencyMilliSeconds);
+        context.put("estMMKex", estTotalSojournTimeMilliSec_MMK);
+        context.put("urMMKex", underEstimateRatio);
+        context.put("reMMKex", relativeError);
+        return new AllocResult(status, minReqAllocation, currOptAllocation, kMaxOptAllocation).setContext(context);
+    }
+
     public static AllocResult checkOptimized_GGK_SimpleAppr(GeneralSourceNode sourceNode, Map<String, GeneralServiceNode> queueingNetwork,
                                                  double targetQoSMilliSec, Map<String, Integer> currBoltAllocation,
                                                  int maxAvailable4Bolt, int currentUsedThreadByBolts) {
@@ -844,6 +930,7 @@ public class TestGeneralServiceModel {
         LOG.info("MMK, kMaxOptAllo: " + allocResult[0].kMaxOptAllocation);
 
         allocResult[1] = checkOptimized_MMK_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        allocResult[1] = checkOptimized_MMK_exec1(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 //        LOG.info("MMKex,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
 //        LOG.info("MMKex, currOptAllo: " + allocResult[1].currOptAllocation);
 //        LOG.info("MMKex, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
@@ -856,7 +943,7 @@ public class TestGeneralServiceModel {
         LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
         LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
 
-        allocResult[3] = checkOptimized_GGK_ComplexAppr_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        allocResult[4] = checkOptimized_GGK_ComplexAppr_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 //        LOG.info("GGKCApprEx,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[4].status);
 //        LOG.info("GGKCApprEx, currOptAllo: " + allocResult[3].currOptAllocation);
 //        LOG.info("GGKCApprEx, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
