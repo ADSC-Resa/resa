@@ -364,7 +364,7 @@ public class TestGeneralServiceModel {
 
     public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_SimpleAppr(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
         Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
+                e -> getMinReqServerCount(e.getValue().getLambda(), ((TestGeneralServiceNode)e.getValue()).getMinMu())));
         int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
 
         LOG.debug("Apply GGK_SimpleAppr, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
