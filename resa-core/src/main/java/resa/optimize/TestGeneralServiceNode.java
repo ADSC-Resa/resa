@@ -42,9 +42,9 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
                 lambda, lambdaByInterArrival, interArrivalScv, exArrivalRate, exArrivalRateByInterArrival);
         this.execServiceNodeList = execServiceNodeList;
 
-        if (executorNumber > 0) {
+        if (this.execServiceNodeList.size() > 0) {
             double maxRho = 0.0;
-            for (int i = 0; 0 < this.execServiceNodeList.size(); i++) {
+            for (int i = 0; i < this.execServiceNodeList.size(); i++) {
                 double avgSojournTimeMMK = TestGeneralServiceModel.sojournTime_MMK(
                         this.execServiceNodeList.get(i).getLambda() * executorNumber,
                         this.execServiceNodeList.get(i).getMu(), executorNumber);
@@ -70,7 +70,7 @@ public class TestGeneralServiceNode extends GeneralServiceNode {
             maxAvgSojournTimeByRho = TestGeneralServiceModel.sojournTime_MMK(
                     this.execServiceNodeList.get(maxIndexByRho).getLambda() * executorNumber,
                     this.execServiceNodeList.get(maxIndexByRho).getMu(), executorNumber);
-            System.out.println("Comp: " + componentID + ", ExecNum: " + executorNumber + ", --> iMMK: + " + maxIndexByMMK + ", iGGK: " + maxIndexByGGK + ", iRho: " + maxRho);
+            System.out.println("Comp: " + componentID + ", ExecNum: " + executorNumber + ", execNodeListSize: " + this.execServiceNodeList.size() + ", --> iMMK: + " + maxIndexByMMK + ", iGGK: " + maxIndexByGGK + ", iRho: " + maxRho);
         }
     }
 
