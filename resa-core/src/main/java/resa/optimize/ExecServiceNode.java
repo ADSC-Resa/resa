@@ -71,7 +71,7 @@ public class ExecServiceNode {
         rho = this.lambda / mu;
         rhoBIA = this.lambdaByInterArrival / mu;
 
-        LOG.info(toString());
+//        LOG.info(toString());
     }
 
     @Override

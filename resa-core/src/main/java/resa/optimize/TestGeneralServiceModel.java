@@ -96,6 +96,7 @@ public class TestGeneralServiceModel {
                 }
             }
 
+            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
             retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
         }
         return retVal;
@@ -167,7 +168,7 @@ public class TestGeneralServiceModel {
                     maxI = i;
                 }
             }
-
+            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
             retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
         }
         return retVal;
