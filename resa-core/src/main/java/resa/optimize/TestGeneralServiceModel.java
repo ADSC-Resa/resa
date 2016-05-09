@@ -333,22 +333,16 @@ public class TestGeneralServiceModel {
                     int newAllocate = retVal.compute(maxDiffCid, (k, count) -> count + 1);
                     LOG.info((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
                 } else {
-                    LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
+                    LOG.info("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
                     for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
                         String cid = e.getKey();
                         TestGeneralServiceNode sn = (TestGeneralServiceNode) e.getValue();
                         int currentAllocated = retVal.get(e.getKey());
-//                        int maxIndex = sn.getMaxIndexByMMK();
-//                        int serverCnt = sn.getExecutorNumber();
 
-                        double beforeAddT = sojournTime_MMK(
-                                sn.getLambda(),
-                                sn.getMinMu(), currentAllocated);
-                        double afterAddT = sojournTime_MMK(
-                                sn.getLambda(),
-                                sn.getMinMu(), currentAllocated + 1);
+                        double beforeAddT = sojournTime_MMK(sn.getLambda(), sn.getMinMu(), currentAllocated);
+                        double afterAddT = sojournTime_MMK(sn.getLambda(), sn.getMinMu(), currentAllocated + 1);
 
-                        LOG.debug(cid + ", currentAllocated: " + currentAllocated
+                        LOG.info(cid + ", currentAllocated: " + currentAllocated
                                 + ", beforeAddT: " + beforeAddT
                                 + ", afterAddT: " + afterAddT);
                     }
