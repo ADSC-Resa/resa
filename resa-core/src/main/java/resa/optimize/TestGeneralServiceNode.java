@@ -8,11 +8,17 @@ import java.util.List;
 /**
  * Created by Tom.fu on 23/4/2014.
  */
-public class TestGeneralServiceNode extends GeneralServiceNode{
+public class TestGeneralServiceNode extends GeneralServiceNode {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestGeneralServiceNode.class);
 
     public List<ExecServiceNode> execServiceNodeList;
+    private int maxIndexByMMK = 0;
+    private double maxAvgSojournTimeByMMK = 0.0;
+    private int maxIndexByGGK = 0;
+    private double maxAvgSojournTimeByGGK = 0.0;
+    private int maxIndexByRho = 0;
+    private double maxAvgSojournTimeByRho = 0.0;
 
     public TestGeneralServiceNode(
             String componentID,
@@ -31,10 +37,53 @@ public class TestGeneralServiceNode extends GeneralServiceNode{
             double exArrivalRate,
             double exArrivalRateByInterArrival,
             List<ExecServiceNode> execServiceNodeList) {
-            super(componentID, executorNumber, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
-                    avgServTimeHis, scvServTimeHis, numCompleteTuples, sumDurationSeconds, tupleCompleteRate,
-                    lambda, lambdaByInterArrival, interArrivalScv, exArrivalRate, exArrivalRateByInterArrival);
-            this.execServiceNodeList = execServiceNodeList;
+        super(componentID, executorNumber, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
+                avgServTimeHis, scvServTimeHis, numCompleteTuples, sumDurationSeconds, tupleCompleteRate,
+                lambda, lambdaByInterArrival, interArrivalScv, exArrivalRate, exArrivalRateByInterArrival);
+        this.execServiceNodeList = execServiceNodeList;
+
+        if (executorNumber > 0) {
+            double maxRho = 0.0;
+            for (int i = 0; 0 < this.execServiceNodeList.size(); i++) {
+                double avgSojournTimeMMK = TestGeneralServiceModel.sojournTime_MMK(
+                        this.execServiceNodeList.get(i).getLambda() * executorNumber,
+                        this.execServiceNodeList.get(i).getMu(), executorNumber);
+                if (avgSojournTimeMMK > maxAvgSojournTimeByMMK) {
+                    maxAvgSojournTimeByMMK = avgSojournTimeMMK;
+                    maxIndexByMMK = i;
+                }
+
+                double avgSojournTimeGGK = TestGeneralServiceModel.sojournTime_GGK_ComplexAppr(
+                        this.execServiceNodeList.get(i).getLambda() * executorNumber, this.execServiceNodeList.get(i).getInterArrivalScv(),
+                        this.execServiceNodeList.get(i).getMu(), this.execServiceNodeList.get(i).getScvServTimeHis(), executorNumber);
+                if (avgSojournTimeGGK > maxAvgSojournTimeByGGK) {
+                    maxAvgSojournTimeByGGK = avgSojournTimeGGK;
+                    maxIndexByGGK = i;
+                }
+
+                double rho = this.execServiceNodeList.get(i).getLambda() / this.execServiceNodeList.get(i).getMu();
+                if (rho > maxRho){
+                    maxRho = rho;
+                    maxIndexByRho = i;
+                }
+            }
+            maxAvgSojournTimeByRho = TestGeneralServiceModel.sojournTime_MMK(
+                    this.execServiceNodeList.get(maxIndexByRho).getLambda() * executorNumber,
+                    this.execServiceNodeList.get(maxIndexByRho).getMu(), executorNumber);
+            System.out.println("Comp: " + componentID + ", ExecNum: " + executorNumber + ", --> iMMK: + " + maxIndexByMMK + ", iGGK: " + maxIndexByGGK + ", iRho: " + maxRho);
+        }
+    }
+
+    public int getMaxIndexByMMK(){
+        return this.maxIndexByMMK;
+    }
+
+    public int getMaxIndexByGGK(){
+        return this.maxIndexByGGK;
+    }
+
+    public int getMaxIndexByRho(){
+        return this.maxIndexByRho;
     }
 
     @Override
@@ -51,7 +100,7 @@ public class TestGeneralServiceNode extends GeneralServiceNode{
 
         return String.format(
                 "(ID, eNum):(%s,%d), ProcRate: %.3f, avgSTime: %.3f, scvSTime: %.3f, mu: %.3f, ProcCnt: %.1f, Dur: %.1f, sample: %.1f, SQLen: %.1f, RQLen: %.1f, " +
-                "-----> arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
+                        "-----> arrRate: %.3f, arrRateBIA: %.3f, arrScv: %.3f, ratio: %.3f, ratioBIA: %.3f, rho: %.3f, rhoBIA: %.3f",
                 componentID, executorNumber, tupleCompleteRate, avgServTimeHis, scvServTimeHis, mu,
                 numCompleteTuples, sumDurationSeconds, compSampleRate, avgSendQueueLength, avgRecvQueueLength,
                 lambda, lambdaByInterArrival, interArrivalScv, ratio, ratioByInterArrival, rho, rhoBIA);

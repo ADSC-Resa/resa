@@ -80,23 +80,27 @@ public class TestGeneralServiceModel {
 
             TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode)e.getValue();
             int serverCount = allocation.get(cid).intValue();
-            int maxI = 0;
+//            int maxI = 0;
+//            double maxAvgSojournTime = sojournTime_MMK(
+//                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda() * testGeneralServiceNode.executorNumber,
+//                    testGeneralServiceNode.execServiceNodeList.get(0).getMu(), serverCount);
+//
+//            for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
+//
+//                double avgSojournTime = sojournTime_MMK(
+//                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda() * testGeneralServiceNode.executorNumber,
+//                        testGeneralServiceNode.execServiceNodeList.get(i).getMu(), serverCount);
+//                if (avgSojournTime > maxAvgSojournTime){
+//                    maxAvgSojournTime = avgSojournTime;
+//                    maxI = i;
+//                }
+//            }
+
+//            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
+            int maxIndex = testGeneralServiceNode.getMaxIndexByMMK();
             double maxAvgSojournTime = sojournTime_MMK(
-                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda() * testGeneralServiceNode.executorNumber,
-                    testGeneralServiceNode.execServiceNodeList.get(0).getMu(), serverCount);
-
-            for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
-
-                double avgSojournTime = sojournTime_MMK(
-                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda() * testGeneralServiceNode.executorNumber,
-                        testGeneralServiceNode.execServiceNodeList.get(i).getMu(), serverCount);
-                if (avgSojournTime > maxAvgSojournTime){
-                    maxAvgSojournTime = avgSojournTime;
-                    maxI = i;
-                }
-            }
-
-            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
+                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getLambda() * serverCount,
+                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getMu(), serverCount);
             retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
         }
         return retVal;
@@ -187,28 +191,15 @@ public class TestGeneralServiceModel {
             String cid = e.getKey();
             TestGeneralServiceNode testGeneralServiceNode = (TestGeneralServiceNode)e.getValue();
             int serverCount = allocation.get(cid).intValue();
-            int maxI = 0;
+            int maxIndex = testGeneralServiceNode.getMaxIndexByGGK();
             double maxAvgSojournTime = sojournTime_GGK_ComplexAppr(
-                    testGeneralServiceNode.execServiceNodeList.get(0).getLambda() * testGeneralServiceNode.executorNumber,
-                    testGeneralServiceNode.execServiceNodeList.get(0).getInterArrivalScv(),
-                    testGeneralServiceNode.execServiceNodeList.get(0).getMu(),
-                    testGeneralServiceNode.execServiceNodeList.get(0).getScvServTimeHis(),
+                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getLambda() * serverCount,
+                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getMu(),
+                    testGeneralServiceNode.execServiceNodeList.get(maxIndex).getScvServTimeHis(),
                     serverCount);
 
-            for (int i = 1; i < testGeneralServiceNode.execServiceNodeList.size(); i ++) {
-
-                double avgSojournTime = sojournTime_GGK_ComplexAppr(
-                        testGeneralServiceNode.execServiceNodeList.get(i).getLambda() * testGeneralServiceNode.executorNumber,
-                        testGeneralServiceNode.execServiceNodeList.get(i).getInterArrivalScv(),
-                        testGeneralServiceNode.execServiceNodeList.get(i).getMu(),
-                        testGeneralServiceNode.execServiceNodeList.get(i).getScvServTimeHis(),
-                        serverCount);
-                if (avgSojournTime > maxAvgSojournTime){
-                    maxAvgSojournTime = avgSojournTime;
-                    maxI = i;
-                }
-            }
-            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
+//            LOG.info(testGeneralServiceNode.execServiceNodeList.get(maxI).toString());
             retVal += (maxAvgSojournTime * testGeneralServiceNode.getRatio());
         }
         return retVal;
@@ -315,6 +306,70 @@ public class TestGeneralServiceModel {
 
                         double beforeAddT = sojournTime_MMK(sn.getLambda(), sn.getMu(), currentAllocated);
                         double afterAddT = sojournTime_MMK(sn.getLambda(), sn.getMu(), currentAllocated + 1);
+
+                        LOG.debug(cid + ", currentAllocated: " + currentAllocated
+                                + ", beforeAddT: " + beforeAddT
+                                + ", afterAddT: " + afterAddT);
+                    }
+                    return retVal;
+                }
+            }
+        } else {
+            LOG.info(String.format("topMinReq (%d) > totalResourceCount (%d)", topMinReq, totalResourceCount));
+            return null;
+        }
+        return retVal;
+    }
+
+
+    public static Map<String, Integer> suggestAllocationGeneralTopApplyMMK_exec(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
+        Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
+        int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
+
+        LOG.debug("Apply M/M/K_Ex, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        if (topMinReq <= totalResourceCount) {
+            int remainCount = totalResourceCount - topMinReq;
+            for (int i = 0; i < remainCount; i++) {
+                double maxDiff = -1;
+                String maxDiffCid = null;
+
+                for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+                    String cid = e.getKey();
+                    TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                    int currentAllocated = retVal.get(e.getKey());
+                    int maxIndex = sn.getMaxIndexByMMK();
+
+                    double beforeAddT = sojournTime_MMK(
+                            sn.execServiceNodeList.get(maxIndex).getLambda(),
+                            sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated);
+                    double afterAddT = sojournTime_MMK(
+                            sn.execServiceNodeList.get(maxIndex).getLambda(),
+                            sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated + 1);
+
+                    double diff = (beforeAddT - afterAddT) * sn.getRatio();
+                    if (diff > maxDiff) {
+                        maxDiff = diff;
+                        maxDiffCid = cid;
+                    }
+                }
+                if (maxDiffCid != null) {
+                    int newAllocate = retVal.compute(maxDiffCid, (k, count) -> count + 1);
+                    LOG.debug((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
+                } else {
+                    LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
+                    for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+                        String cid = e.getKey();
+                        TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                        int currentAllocated = retVal.get(e.getKey());
+                        int maxIndex = sn.getMaxIndexByMMK();
+
+                        double beforeAddT = sojournTime_MMK(
+                                sn.execServiceNodeList.get(maxIndex).getLambda(),
+                                sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated);
+                        double afterAddT = sojournTime_MMK(
+                                sn.execServiceNodeList.get(maxIndex).getLambda(),
+                                sn.execServiceNodeList.get(maxIndex).getMu(), currentAllocated + 1);
 
                         LOG.debug(cid + ", currentAllocated: " + currentAllocated
                                 + ", beforeAddT: " + beforeAddT
@@ -489,6 +544,72 @@ public class TestGeneralServiceModel {
         }
         return retVal;
     }
+
+    public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_ComplexAppr_exec(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
+        Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                e -> getMinReqServerCount(e.getValue().getLambda(), e.getValue().getMu())));
+        int topMinReq = retVal.values().stream().mapToInt(Integer::intValue).sum();
+
+        LOG.debug("Apply GGK_ComAppr_Ex, resCnt: " + totalResourceCount + ", topMinReq: " + topMinReq);
+        if (topMinReq <= totalResourceCount) {
+            int remainCount = totalResourceCount - topMinReq;
+            for (int i = 0; i < remainCount; i++) {
+                double maxDiff = -1;
+                String maxDiffCid = null;
+
+                for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+                    String cid = e.getKey();
+                    TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                    int currentAllocated = retVal.get(e.getKey());
+                    int maxIndex = sn.getMaxIndexByMMK();
+
+                    double beforeAddT = sojournTime_GGK_ComplexAppr(
+                            sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                            sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated);
+
+                    double afterAddT = sojournTime_GGK_ComplexAppr(
+                            sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                            sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated + 1);
+
+                    double diff = (beforeAddT - afterAddT) * sn.getRatio();
+                    if (diff > maxDiff) {
+                        maxDiff = diff;
+                        maxDiffCid = cid;
+                    }
+                }
+                if (maxDiffCid != null) {
+                    int newAllocate = retVal.compute(maxDiffCid, (k, count) -> count + 1);
+                    LOG.debug((i + 1) + " of " + remainCount + ", assigned to " + maxDiffCid + ", newAllocate: " + newAllocate);
+                } else {
+                    LOG.debug("Null MaxDiffCid returned in " + (i + 1) + " of " + remainCount);
+                    for (Map.Entry<String, GeneralServiceNode> e : serviceNodes.entrySet()) {
+                        String cid = e.getKey();
+                        TestGeneralServiceNode sn = (TestGeneralServiceNode)e.getValue();
+                        int currentAllocated = retVal.get(e.getKey());
+                        int maxIndex = sn.getMaxIndexByMMK();
+
+                        double beforeAddT = sojournTime_GGK_ComplexAppr(
+                                sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                                sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated);
+
+                        double afterAddT = sojournTime_GGK_ComplexAppr(
+                                sn.execServiceNodeList.get(maxIndex).getLambda(), sn.execServiceNodeList.get(maxIndex).getInterArrivalScv(),
+                                sn.execServiceNodeList.get(maxIndex).getMu(), sn.execServiceNodeList.get(maxIndex).getScvServTimeHis(), currentAllocated + 1);
+
+                        LOG.debug(cid + ", currentAllocated: " + currentAllocated
+                                + ", beforeAddT: " + beforeAddT
+                                + ", afterAddT: " + afterAddT);
+                    }
+                    return retVal;
+                }
+            }
+        } else {
+            LOG.info(String.format("topMinReq (%d) > totalResourceCount (%d)", topMinReq, totalResourceCount));
+            return null;
+        }
+        return retVal;
+    }
+
 
     public static Map<String, Integer> suggestAllocationGeneralTopApplyGGK_ComplexApprBIA(Map<String, GeneralServiceNode> serviceNodes, int totalResourceCount) {
         Map<String, Integer> retVal = serviceNodes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
@@ -681,8 +802,8 @@ public class TestGeneralServiceModel {
             status = AllocResult.Status.INFEASIBLE;
         }
         LOG.debug("Find out best allocation given available executors.");
-        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyMMK(queueingNetwork, maxAvailable4Bolt);
-        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyMMK(queueingNetwork, currentUsedThreadByBolts);
+        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyMMK_exec(queueingNetwork, maxAvailable4Bolt);
+        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyMMK_exec(queueingNetwork, currentUsedThreadByBolts);
         Map<String, Object> context = new HashMap<>();
         context.put("realLatency", realLatencyMilliSeconds);
         context.put("estMMKex", estTotalSojournTimeMilliSec_MMK);
@@ -871,8 +992,8 @@ public class TestGeneralServiceModel {
             status = AllocResult.Status.INFEASIBLE;
         }
         LOG.debug("Find out best allocation given available executors.");
-        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyGGK_ComplexAppr(queueingNetwork, maxAvailable4Bolt);
-        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyGGK_ComplexAppr(queueingNetwork, currentUsedThreadByBolts);
+        Map<String, Integer> kMaxOptAllocation = suggestAllocationGeneralTopApplyGGK_ComplexAppr_exec(queueingNetwork, maxAvailable4Bolt);
+        Map<String, Integer> currOptAllocation = suggestAllocationGeneralTopApplyGGK_ComplexAppr_exec(queueingNetwork, currentUsedThreadByBolts);
         Map<String, Object> context = new HashMap<>();
         context.put("realLatency", realLatencyMilliSeconds);
         context.put("estGGKCApprEx", estTotalSojournTimeMilliSec_GGK_CAppr);
@@ -930,7 +1051,11 @@ public class TestGeneralServiceModel {
         LOG.info("MMK, kMaxOptAllo: " + allocResult[0].kMaxOptAllocation);
 
         allocResult[1] = checkOptimized_MMK_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        allocResult[2] = checkOptimized_MMK_exec1(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("MMKEx,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
+        LOG.info("MMKEx, currOptAllo: " + allocResult[1].currOptAllocation);
+        LOG.info("MMKEx, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
+
+//        allocResult[2] = checkOptimized_MMK_exec1(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 //        LOG.info("MMKex,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
 //        LOG.info("MMKex, currOptAllo: " + allocResult[1].currOptAllocation);
 //        LOG.info("MMKex, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
@@ -938,15 +1063,15 @@ public class TestGeneralServiceModel {
 //        LOG.info("GGKSAppr,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
 //        LOG.info("GGKSAppr, currOptAllo: " + allocResult[1].currOptAllocation);
 //        LOG.info("GGKSAppr, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
-        allocResult[3] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
-        LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
-        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
+        allocResult[2] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
+        LOG.info("GGKCAppr, currOptAllo: " + allocResult[2].currOptAllocation);
+        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
 
-        allocResult[4] = checkOptimized_GGK_ComplexAppr_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-//        LOG.info("GGKCApprEx,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[4].status);
-//        LOG.info("GGKCApprEx, currOptAllo: " + allocResult[3].currOptAllocation);
-//        LOG.info("GGKCApprEx, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
+        allocResult[3] = checkOptimized_GGK_ComplexAppr_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCApprEx,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
+        LOG.info("GGKCApprEx, currOptAllo: " + allocResult[3].currOptAllocation);
+        LOG.info("GGKCApprEx, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
 ////        allocResult[2] = checkOptimized_GGK_SimpleApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 ////        LOG.info("GGKSApprBIA,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
 ////        LOG.info("GGKSApprBIA, currOptAllo: " + allocResult[2].currOptAllocation);
@@ -961,7 +1086,8 @@ public class TestGeneralServiceModel {
 //                context.putAll((Map<String, Object>)allocResult[i].getContext());
 //        }
         context.putAll((Map<String, Object>)allocResult[0].getContext());
-//        context.putAll((Map<String, Object>)allocResult[1].getContext());
+        context.putAll((Map<String, Object>)allocResult[1].getContext());
+        context.putAll((Map<String, Object>)allocResult[2].getContext());
         context.putAll((Map<String, Object>)allocResult[3].getContext());
 
 
