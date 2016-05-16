@@ -16,7 +16,7 @@ import static resa.evaluation.topology.vld.Constant.*;
  */
 public class ImageSourceDelta extends RedisQueueSpout {
 
-    private long frameId;
+    private int frameId;
     private String idPrefix;
 
     public ImageSourceDelta(String host, int port, String queue) {
