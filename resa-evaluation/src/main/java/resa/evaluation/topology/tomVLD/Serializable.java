@@ -31,7 +31,7 @@ public class Serializable {
      * Essential fields are image data itself, rows and columns count and type of the data.
      */
     public static class Mat implements KryoSerializable, java.io.Serializable {
-        private byte[] data;
+        private byte[] data = null;
         private int rows, cols, type;
 
         public int getRows() {
@@ -77,14 +77,16 @@ public class Serializable {
             this.cols = mat.cols();
             this.type = mat.type();
             int size = mat.arraySize();
-            this.data = new byte[size];
-//            mat.getByteBuffer().get(this.data);
+            if (size > 0) {
+                this.data = new byte[size];
+                mat.getByteBuffer().get(this.data);
+            }
 
-            ByteBuffer bb = mat.getByteBuffer();
-            bb.rewind();
-            this.data = new byte[size];
-            while (bb.hasRemaining())  // should happen only once
-                bb.get(this.data);
+//            ByteBuffer bb = mat.getByteBuffer();
+//            bb.rewind();
+//            this.data = new byte[size];
+//            while (bb.hasRemaining())  // should happen only once
+//                bb.get(this.data);
         }
 
         /**
@@ -101,10 +103,12 @@ public class Serializable {
                 this.cols = in.readInt();
                 this.type = in.readInt();
                 int size = in.readInt();
-                this.data = new byte[size];
-                int readed = 0;
-                while (readed < size) {
-                    readed += in.read(data, readed, size - readed);
+                if (size > 0) {
+                    this.data = new byte[size];
+                    int readed = 0;
+                    while (readed < size) {
+                        readed += in.read(data, readed, size - readed);
+                    }
                 }
                 //System.out.println("in: " + this.rows + "-" + this.cols + "-" + this.type + "-" + size + "-" + readed);
             } catch (IOException e) {
@@ -120,8 +124,12 @@ public class Serializable {
                 out.writeInt(this.rows);
                 out.writeInt(this.cols);
                 out.writeInt(this.type);
-                out.writeInt(this.data.length);
-                out.write(this.data);
+                if (this.data != null) {
+                    out.writeInt(this.data.length);
+                    out.write(this.data);
+                } else {
+                    out.writeInt(0);
+                }
                 out.close();
                 byte[] int_bytes = bos.toByteArray();
                 bos.close();
@@ -204,7 +212,11 @@ public class Serializable {
          * @return Converts this Serializable Mat into JavaCV's Mat
          */
         public opencv_core.Mat toJavaCVMat() {
-            return new opencv_core.Mat(rows, cols, type, new BytePointer(data));
+            if (this.data != null) {
+                return new opencv_core.Mat(rows, cols, type, new BytePointer(data));
+            } else {
+                return new opencv_core.Mat(rows, cols, type);
+            }
         }
 
         @Override
@@ -212,8 +224,12 @@ public class Serializable {
             output.writeInt(this.rows);
             output.writeInt(this.cols);
             output.writeInt(this.type);
-            output.writeInt(this.data.length);
-            output.writeBytes(this.data);
+            if (this.data != null) {
+                output.writeInt(this.data.length);
+                output.writeBytes(this.data);
+            }else {
+                output.writeInt(0);
+            }
         }
 
         @Override
@@ -222,7 +238,9 @@ public class Serializable {
             this.cols = input.readInt();
             this.type = input.readInt();
             int size = input.readInt();
-            this.data = input.readBytes(size);
+            if (size > 0) {
+                this.data = input.readBytes(size);
+            }
         }
     }
 
@@ -438,6 +456,7 @@ public class Serializable {
 
         /**
          * Creates PatchIdentifier with given frame id and rectangle.
+         *
          * @param frameId
          * @param roi
          * @param sMat
@@ -471,7 +490,7 @@ public class Serializable {
         }
     }
 
-    public static class KeyPoint implements KryoSerializable, java.io.Serializable{
+    public static class KeyPoint implements KryoSerializable, java.io.Serializable {
         float x;
         float y;
         float size;
