@@ -40,6 +40,10 @@ public interface Constants {
     public static String FIELD_FLOW_IMPL = "flow-impl";
     public static String FIELD_MBHX_MAT = "mbhx-mat";
     public static String FIELD_MBHY_MAT = "mbhy-mat";
+    public static String FIELD_SIFT_RR_MAT = "sift-rr-mat";
+    public static String FIELD_SIFT_TDES_MAT = "sift-tDes-mat";
+    public static String FIELD_SIFT_KEY_POINTS = "sift-key-points";
+    public static String FIELD_SIFT_ROI = "sift-roi";
 
     ////////////////For logo detection
 
@@ -52,6 +56,7 @@ public interface Constants {
     public final static String DETECTED_LOGO_STREAM = "dectlogo-stream";
     public final static String CACHE_CLEAR_STREAM = "cc-stream";
     public final static String PROCESSED_FRAME_STREAM = "pf-stream";
+    public final static String SIFT_FEATURE_STREAM = "sift-fea-stream";
 
     public final static String FIELD_PATCH_FRAME_MAT = "p-frm-mat";
     public final static String FIELD_PATCH_COUNT = "patch-cnt";

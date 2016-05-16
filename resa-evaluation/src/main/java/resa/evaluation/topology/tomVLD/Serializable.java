@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_features2d;
 
 import java.io.*;
 
@@ -467,5 +468,75 @@ public class Serializable {
         public int hashCode() {
             return this.identifier.hashCode();
         }
+    }
+
+    public static class KeyPoint implements KryoSerializable, java.io.Serializable{
+        float x;
+        float y;
+        float size;
+        float angle;
+        float response;
+        int octave;
+        int classId;
+
+        public KeyPoint() {
+        }
+
+        public KeyPoint(opencv_features2d.KeyPoint p) {
+            this.x = p.pt().x();
+            this.y = p.pt().y();
+            this.size = p.size();
+            this.angle = p.angle();
+            this.response = p.response();
+            this.octave = p.octave();
+            this.classId = p.class_id();
+        }
+
+        public KeyPoint(KeyPoint p) {
+            this.x = p.x;
+            this.y = p.y;
+            this.size = p.size;
+            this.angle = p.angle;
+            this.response = p.response;
+            this.octave = p.octave;
+            this.classId = p.classId;
+        }
+
+        public opencv_features2d.KeyPoint toJavaCvFeatures2dKeyPoint() {
+//            opencv_features2d.KeyPoint retVal = new opencv_features2d.KeyPoint();
+//            retVal.pt(new opencv_core.Point2f(x, y));
+//            retVal.size(size);
+//            retVal.angle(angle);
+//            retVal.response(response);
+//            retVal.octave(octave);
+//            retVal.class_id(classId);
+//            return retVal;
+
+            return new opencv_features2d.KeyPoint().pt(new opencv_core.Point2f(x, y))
+                    .size(size).angle(angle).response(response).octave(octave).class_id(classId);
+        }
+
+        @Override
+        public void write(Kryo kryo, Output output) {
+            output.writeFloat(this.x);
+            output.writeFloat(this.y);
+            output.writeFloat(this.size);
+            output.writeFloat(this.angle);
+            output.writeFloat(this.response);
+            output.writeInt(this.octave);
+            output.writeInt(this.classId);
+        }
+
+        @Override
+        public void read(Kryo kryo, Input input) {
+            this.x = input.readFloat();
+            this.y = input.readFloat();
+            this.size = input.readFloat();
+            this.angle = input.readFloat();
+            this.response = input.readFloat();
+            this.octave = input.readInt();
+            this.classId = input.readInt();
+        }
+
     }
 }

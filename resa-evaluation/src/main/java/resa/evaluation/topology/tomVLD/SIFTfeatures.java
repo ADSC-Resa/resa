@@ -35,6 +35,13 @@ public class SIFTfeatures {
         sift.detectAndCompute(rr, opencv_core.Mat.EMPTY, keyPoints, testDescriptors);
     }
 
+    public SIFTfeatures(Serializable.KeyPoint sKeyPoints, Serializable.Mat sTestDescriptors, Serializable.Mat sRR, Serializable.Rect sRoi){
+        keyPoints = sKeyPoints.toJavaCvFeatures2dKeyPoint();
+        testDescriptors = sTestDescriptors.toJavaCVMat();
+        rr = sRR.toJavaCVMat();
+        roi = sRoi.toJavaCVRect();
+    }
+
     public void release(){
         // Manually force JVM to release this.
         rr.release();
