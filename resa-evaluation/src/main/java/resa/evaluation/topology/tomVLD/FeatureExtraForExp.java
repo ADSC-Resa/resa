@@ -61,12 +61,10 @@ public class FeatureExtraForExp extends BaseRichBolt {
         if (sifTfeatures.testDescriptors != null && sifTfeatures.testDescriptors.arraySize() > 0){
             System.out.println(sifTfeatures.testDescriptors.rows() + ", " + sifTfeatures.testDescriptors.cols() + ", "
                     + sifTfeatures.testDescriptors.arraySize() + ", " + (sifTfeatures.testDescriptors.getByteBuffer() == null));
+        } else {
+            System.out.printf( "arraySize: " + sifTfeatures.testDescriptors.arraySize());
         }
         Serializable.Mat sTestDescriptors = sifTfeatures.testDescriptors == null ? null : new Serializable.Mat(sifTfeatures.testDescriptors);
-        if (sifTfeatures.rr != null){
-            System.out.println(sifTfeatures.rr.rows() + ", " + sifTfeatures.rr.cols() + ", "
-                    + sifTfeatures.rr.arraySize() + ", " + (sifTfeatures.rr.getByteBuffer() == null));
-        }
         Serializable.Mat sRR = sifTfeatures.rr == null ? null : new Serializable.Mat(sifTfeatures.rr);
         Serializable.Rect sRoi = sifTfeatures.roi == null? null : new Serializable.Rect(sifTfeatures.roi);
 
