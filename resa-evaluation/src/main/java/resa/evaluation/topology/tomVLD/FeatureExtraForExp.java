@@ -58,14 +58,14 @@ public class FeatureExtraForExp extends BaseRichBolt {
         SIFTfeatures sifTfeatures = new SIFTfeatures(sift, identifierMat.sMat.toJavaCVMat(), identifierMat.identifier.roi.toJavaCVRect(), false);
 
         Serializable.KeyPoint sKeyPoints = sifTfeatures.keyPoints == null ? null: new Serializable.KeyPoint(sifTfeatures.keyPoints);
-        if (sifTfeatures.testDescriptors != null){
+        if (sifTfeatures.testDescriptors != null && sifTfeatures.testDescriptors.arraySize() > 0){
             System.out.println(sifTfeatures.testDescriptors.rows() + ", " + sifTfeatures.testDescriptors.cols() + ", "
-                    + sifTfeatures.testDescriptors.size() + ", " + (sifTfeatures.testDescriptors.getByteBuffer() == null));
+                    + sifTfeatures.testDescriptors.arraySize() + ", " + (sifTfeatures.testDescriptors.getByteBuffer() == null));
         }
         Serializable.Mat sTestDescriptors = sifTfeatures.testDescriptors == null ? null : new Serializable.Mat(sifTfeatures.testDescriptors);
         if (sifTfeatures.rr != null){
             System.out.println(sifTfeatures.rr.rows() + ", " + sifTfeatures.rr.cols() + ", "
-                    + sifTfeatures.rr.size() + ", " + (sifTfeatures.rr.getByteBuffer() == null));
+                    + sifTfeatures.rr.arraySize() + ", " + (sifTfeatures.rr.getByteBuffer() == null));
         }
         Serializable.Mat sRR = sifTfeatures.rr == null ? null : new Serializable.Mat(sifTfeatures.rr);
         Serializable.Rect sRoi = sifTfeatures.roi == null? null : new Serializable.Rect(sifTfeatures.roi);
