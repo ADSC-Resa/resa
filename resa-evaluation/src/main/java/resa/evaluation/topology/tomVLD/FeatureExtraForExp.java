@@ -62,13 +62,13 @@ public class FeatureExtraForExp extends BaseRichBolt {
         Serializable.Mat sRR = new Serializable.Mat(sifTfeatures.rr);
         Serializable.Rect sRoi = new Serializable.Rect(sifTfeatures.roi);
 
-        collector.emit(SIFT_FEATURE_STREAM, tuple, new Values(frameId, sKeyPoints, sTestDescriptors, sRR, sRoi, patchCount, sampleID));
+        collector.emit(SIFT_FEATURE_STREAM, tuple, new Values(frameId, sKeyPoints, sTestDescriptors, sRR, sRoi, identifierMat.identifier, patchCount, sampleID));
         collector.ack(tuple);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declareStream(SIFT_FEATURE_STREAM,
-                new Fields(FIELD_FRAME_ID, FIELD_SIFT_KEY_POINTS, FIELD_SIFT_TDES_MAT, FIELD_SIFT_RR_MAT, FIELD_SIFT_ROI, FIELD_PATCH_COUNT, FIELD_SAMPLE_ID));
+                new Fields(FIELD_FRAME_ID, FIELD_SIFT_KEY_POINTS, FIELD_SIFT_TDES_MAT, FIELD_SIFT_RR_MAT, FIELD_SIFT_ROI, FIELD_PATCH_IDENTIFIER, FIELD_PATCH_COUNT, FIELD_SAMPLE_ID));
     }
 }

@@ -64,7 +64,7 @@ public class PatchProcessorForExp extends BaseRichBolt {
         int frameId = tuple.getIntegerByField(FIELD_FRAME_ID);
         int sampleID = tuple.getIntegerByField(FIELD_SAMPLE_ID);
 
-        Serializable.PatchIdentifierMat identifierMat = (Serializable.PatchIdentifierMat) tuple.getValueByField(FIELD_PATCH_FRAME_MAT);
+        Serializable.PatchIdentifier identifier = (Serializable.PatchIdentifier) tuple.getValueByField(FIELD_PATCH_IDENTIFIER);
         int patchCount = tuple.getIntegerByField(FIELD_PATCH_COUNT);
 
         Serializable.KeyPoint sKeyPoints = (Serializable.KeyPoint)tuple.getValueByField(FIELD_SIFT_KEY_POINTS);
@@ -83,7 +83,7 @@ public class PatchProcessorForExp extends BaseRichBolt {
             Serializable.Mat extractedTemplate = detector.getExtractedTemplate();
             if (detectedLogo != null) {
                 collector.emit(LOGO_TEMPLATE_UPDATE_STREAM,
-                        new Values(identifierMat.identifier, extractedTemplate, detector.getParentIdentifier(), logoIndex));
+                        new Values(identifier, extractedTemplate, detector.getParentIdentifier(), logoIndex));
             }
 
             detectedLogoList.add(detectedLogo);

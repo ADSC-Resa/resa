@@ -35,4 +35,10 @@ public interface Constant {
 
     public static String CONF_FEAT_PREFILTER_THRESHOLD = "vd.feature.prefilter.threshold";
 
+    public final static String PATCH_FRAME_STREAM = "pat-frm-stm";
+
+    public final static String FIELD_PATCH_FRAME_MAT = "p-frm-mat";
+
+    public final static String FIELD_PATCH_COUNT = "patch-cnt";
+
 }
