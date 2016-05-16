@@ -67,7 +67,7 @@ public class PatchAggFox extends BaseRichBolt {
             }
         }
         frameMonitor.computeIfAbsent(frameId, k->0);
-        frameMonitor.computeIfPresent(frameId, (k,v)->v+1);;
+        frameMonitor.computeIfPresent(frameId, (k,v)->v+1);
 
         /* If all patches of this frame are collected proceed to the frame aggregator */
         if (frameMonitor.get(frameId) == patchCount) {
@@ -83,6 +83,7 @@ public class PatchAggFox extends BaseRichBolt {
             frameMonitor.remove(frameId);
             foundRectAccount.remove(frameId);
         }
+        System.out.println("frameID: " + frameId + "frameMonitor.size: " + frameMonitor.size() + ", foundRectAccount.size: " + foundRectAccount.size());
         collector.ack(tuple);
     }
 
