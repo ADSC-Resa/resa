@@ -36,10 +36,10 @@ public class SIFTfeatures {
     }
 
     public SIFTfeatures(Serializable.KeyPoint sKeyPoints, Serializable.Mat sTestDescriptors, Serializable.Mat sRR, Serializable.Rect sRoi){
-        keyPoints = sKeyPoints.toJavaCvFeatures2dKeyPoint();
-        testDescriptors = sTestDescriptors.toJavaCVMat();
-        rr = sRR.toJavaCVMat();
-        roi = sRoi.toJavaCVRect();
+        keyPoints = sKeyPoints == null ? null : sKeyPoints.toJavaCvFeatures2dKeyPoint();
+        testDescriptors = sTestDescriptors == null ? null :  sTestDescriptors.toJavaCVMat();
+        rr = sRR == null ? null : sRR.toJavaCVMat();
+        roi = sRoi == null ? null : sRoi.toJavaCVRect();
     }
 
     public void release(){

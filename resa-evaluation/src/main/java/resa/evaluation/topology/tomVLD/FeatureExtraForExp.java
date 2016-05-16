@@ -57,10 +57,10 @@ public class FeatureExtraForExp extends BaseRichBolt {
 
         SIFTfeatures sifTfeatures = new SIFTfeatures(sift, identifierMat.sMat.toJavaCVMat(), identifierMat.identifier.roi.toJavaCVRect(), false);
 
-        Serializable.KeyPoint sKeyPoints = new Serializable.KeyPoint(sifTfeatures.keyPoints);
-        Serializable.Mat sTestDescriptors = new Serializable.Mat(sifTfeatures.testDescriptors);
-        Serializable.Mat sRR = new Serializable.Mat(sifTfeatures.rr);
-        Serializable.Rect sRoi = new Serializable.Rect(sifTfeatures.roi);
+        Serializable.KeyPoint sKeyPoints = sifTfeatures.keyPoints == null ? null: new Serializable.KeyPoint(sifTfeatures.keyPoints);
+        Serializable.Mat sTestDescriptors = sifTfeatures.testDescriptors == null ? null : new Serializable.Mat(sifTfeatures.testDescriptors);
+        Serializable.Mat sRR = sifTfeatures.rr == null ? null : new Serializable.Mat(sifTfeatures.rr);
+        Serializable.Rect sRoi = sifTfeatures.roi == null? null : new Serializable.Rect(sifTfeatures.roi);
 
         collector.emit(SIFT_FEATURE_STREAM, tuple, new Values(frameId, sKeyPoints, sTestDescriptors, sRR, sRoi, identifierMat.identifier, patchCount, sampleID));
         collector.ack(tuple);
