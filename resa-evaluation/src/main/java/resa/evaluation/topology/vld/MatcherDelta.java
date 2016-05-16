@@ -96,7 +96,7 @@ public class MatcherDelta extends BaseRichBolt {
 
     @Override
     public void execute(Tuple input) {
-        String frameId = input.getStringByField(FIELD_FRAME_ID);
+        int frameId = input.getIntegerByField(FIELD_FRAME_ID);
         List<byte[]> desc = (List<byte[]>) input.getValueByField(FIELD_FEATURE_DESC);
         int patchCount = input.getIntegerByField(FIELD_PATCH_COUNT);
 
