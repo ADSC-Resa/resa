@@ -41,7 +41,8 @@ public class PatchGenDelta extends BaseRichBolt {
         int frameId = input.getIntegerByField(FIELD_FRAME_ID);
 
         double fx = .25, fy = .25;
-        double fsx = .5, fsy = .5;
+//        double fsx = .5, fsy = .5;
+        double fsx = 1.0, fsy = 1.0;
 
         int W = sMat.getCols(), H = sMat.getRows();
         int w = (int) (W * fx + .5), h = (int) (H * fy + .5);
