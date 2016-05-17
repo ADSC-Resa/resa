@@ -83,7 +83,7 @@ public class PatchAggFox extends BaseRichBolt {
             frameMonitor.remove(frameId);
             foundRectAccount.remove(frameId);
         }
-        System.out.println("frameID: " + frameId + "frameMonitor.size: " + frameMonitor.size() + ", foundRectAccount.size: " + foundRectAccount.size());
+//        System.out.println("frameID: " + frameId + "frameMonitor.size: " + frameMonitor.size() + ", foundRectAccount.size: " + foundRectAccount.size());
         collector.ack(tuple);
     }
 
