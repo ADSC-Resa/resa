@@ -68,7 +68,7 @@ public class ResaVLDTopForExpRedisIn {
                 .shuffleGrouping(spoutName, SAMPLE_FRAME_STREAM)
                 .setNumTasks(getInt(conf, patchGenBolt + ".tasks"));
 
-        builder.setBolt(feaExtraBolt, new FeatureExtraForExp(), getInt(conf, patchProcBolt + ".parallelism"))
+        builder.setBolt(feaExtraBolt, new FeatureExtraForExp(), getInt(conf, feaExtraBolt + ".parallelism"))
                 .shuffleGrouping(patchGenBolt, PATCH_FRAME_STREAM)
                 .setNumTasks(getInt(conf, feaExtraBolt + ".tasks"));
 
