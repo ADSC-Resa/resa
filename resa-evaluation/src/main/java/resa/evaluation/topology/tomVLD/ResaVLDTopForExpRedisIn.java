@@ -47,9 +47,9 @@ public class ResaVLDTopForExpRedisIn {
             System.exit(0);
         }
         Config conf = readConfig(args[0]);
-        String host = getString(conf, "redis.host");
-        int port = getInt(conf, "redis.port");
-        String queueName = getString(conf, "tVLDQueueName");
+        String host = getString(conf, "input.redis.host");
+        int port = getInt(conf, "input.redis.port");
+        String queueName = getString(conf, "input.redis.queueName");
 
         TopologyBuilder builder = new ResaTopologyBuilder();
 //        TopologyBuilder builder = new TopologyBuilder();
