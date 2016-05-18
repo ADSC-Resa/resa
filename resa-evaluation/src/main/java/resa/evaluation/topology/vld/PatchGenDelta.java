@@ -11,6 +11,7 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.*;
 import resa.evaluation.topology.tomVLD.Serializable;
+import resa.util.ConfigUtil;
 
 import java.util.Map;
 
@@ -26,16 +27,21 @@ import static resa.evaluation.topology.vld.Constant.*;
 public class PatchGenDelta extends BaseRichBolt {
 
     private OutputCollector collector;
+    double fx,fy,fsx,fsy;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         System.out.println("PatchGenDelta.prepare");
+        fx = ConfigUtil.getDouble(stormConf, "fx", 0.25);
+        fy = ConfigUtil.getDouble(stormConf, "fy", 0.25);
+        fsx = ConfigUtil.getDouble(stormConf, "fsx", 0.5);
+        fsy = ConfigUtil.getDouble(stormConf, "fsy", 0.5);
     }
 
     @Override
     public void execute(Tuple input) {
-        System.out.println("PatchGenDelta.exec start");
+//        System.out.println("PatchGenDelta.exec start");
 //        byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
 //        IplImage image = cvDecodeImage(cvMat(1, imgBytes.length, CV_8UC1, new BytePointer(imgBytes)));
 //        opencv_core.Mat matOrg = new opencv_core.Mat(image);
@@ -44,11 +50,11 @@ public class PatchGenDelta extends BaseRichBolt {
 //        opencv_core.IplImage fk = new opencv_core.IplImage();
         byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
         Serializable.Mat sMat = new Serializable.Mat(imgBytes);
-        System.out.println("get frame: " + frameId);
+//        System.out.println("get frame: " + frameId);
 
-        double fx = .25, fy = .25;
+//        double fx = .25, fy = .25;
 //        double fsx = .5, fsy = .5;
-        double fsx = 1.0, fsy = 1.0;
+//        double fsx = 1.0, fsy = 1.0;
 
         int W = sMat.getCols(), H = sMat.getRows();
         int w = (int) (W * fx + .5), h = (int) (H * fy + .5);
