@@ -47,7 +47,7 @@ public class PatchGenDelta extends BaseRichBolt {
 //        opencv_core.Mat matOrg = new opencv_core.Mat(image);
 //        Serializable.Mat sMat = new Serializable.Mat(matOrg);
         int frameId = input.getIntegerByField(FIELD_FRAME_ID);
-//        opencv_core.IplImage fk = new opencv_core.IplImage();
+        opencv_core.IplImage fk = new opencv_core.IplImage();
         Serializable.Mat sMat = new Serializable.Mat(imgBytes);
 //        System.out.println("get frame: " + frameId);
 
