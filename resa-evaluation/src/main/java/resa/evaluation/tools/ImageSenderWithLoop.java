@@ -36,7 +36,7 @@ public class ImageSenderWithLoop {
     private String imageFolder;
     private String filePrefix;
 
-    private BlockingQueue<Serializable.Mat> dataQueue = new ArrayBlockingQueue<>(10000);
+    private BlockingQueue<String> dataQueue = new ArrayBlockingQueue<>(10000);
 
     public ImageSenderWithLoop(Map<String, Object> conf) {
         this.host = (String) conf.get("redis.host");
@@ -72,11 +72,11 @@ public class ImageSenderWithLoop {
                     if (retainFrames.contains(j)) {
                         String fileName = path + imageFolder + System.getProperty("file.separator")
                                 + String.format("%s%06d.jpg", filePrefix, (++generatedFrames));
-                        opencv_core.IplImage image = cvLoadImage(fileName);
-                        opencv_core.Mat matOrg = new opencv_core.Mat(image);
-                        Serializable.Mat sMat = new Serializable.Mat(matOrg);
+//                        opencv_core.IplImage image = cvLoadImage(fileName);
+//                        opencv_core.Mat matOrg = new opencv_core.Mat(image);
+//                        Serializable.Mat sMat = new Serializable.Mat(matOrg);
 
-                        dataQueue.put(sMat);
+                        dataQueue.put(fileName);
                         if (generatedFrames > end) {
                             generatedFrames = st;
                         }
@@ -101,9 +101,12 @@ public class ImageSenderWithLoop {
 
         @Override
         public void run() {
-            Serializable.Mat sMat;
+            String fname = null;
             try {
-                while ((sMat = dataQueue.take()) != null) {
+                while ((fname = dataQueue.take()) != null) {
+                    opencv_core.IplImage image = cvLoadImage(fname);
+                    opencv_core.Mat matOrg = new opencv_core.Mat(image);
+                    Serializable.Mat sMat = new Serializable.Mat(matOrg);
                     jedis.rpush(queueName, sMat.toByteArray());
                 }
             } catch (InterruptedException e) {
