@@ -1,6 +1,7 @@
 package resa.evaluation.tools;
 
 import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_highgui;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import redis.clients.jedis.Jedis;
@@ -16,6 +17,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.bytedeco.javacpp.opencv_highgui.cvLoadImage;
 import static org.bytedeco.javacpp.opencv_highgui.cvSaveImage;
 import static resa.evaluation.topology.tomVLD.StormConfigManager.getString;
 
@@ -46,7 +48,7 @@ public class ImageSenderWithLoop {
 
     public void send2Queue(int st, int end, int fps, int retain) throws IOException {
         int generatedFrames = st;
-
+        opencv_core.IplImage fk = new opencv_core.IplImage();
         List<Integer> array = new ArrayList(IntStream.range(0, fps).boxed().collect(Collectors.toList()));
         for (int i = 0; i < 3; i++) {
             new PushThread().start();
@@ -69,7 +71,9 @@ public class ImageSenderWithLoop {
                     if (retainFrames.contains(j)) {
                         String fileName = path + imageFolder + System.getProperty("file.separator")
                                 + String.format("%s%06d.jpg", filePrefix, (++generatedFrames));
-                        File imgFile = new File(fileName);
+                        opencv_core.IplImage source = cvLoadImage(fileName);
+                        File imgFile = File.createTempFile("img-", ".jpg");
+                        cvSaveImage(imgFile.getAbsolutePath(), source);
                         dataQueue.put(imgFile);
                         if (generatedFrames > end){
                             generatedFrames = st;
