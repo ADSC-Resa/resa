@@ -72,7 +72,6 @@ public class ImageSenderWithLoop {
                     if (retainFrames.contains(j)) {
                         String fileName = path + imageFolder + System.getProperty("file.separator")
                                 + String.format("%s%06d.jpg", filePrefix, (++generatedFrames));
-                        opencv_core.IplImage source = cvLoadImage(fileName);
                         opencv_core.IplImage image = cvLoadImage(fileName);
                         opencv_core.Mat matOrg = new opencv_core.Mat(image);
                         Serializable.Mat sMat = new Serializable.Mat(matOrg);
