@@ -30,10 +30,12 @@ public class PatchGenDelta extends BaseRichBolt {
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
+        System.out.println("PatchGenDelta.prepare");
     }
 
     @Override
     public void execute(Tuple input) {
+        System.out.println("PatchGenDelta.exec start");
 //        byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
 //        IplImage image = cvDecodeImage(cvMat(1, imgBytes.length, CV_8UC1, new BytePointer(imgBytes)));
 //        opencv_core.Mat matOrg = new opencv_core.Mat(image);
@@ -42,6 +44,7 @@ public class PatchGenDelta extends BaseRichBolt {
 //        opencv_core.IplImage fk = new opencv_core.IplImage();
         byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
         Serializable.Mat sMat = new Serializable.Mat(imgBytes);
+        System.out.println("get frame: " + frameId);
 
         double fx = .25, fy = .25;
 //        double fsx = .5, fsy = .5;
