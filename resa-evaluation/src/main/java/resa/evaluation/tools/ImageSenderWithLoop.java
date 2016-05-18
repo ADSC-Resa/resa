@@ -5,6 +5,7 @@ import org.bytedeco.javacpp.opencv_highgui;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import redis.clients.jedis.Jedis;
+import resa.evaluation.topology.tomVLD.Serializable;
 import resa.util.ConfigUtil;
 
 import java.io.File;
@@ -35,7 +36,7 @@ public class ImageSenderWithLoop {
     private String imageFolder;
     private String filePrefix;
 
-    private BlockingQueue<File> dataQueue = new ArrayBlockingQueue<>(10000);
+    private BlockingQueue<Serializable.Mat> dataQueue = new ArrayBlockingQueue<>(10000);
 
     public ImageSenderWithLoop(Map<String, Object> conf) {
         this.host = (String) conf.get("redis.host");
@@ -72,10 +73,12 @@ public class ImageSenderWithLoop {
                         String fileName = path + imageFolder + System.getProperty("file.separator")
                                 + String.format("%s%06d.jpg", filePrefix, (++generatedFrames));
                         opencv_core.IplImage source = cvLoadImage(fileName);
-                        File imgFile = File.createTempFile("img-", ".jpg");
-                        cvSaveImage(imgFile.getAbsolutePath(), source);
-                        dataQueue.put(imgFile);
-                        if (generatedFrames > end){
+                        opencv_core.IplImage image = cvLoadImage(fileName);
+                        opencv_core.Mat matOrg = new opencv_core.Mat(image);
+                        Serializable.Mat sMat = new Serializable.Mat(matOrg);
+
+                        dataQueue.put(sMat);
+                        if (generatedFrames > end) {
                             generatedFrames = st;
                         }
                     }
@@ -99,20 +102,13 @@ public class ImageSenderWithLoop {
 
         @Override
         public void run() {
-            File f;
+            Serializable.Mat sMat;
             try {
-                while ((f = dataQueue.take()) != END) {
-                    try {
-                        jedis.rpush(queueName, Files.readAllBytes(f.toPath()));
-                    } catch (IOException e) {
-                    } finally {
-                        f.delete();
-                    }
+                while ((sMat = dataQueue.take()) != null) {
+                    jedis.rpush(queueName, sMat.toByteArray());
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                dataQueue.offer(END);
             }
         }
     }

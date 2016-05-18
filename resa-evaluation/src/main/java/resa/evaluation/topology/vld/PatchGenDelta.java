@@ -34,11 +34,13 @@ public class PatchGenDelta extends BaseRichBolt {
 
     @Override
     public void execute(Tuple input) {
-        byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
-        IplImage image = cvDecodeImage(cvMat(1, imgBytes.length, CV_8UC1, new BytePointer(imgBytes)));
-        opencv_core.Mat matOrg = new opencv_core.Mat(image);
-        Serializable.Mat sMat = new Serializable.Mat(matOrg);
+//        byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
+//        IplImage image = cvDecodeImage(cvMat(1, imgBytes.length, CV_8UC1, new BytePointer(imgBytes)));
+//        opencv_core.Mat matOrg = new opencv_core.Mat(image);
+//        Serializable.Mat sMat = new Serializable.Mat(matOrg);
         int frameId = input.getIntegerByField(FIELD_FRAME_ID);
+        opencv_core.IplImage fk = new opencv_core.IplImage();
+        Serializable.Mat sMat = (Serializable.Mat) input.getValueByField(FIELD_IMG_BYTES);
 
         double fx = .25, fy = .25;
 //        double fsx = .5, fsy = .5;
@@ -64,10 +66,10 @@ public class PatchGenDelta extends BaseRichBolt {
             }
         }
 
-        try {
-            cvReleaseImage(image);
-        } catch (Exception e) {
-        }
+//        try {
+//            cvReleaseImage(image);
+//        } catch (Exception e) {
+//        }
 
         System.out.println("FrameID: " + frameId + ", patchCount: " + patchCount);
         collector.ack(input);
