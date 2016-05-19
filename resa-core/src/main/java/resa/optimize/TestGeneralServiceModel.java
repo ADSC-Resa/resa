@@ -1035,28 +1035,28 @@ public class TestGeneralServiceModel {
         LOG.info("MMK, currOptAllo: " + allocResult[0].currOptAllocation);
         LOG.info("MMK, kMaxOptAllo: " + allocResult[0].kMaxOptAllocation);
 
-//        allocResult[1] = checkOptimized_MMK_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-//        LOG.info("MMKEx,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
-//        LOG.info("MMKEx, currOptAllo: " + allocResult[1].currOptAllocation);
-//        LOG.info("MMKEx, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
+        allocResult[1] = checkOptimized_MMK_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("MMKEx,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
+        LOG.info("MMKEx, currOptAllo: " + allocResult[1].currOptAllocation);
+        LOG.info("MMKEx, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
 
 //        LOG.info("MMKex,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
 //        LOG.info("MMKex, currOptAllo: " + allocResult[1].currOptAllocation);
 //        LOG.info("MMKex, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
-        allocResult[1] = checkOptimized_GGK_SimpleAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKSAppr,  minReqAllo: " + allocResult[1].minReqOptAllocation + ", minReqStatus: " + allocResult[1].status);
-        LOG.info("GGKSAppr, currOptAllo: " + allocResult[1].currOptAllocation);
-        LOG.info("GGKSAppr, kMaxOptAllo: " + allocResult[1].kMaxOptAllocation);
-        allocResult[2] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
-        LOG.info("GGKCAppr, currOptAllo: " + allocResult[2].currOptAllocation);
-        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
+        allocResult[2] = checkOptimized_GGK_SimpleAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKSAppr,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
+        LOG.info("GGKSAppr, currOptAllo: " + allocResult[2].currOptAllocation);
+        LOG.info("GGKSAppr, kMaxOptAllo: " + allocResult[2].kMaxOptAllocation);
+        allocResult[3] = checkOptimized_GGK_ComplexAppr(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCAppr,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
+        LOG.info("GGKCAppr, currOptAllo: " + allocResult[3].currOptAllocation);
+        LOG.info("GGKCAppr, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
 
-        allocResult[3] = checkOptimized_GGK_ComplexAppr_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
-        LOG.info("GGKCApprEx,  minReqAllo: " + allocResult[3].minReqOptAllocation + ", minReqStatus: " + allocResult[3].status);
-        LOG.info("GGKCApprEx, currOptAllo: " + allocResult[3].currOptAllocation);
-        LOG.info("GGKCApprEx, kMaxOptAllo: " + allocResult[3].kMaxOptAllocation);
-        allocResult[4] = checkOptimized_MMK_execAvg(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        allocResult[4] = checkOptimized_GGK_ComplexAppr_exec(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
+        LOG.info("GGKCApprEx,  minReqAllo: " + allocResult[4].minReqOptAllocation + ", minReqStatus: " + allocResult[4].status);
+        LOG.info("GGKCApprEx, currOptAllo: " + allocResult[4].currOptAllocation);
+        LOG.info("GGKCApprEx, kMaxOptAllo: " + allocResult[4].kMaxOptAllocation);
+        allocResult[5] = checkOptimized_MMK_execAvg(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 ////        allocResult[2] = checkOptimized_GGK_SimpleApprBIA(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
 ////        LOG.info("GGKSApprBIA,  minReqAllo: " + allocResult[2].minReqOptAllocation + ", minReqStatus: " + allocResult[2].status);
 ////        LOG.info("GGKSApprBIA, currOptAllo: " + allocResult[2].currOptAllocation);
@@ -1074,6 +1074,7 @@ public class TestGeneralServiceModel {
         context.putAll((Map<String, Object>) allocResult[1].getContext());
         context.putAll((Map<String, Object>) allocResult[2].getContext());
         context.putAll((Map<String, Object>) allocResult[3].getContext());
+        context.putAll((Map<String, Object>) allocResult[4].getContext());
 
 
 //        allocResult[2] = checkOptimized_GGK_SimpleApprAdj(sourceNode, queueingNetwork, targetQoSMilliSec, currBoltAllocation, maxAvailable4Bolt, currentUsedThreadByBolts);
