@@ -91,6 +91,7 @@ public class ImageSenderWithLoop {
                         System.out.println("qLen > safeLen, stop sending....");
                         qLen = jedis.llen(this.queueName);
                     }
+                    rate = fps + (int)((2 * Math.random() - 1) * range);
                 }
             }
 
