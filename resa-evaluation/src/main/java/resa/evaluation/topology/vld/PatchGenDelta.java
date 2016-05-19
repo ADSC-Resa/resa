@@ -13,7 +13,9 @@ import org.bytedeco.javacpp.opencv_core.*;
 import resa.evaluation.topology.tomVLD.Serializable;
 import resa.util.ConfigUtil;
 
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.cvDecodeImage;
@@ -59,21 +61,41 @@ public class PatchGenDelta extends BaseRichBolt {
         int w = (int) (W * fx + .5), h = (int) (H * fy + .5);
         int dx = (int) (w * fsx + .5), dy = (int) (h * fsy + .5);
         int patchCount = 0;
-        for (int x = 0; x + w <= W; x += dx)
-            for (int y = 0; y + h <= H; y += dy)
-                patchCount++;
-
+        int xCnt = 0;
         for (int x = 0; x + w <= W; x += dx) {
+            xCnt++;
             for (int y = 0; y + h <= H; y += dy) {
-                Serializable.Rect rect = new Serializable.Rect(x, y, w, h);
-
-                opencv_core.Mat pMat = new opencv_core.Mat(sMat.toJavaCVMat(), rect.toJavaCVRect());
-                Serializable.Mat pSMat = new Serializable.Mat(pMat);
-                Serializable.PatchIdentifierMat subPatchMat = new Serializable.PatchIdentifierMat(frameId, rect, pSMat);
-
-                collector.emit(PATCH_FRAME_STREAM, input, new Values(frameId, subPatchMat, patchCount));
+                patchCount++;
             }
         }
+
+        List<Integer> array = new ArrayList(IntStream.range(0, patchCount).boxed().collect(Collectors.toList()));
+        Collections.shuffle(array);
+
+        for (int i = 0; i < array.size(); i ++){
+            int y = array.get(i) / xCnt * dy;
+            int x = array.get(i) % xCnt * dx;
+
+            Serializable.Rect rect = new Serializable.Rect(x, y, w, h);
+
+            opencv_core.Mat pMat = new opencv_core.Mat(sMat.toJavaCVMat(), rect.toJavaCVRect());
+            Serializable.Mat pSMat = new Serializable.Mat(pMat);
+            Serializable.PatchIdentifierMat subPatchMat = new Serializable.PatchIdentifierMat(frameId, rect, pSMat);
+
+            collector.emit(PATCH_FRAME_STREAM, input, new Values(frameId, subPatchMat, patchCount));
+        }
+
+//        for (int x = 0; x + w <= W; x += dx) {
+//            for (int y = 0; y + h <= H; y += dy) {
+//                Serializable.Rect rect = new Serializable.Rect(x, y, w, h);
+//
+//                opencv_core.Mat pMat = new opencv_core.Mat(sMat.toJavaCVMat(), rect.toJavaCVRect());
+//                Serializable.Mat pSMat = new Serializable.Mat(pMat);
+//                Serializable.PatchIdentifierMat subPatchMat = new Serializable.PatchIdentifierMat(frameId, rect, pSMat);
+//
+//                collector.emit(PATCH_FRAME_STREAM, input, new Values(frameId, subPatchMat, patchCount));
+//            }
+//        }
 
 //        try {
 //            cvReleaseImage(image);

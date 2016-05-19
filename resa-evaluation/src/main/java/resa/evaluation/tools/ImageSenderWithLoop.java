@@ -36,8 +36,6 @@ public class ImageSenderWithLoop {
     private String imageFolder;
     private String filePrefix;
 
-    private BlockingQueue<String> dataQueue = new ArrayBlockingQueue<>(10000);
-
     public ImageSenderWithLoop(Map<String, Object> conf) {
         this.host = (String) conf.get("redis.host");
         this.port = ((Number) conf.get("redis.port")).intValue();
@@ -47,83 +45,71 @@ public class ImageSenderWithLoop {
         this.filePrefix = getString(conf, "filePrefix");
     }
 
-    public void send2Queue(int st, int end, int fps, int retain) throws IOException {
-        int generatedFrames = st;
-        opencv_core.IplImage fk = new opencv_core.IplImage();
-        List<Integer> array = new ArrayList(IntStream.range(0, fps).boxed().collect(Collectors.toList()));
-        for (int i = 0; i < 3; i++) {
-            new PushThread().start();
-        }
-        Random rand = new Random();
-        int range = Math.min(fps - retain, retain);
-        try {
-            long now;
-            Set<Integer> retainFrames = new HashSet<>();
-            while (true) {
-                Collections.shuffle(array);
-                int count = retain + (int) ((2 * rand.nextDouble() - 1) * range);
-                retainFrames.clear();
-                for (int j = 0; j < count; j++) {
-                    retainFrames.add(array.get(j));
-                }
-                now = System.currentTimeMillis();
-                System.out.println(count + "@" + now + ", qLen=" + dataQueue.size());
-                for (int j = 0; j < fps; j++) {
-                    if (retainFrames.contains(j)) {
-                        String fileName = path + imageFolder + System.getProperty("file.separator")
-                                + String.format("%s%06d.jpg", filePrefix, (++generatedFrames));
-//                        opencv_core.IplImage image = cvLoadImage(fileName);
-//                        opencv_core.Mat matOrg = new opencv_core.Mat(image);
-//                        Serializable.Mat sMat = new Serializable.Mat(matOrg);
+    public void send2Queue(int st, int end, int fps, int range, int safeLen, int stopTime) throws IOException {
+        Jedis jedis = new Jedis(host, port);
+        int generatedFrames = 0;
+        int fileIndex = st;
 
-                        dataQueue.put(fileName);
-                        if (generatedFrames > end) {
-                            generatedFrames = st;
-                        }
+        try {
+            long start = System.currentTimeMillis();
+            long last = start;
+            long qLen = 0;
+            int rate = fps + (int)((2 * Math.random() - 1) * range);
+
+            while (true) {
+
+                String fileName = path + imageFolder + System.getProperty("file.separator")
+                        + String.format("%s%06d.jpg", filePrefix, (fileIndex++));
+                File f = new File(fileName);
+                if (f.exists() == false) {
+                    System.out.println("File not exist: " + fileName);
+                    continue;
+                }
+
+                opencv_core.IplImage image = cvLoadImage(fileName);
+                opencv_core.Mat matOrg = new opencv_core.Mat(image);
+                Serializable.Mat sMat = new Serializable.Mat(matOrg);
+                jedis.rpush(this.queueName, sMat.toByteArray());
+
+                if (fileIndex > end){
+                    fileIndex = st;
+                }
+
+                if (++generatedFrames % rate == 0) {
+                    long current = System.currentTimeMillis();
+                    long elapse = current - last;
+                    long remain = 1000 - elapse;
+                    if (remain > 0) {
+                        Thread.sleep(remain);
+                    }
+                    last = System.currentTimeMillis();
+                    qLen = jedis.llen(this.queueName);
+                    System.out.println("Current: " + rate + ", elapsed: " + (last - start) / 1000
+                            + ",totalSend: " + generatedFrames+ ", remain: " + remain + ", sendQLen: " + qLen);
+                    while (qLen > safeLen){
+                        Thread.sleep(Math.max(100, stopTime));
+                        System.out.println("qLen > safeLen, stop sending....");
+                        qLen = jedis.llen(this.queueName);
                     }
                 }
-                long sleep = now + 1000 - System.currentTimeMillis();
-                if (sleep > 0) {
-                    Thread.sleep(sleep);
-                }
             }
-        } catch (Exception e) {
+
+        } catch (InterruptedException e){
             e.printStackTrace();
-        }
-    }
-
-    private class PushThread extends Thread {
-
-        private Jedis jedis = new Jedis(host, port);
-
-        private PushThread() {
-        }
-
-        @Override
-        public void run() {
-            String fname = null;
-            try {
-                while ((fname = dataQueue.take()) != null) {
-                    opencv_core.IplImage image = cvLoadImage(fname);
-                    opencv_core.Mat matOrg = new opencv_core.Mat(image);
-                    Serializable.Mat sMat = new Serializable.Mat(matOrg);
-                    jedis.rpush(queueName, sMat.toByteArray());
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
-            System.out.println("usage: ImageSender <confFile> <fileSt> <fileEnd> <fps> <retain>");
+            System.out.println("usage: ImageSender <confFile> <fileSt> <fileEnd> <fps> <range> <safeLen> <stopTime>");
             return;
         }
         ImageSenderWithLoop sender = new ImageSenderWithLoop(ConfigUtil.readConfig(new File(args[0])));
-        System.out.println("start sender");
+        System.out.println(String.format("start sender, st: %d, end: %d, fps: %d, r: %d, slen: %d, sTime: %d",
+                Integer.parseInt(args[1]), Integer.parseInt(args[2]),
+                Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6])));
         sender.send2Queue(Integer.parseInt(args[1]), Integer.parseInt(args[2]),
-                Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+                Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6]));
         System.out.println("end sender");
     }
 
