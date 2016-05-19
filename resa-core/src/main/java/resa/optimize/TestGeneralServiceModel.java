@@ -151,8 +151,8 @@ public class TestGeneralServiceModel {
                     serviceNode.getLambda(), serviceNode.getInterArrivalScv(), serviceNode.getMu(), serviceNode.getScvServTimeHis(), serverCount);
             retVal += (avgSojournTime * serviceNode.getRatio());
 
-            System.out.println(String.format("%s, l: %.4f, ll: %.4f, u: %.4f, uu: %.4f, c: %d, r: %.4f, MMKT: %.5f, add: %.5f, ret: %.5f",
-                    serviceNode.getLambda(), serviceNode.getInterArrivalScv(), serviceNode.getMu(), serviceNode.getScvServTimeHis(), serverCount,
+            System.out.println(String.format("%s, l: %.4f, ll: %.4f, u: %.4f, uu: %.4f, c: %d, r: %.4f, GGKS: %.5f, add: %.5f, ret: %.5f",
+                    cid, serviceNode.getLambda(), serviceNode.getInterArrivalScv(), serviceNode.getMu(), serviceNode.getScvServTimeHis(), serverCount,
                     serviceNode.getRatio(), avgSojournTime, avgSojournTime * serviceNode.getRatio(), retVal));
         }
         return retVal;
@@ -169,6 +169,10 @@ public class TestGeneralServiceModel {
             double avgSojournTime = sojournTime_GGK_ComplexAppr(
                     serviceNode.getLambda(), serviceNode.getInterArrivalScv(), serviceNode.getMu(), serviceNode.getScvServTimeHis(), serverCount);
             retVal += (avgSojournTime * serviceNode.getRatio());
+
+            System.out.println(String.format("%s, l: %.4f, ll: %.4f, u: %.4f, uu: %.4f, c: %d, r: %.4f, GGKC: %.5f, add: %.5f, ret: %.5f",
+                    cid, serviceNode.getLambda(), serviceNode.getInterArrivalScv(), serviceNode.getMu(), serviceNode.getScvServTimeHis(), serverCount,
+                    serviceNode.getRatio(), avgSojournTime, avgSojournTime * serviceNode.getRatio(), retVal));
         }
         return retVal;
     }
