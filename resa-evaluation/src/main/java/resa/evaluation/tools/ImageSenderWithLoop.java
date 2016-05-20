@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -45,7 +46,7 @@ public class ImageSenderWithLoop {
         this.filePrefix = getString(conf, "filePrefix");
     }
 
-    public void send2Queue(int st, int end, int fps, int range, int safeLen, int stopTime) throws IOException {
+    public void send2Queue(int st, int end, int fps, int range, int safeLen, int stopTime, int mode) throws IOException {
         Jedis jedis = new Jedis(host, port);
         int generatedFrames = 0;
         int fileIndex = st;
@@ -66,10 +67,15 @@ public class ImageSenderWithLoop {
                     continue;
                 }
 
-                opencv_core.IplImage image = cvLoadImage(fileName);
-                opencv_core.Mat matOrg = new opencv_core.Mat(image);
-                Serializable.Mat sMat = new Serializable.Mat(matOrg);
-                jedis.rpush(this.queueName, sMat.toByteArray());
+                if (mode == 0) {
+                    opencv_core.IplImage image = cvLoadImage(fileName);
+                    opencv_core.Mat matOrg = new opencv_core.Mat(image);
+                    Serializable.Mat sMat = new Serializable.Mat(matOrg);
+                    jedis.rpush(this.queueName, sMat.toByteArray());
+                } else {
+
+                    jedis.rpush(this.queueName, Files.readAllBytes(new File(fileName).toPath()));
+                }
 
                 if (fileIndex > end){
                     fileIndex = st;
@@ -102,15 +108,17 @@ public class ImageSenderWithLoop {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
-            System.out.println("usage: ImageSender <confFile> <fileSt> <fileEnd> <fps> <range> <safeLen> <stopTime>");
+            System.out.println("usage: ImageSender <confFile> <fileSt> <fileEnd> <fps> <range> <safeLen> <stopTime> <mode>");
             return;
         }
         ImageSenderWithLoop sender = new ImageSenderWithLoop(ConfigUtil.readConfig(new File(args[0])));
-        System.out.println(String.format("start sender, st: %d, end: %d, fps: %d, r: %d, slen: %d, sTime: %d",
+        System.out.println(String.format("start sender, st: %d, end: %d, fps: %d, r: %d, slen: %d, sTime: %d, mode: %d",
                 Integer.parseInt(args[1]), Integer.parseInt(args[2]),
-                Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6])));
+                Integer.parseInt(args[3]), Integer.parseInt(args[4]),
+                Integer.parseInt(args[5]), Integer.parseInt(args[6]), Integer.parseInt(args[7])));
         sender.send2Queue(Integer.parseInt(args[1]), Integer.parseInt(args[2]),
-                Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6]));
+                Integer.parseInt(args[3]), Integer.parseInt(args[4]),
+                Integer.parseInt(args[5]), Integer.parseInt(args[6]), Integer.parseInt(args[7]));
         System.out.println("end sender");
     }
 
