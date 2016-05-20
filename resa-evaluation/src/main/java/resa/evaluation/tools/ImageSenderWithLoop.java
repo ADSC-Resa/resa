@@ -83,7 +83,7 @@ public class ImageSenderWithLoop {
                 }
 
                 generatedFrames ++;
-                if (finished ++ == 0) {
+                if (finished ++ == target) {
                     long current = System.currentTimeMillis();
                     long elapse = current - last;
                     long remain = 1000 - elapse;
