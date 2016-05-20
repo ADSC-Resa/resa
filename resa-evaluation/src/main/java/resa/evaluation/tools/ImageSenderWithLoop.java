@@ -55,7 +55,8 @@ public class ImageSenderWithLoop {
             long start = System.currentTimeMillis();
             long last = start;
             long qLen = 0;
-            int rate = fps + (int)((2 * Math.random() - 1) * range);
+            int target = fps + (int)((2 * Math.random() - 1) * range);
+            int finished = 0;
 
             while (true) {
 
@@ -81,7 +82,7 @@ public class ImageSenderWithLoop {
                     fileIndex = st;
                 }
 
-                if (++generatedFrames % rate == 0) {
+                if (finished ++ == 0) {
                     long current = System.currentTimeMillis();
                     long elapse = current - last;
                     long remain = 1000 - elapse;
@@ -90,14 +91,15 @@ public class ImageSenderWithLoop {
                     }
                     last = System.currentTimeMillis();
                     qLen = jedis.llen(this.queueName);
-                    System.out.println("Current: " + rate + ", elapsed: " + (last - start) / 1000
+                    System.out.println("Target: " + target + ", elapsed: " + (last - start) / 1000
                             + ",totalSend: " + generatedFrames+ ", remain: " + remain + ", sendQLen: " + qLen);
                     while (qLen > safeLen){
                         Thread.sleep(Math.max(100, stopTime));
                         System.out.println("qLen > safeLen, stop sending....");
                         qLen = jedis.llen(this.queueName);
                     }
-                    rate = fps + (int)((2 * Math.random() - 1) * range);
+                    target = fps + (int)((2 * Math.random() - 1) * range);
+                    finished = 0;
                 }
             }
 
