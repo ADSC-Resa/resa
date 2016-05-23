@@ -18,7 +18,7 @@ import static resa.util.ConfigUtil.getInt;
  *
  * In charlie version, the number of groups organized in the featureExtractorBolt is not determined by number of tasks of Matcher bolt, but by input parameter setting.
  */
-public class DectationTopologyCharlie implements Constant {
+public class DectationTopologyCharlie2 implements Constant {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
@@ -36,7 +36,7 @@ public class DectationTopologyCharlie implements Constant {
 
         builder.setSpout("image-input", new ImageSource(host, port, queue), getInt(conf, "vd.spout.parallelism", 1));
 
-        builder.setBolt("feat-ext", new FeatureExtracterCharlie(), getInt(conf, "vd.feat-ext.parallelism", 1))
+        builder.setBolt("feat-ext", new FeatureExtracterCharlie2(), getInt(conf, "vd.feat-ext.parallelism", 1))
                 .shuffleGrouping("image-input", STREAM_IMG_OUTPUT)
                 .setNumTasks(getInt(conf, "vd.feat-ext.tasks", 1));
         builder.setBolt("matcher", new MatcherCharlie(), getInt(conf, "vd.matcher.parallelism", 1))
@@ -60,7 +60,7 @@ public class DectationTopologyCharlie implements Constant {
             System.out.println("ResaMetricsCollector is registered");
         }
 
-        StormSubmitter.submitTopology("resa-vd-JB-cha", resaConfig, builder.createTopology());
+        StormSubmitter.submitTopology("resa-vd-JB-cha2", resaConfig, builder.createTopology());
 
     }
 
