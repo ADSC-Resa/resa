@@ -33,6 +33,7 @@ public class FeatureExtracterCharlie2 extends BaseRichBolt {
     private OutputCollector collector;
     private int groupNumber;
     private int minGroupSize;
+    private boolean showDetails;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -45,6 +46,7 @@ public class FeatureExtracterCharlie2 extends BaseRichBolt {
         this.collector = collector;
         minGroupSize = ConfigUtil.getInt(stormConf, "vd-minGroupSize", 50);
         groupNumber = ConfigUtil.getInt(stormConf, "vd-group.count", 1);
+        showDetails = ConfigUtil.getBoolean(stormConf, "show-details", false);
 
         System.out.println("FeatureExtracterCharlie2.prepare, nfeatures: " + nfeatures + ", contrastThreshold: "
                 + contrastThreshold + ", edgeThreshold: " + edgeThreshold + ",minGroupSize: " + minGroupSize + ", groupNumber: " + groupNumber);
@@ -99,7 +101,9 @@ public class FeatureExtracterCharlie2 extends BaseRichBolt {
             collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, emtpy, 0, 1));
         }
 
-        System.out.println("FrameID: " + frameId + ", rows: " + rows + ", tempGroupNum: " + tempGroupNumber);
+        if (showDetails) {
+            System.out.println("FrameID: " + frameId + ", rows: " + rows + ", tempGroupNum: " + tempGroupNumber);
+        }
         collector.ack(input);
     }
 
