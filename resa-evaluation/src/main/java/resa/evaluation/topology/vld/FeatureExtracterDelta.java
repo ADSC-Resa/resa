@@ -43,6 +43,9 @@ public class FeatureExtracterDelta extends BaseRichBolt {
         this.collector = collector;
 
         showDetails = ConfigUtil.getBoolean(stormConf, "show-details", false);
+
+        System.out.println("FeatureExtracterDelta.prepare, nfeatures: " + nfeatures + ", contrastThreshold: "
+                + contrastThreshold + ", edgeThreshold: " + edgeThreshold);
     }
 
     @Override
