@@ -30,6 +30,7 @@ public class FeatureExtracterDelta extends BaseRichBolt {
     private SIFT sift;
     private double[] buf;
     private OutputCollector collector;
+    private boolean showDetails;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -40,6 +41,8 @@ public class FeatureExtracterDelta extends BaseRichBolt {
         sift = new SIFT(nfeatures, 3, contrastThreshold, edgeThreshold, 1.6);
         buf = new double[128];
         this.collector = collector;
+
+        showDetails = ConfigUtil.getBoolean(stormConf, "show-details", false);
     }
 
     @Override
@@ -65,8 +68,9 @@ public class FeatureExtracterDelta extends BaseRichBolt {
             }
             selected.add(siftFeat);
         }
-
-//        System.out.println("FrameID: " + frameId + ", rows: " + rows + ", sampleCnt: " + sampleSend.size() + ", tempGroupNum: " + tempGroupNumber);
+        if (showDetails) {
+            System.out.println("FrameID: " + frameId + ", rows: " + rows);
+        }
         collector.emit(STREAM_FEATURE_DESC, input, new Values(frameId, selected, patchCount));
         collector.ack(input);
     }
