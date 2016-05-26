@@ -31,7 +31,7 @@ public class DectationTopologyDelta2 implements Constant {
         int port = ConfigUtil.getInt(conf, "redis.port", 6379);
         String queue = (String) conf.get("redis.queue");
 
-        builder.setSpout("image-input", new ImageSource(host, port, queue), getInt(conf, "vd.spout.parallelism", 1));
+        builder.setSpout("image-input", new ImageSourceDelta(host, port, queue), getInt(conf, "vd.spout.parallelism", 1));
 
         builder.setBolt("feat-ext", new FeatureExtracterDelta2(), getInt(conf, "vd.feat-ext.parallelism", 1))
                 .shuffleGrouping("image-input", STREAM_IMG_OUTPUT)

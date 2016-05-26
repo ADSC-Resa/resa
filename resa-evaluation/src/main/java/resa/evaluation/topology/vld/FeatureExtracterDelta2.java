@@ -60,9 +60,10 @@ public class FeatureExtracterDelta2 extends BaseRichBolt {
 
     @Override
     public void execute(Tuple input) {
+        int frameId = input.getIntegerByField(FIELD_FRAME_ID);
+
         byte[] imgBytes = (byte[]) input.getValueByField(FIELD_IMG_BYTES);
         IplImage image = cvDecodeImage(cvMat(1, imgBytes.length, CV_8UC1, new BytePointer(imgBytes)));
-        String frameId = input.getStringByField(FIELD_FRAME_ID);
         Mat matImg = new Mat(image);
 
         int W = matImg.cols(), H = matImg.rows();
